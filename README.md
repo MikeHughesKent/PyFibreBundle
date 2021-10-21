@@ -25,7 +25,7 @@ PyBundle functions are static.
 * __gFilter__(img, filterSize) : Applies 2D Gaussian filter of sigma *filterSize* to *img*.
 * __bundleLocate__(img) : Locates bundle in *img* and returns tuple of (centreX, centreY, radius, mask) where mask is a 2D numpy array of 1 inside bundle and 0 outside.
 * __findBundle__(img, filterSize = 4) : Customised location of bundle in *img* using preprocessing Gaussian filter of sigma *filterSize*. Returns tuple of *loc = (centreX, centreY, radius)*.
-* __maskAuto__(img) : Locates bundle in *img* and returns an image with pixels outside bundle set to 0.
+* __maskAuto__(img, loc) : Locates bundle in *img* and returns an image with pixels outside bundle set to 0.
 * __cropRect__(img, loc) : Extracts region of interest around bundle in image *img* defined by tuple *loc = (centreX, centreY, radius)*. 
 * __cropFilterMask__(img, loc, mask, filterSize) : Combined processing using previously located bundle at tuple *loc = (centreX, centreY, radius)* and previously calculated *mask*. Crops the *img* to a square around the bunldle, applies Gaussian filter of sigma *filterSize* and sets pixels outside bundle radius to 0.
 * __getMask__(img, loc) : Returns a numpy array which is 1 inside bundle and 0 outside, using bundle location tuple *loc = (centreX, centreY, radius)*. 
@@ -41,7 +41,7 @@ The Mosaic class allows high speed mosaicing using normalised cross correlation 
 mMosaic = Mosaic(mosaicSize, optionalArguments).
 
 Required arguments:
-* __mosaicSize__ = Size of mosaic image in pixels. This may later changes depending on which __boundaryMethod__ is set.
+* __mosaicSize__ = Size of mosaic image in pixels. This may later change depending on which __boundaryMethod__ is set.
 
 Optional arguments:
 * __resize__ = Images are resize to this size before insertion (default = same as size of first image added to mosaic, i.e. no resizing).

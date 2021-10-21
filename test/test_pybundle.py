@@ -2,8 +2,6 @@
 """
 Some general tests of PyBundle
 
-Created on Mon May 31 19:21:51 2021
-
 @author: Mike Hughes
 """
 from matplotlib import pyplot as plt
