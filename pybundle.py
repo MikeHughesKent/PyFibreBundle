@@ -71,6 +71,9 @@ class PyBundle:
               
         return centreX, centreY, radius
     
+    
+    
+    
         
     # Extracts a square around the bundle using specified co-ordinates in tuple 
     # loc = (centreX, centreY, radius)
@@ -101,14 +104,7 @@ class PyBundle:
     
 
     
-    # Returns location of bundle (tuple of centreX, centreY, radius) and a
-    # a mask image with all pixel inside of bundle = 1, and those outside = 0
-    def locateBundle(img):
-        loc = PyBundle.findBundle(img)
-        imgD, croppedLoc = PyBundle.cropRect(img,loc)
-        mask = PyBundle.getMask(imgD, croppedLoc)
-        return loc, mask
-    
+      
     
     # Sequentially crops image to bundle, applies Gaussian filter and then
     # sets pixels outside bundle to 0
@@ -268,7 +264,8 @@ class PyBundle:
     # Reconstructed images will be of size (gridSize, gridSize). 'coreSize' is used by
     # the core finding routine, and should be an estimate of the core spacing. 'centreX' and
     # 'centreY' are the positions in the original image that the reconstruction will be centred
-    # on
+    # on.
+    # Thanks to Cheng Yong Xin, Joseph, who 
     def calibTriInterp(img, coreSize, gridSize, **kwargs):
         
         
@@ -278,18 +275,20 @@ class PyBundle:
         filterSize = kwargs.get('filterSize', 0)
         normalise = kwargs.get('normalise', 0)
 
-        # Default values
-        if centreX < 0:
-            centreX = np.shape(img)[1] / 2
-        if centreY < 0:
-            centreY = np.shape(img)[0] / 2
-        if radius < 0:
-            radius =  min(np.shape(img)) / 2
-        
-
+       
         
         # Find the cores in the calibration image
         coreX,coreY = PyBundle.findCores(img, coreSize)
+
+
+        # Default values
+        if centreX < 0:
+            centreX = np.mean(coreX)
+        if centreY < 0:
+            centreY = np.mean(coreY)
+        if radius < 0:
+            dist = np.sqrt((coreX - centreX)**2 + (coreY - centreY)**2)
+            radius =  max(dist)
 
 
         # Delaunay triangulation and find barycentric co-ordinates for each pixel
