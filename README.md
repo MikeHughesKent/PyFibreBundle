@@ -35,7 +35,7 @@ PyBundle functions are static.
 * __findCores__(img, coreSpacing) : Finds bundle cores in image *img* where the separation of the cores is *coreSpacing*. Use regional maxima approach and is fast.
 * __findCoresHough__(img, kwargs) : Experimental. Finds cores using Hough transform. Currently quite slow and not as accurate as findCores. See source for optional parameters.
 
-### Core Remova;
+### Core Removal
 * __calibTriInterp__(img, coreSize, gridSize, [centreX = -1], [centreY = -1], [radius = -1], [filterSize = 0=], [normalise = 0]) : Calibration to allow core removal by triangular linear interpolation. Image *img* should be a uniformly illuminated image of the bundle to allow cores to be located. *coreSize* is the estimated spacing between cores (used by core finding routines). *gridSize* is the number of pixels in the reconstructed images. The reconstructed image will be centred on *(centreX, centreY)* and cover radius *radius*. If any of these parameters are left as the default of -1 then they will be estimated based on the discoverd core positions. Function returns a tuple which is used by *reconTri_Interp*.
 * __initTriInterp__ : This is used by calibTriInterp, see source for parameters.
 * __reconTriInterp__(img, calib) : Removes core pattern from image *img* using prior calibration *calib* produced by *calibTriInterp*.
