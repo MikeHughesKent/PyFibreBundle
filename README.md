@@ -1,7 +1,7 @@
 # PyBundle
-Python library for image processing fibre bundle images. Developed mainly by Mike Hughes at the Applied Optics Group, University of Kent, but pull requests welcome.
+PyBundle is a Python library for basic image processing of fibre bundle images. It is being developed mainly by Mike Hughes at the Applied Optics Group, University of Kent, but pull requests are welcome.
 
-Currently under development. Mostly uses OpenCV library. The aim is to keep this fast enough for use in real-time image acquisition and display system.
+This library is currently under development and there is no stable release. Some functions reqquire the OpenCV library. The aim is to keep this fast enough for use in real-time image acquisition and display systems.
 
 ## Bundle Processing  
 * Locate bundle in image
@@ -9,6 +9,7 @@ Currently under development. Mostly uses OpenCV library. The aim is to keep this
 * Mask areas outside of bundle
 * Gaussian spatial filtering to remove core pattern
 * Find centers of all cores in bundle (two implementations: regional maxima and Hough transform)
+* Core removal using trinagular linear interpolation following Delaunay triangulation. Currently quite slow.
 
 ## Mosaicing
 * Detect image to image shift using normalised cross correlation.
@@ -16,23 +17,29 @@ Currently under development. Mostly uses OpenCV library. The aim is to keep this
 * Expand or scroll mosaic when the edge of the mosaic image is reached.
 
 ## Currently being worked on
-* Triangular linear interpolation to remove core pattern. Delaunay triangulation works, problem is finding which enclosing triangle each pixel is. Matlab has pointLocation for this, but no similar function in OpenCV.
+* Speed improvement to triangular linear interpolation to remove core pattern. 
 
 ## PyBundle Class
 PyBundle functions are static.
 
 ### Bundle locating, masking and filtering
 * __gFilter__(img, filterSize) : Applies 2D Gaussian filter of sigma *filterSize* to *img*.
-* __bundleLocate__(img) : Locates bundle in *img* and returns tuple of (centreX, centreY, radius, mask) where mask is a 2D numpy array of 1 inside bundle and 0 outside.
-* __findBundle__(img, filterSize = 4) : Customised location of bundle in *img* using preprocessing Gaussian filter of sigma *filterSize*. Returns tuple of *loc = (centreX, centreY, radius)*.
-* __maskAuto__(img, loc) : Locates bundle in *img* and returns an image with pixels outside bundle set to 0.
-* __cropRect__(img, loc) : Extracts region of interest around bundle in image *img* defined by tuple *loc = (centreX, centreY, radius)*. 
+* __findBundle__(img, [filterSize = 4]) : Finds bundle in image *img* using preprocessing Gaussian filter of sigma *filterSize*. Returns tuple of *loc = (centreX, centreY, radius)*.
+* __getMask__(img, loc) : Returns a mask as a 2D numpy array which is 1 inside bundle and 0 outside, using bundle location tuple *loc = (centreX, centreY, radius)*. 
+* __applyMask__(img, mask) : Mutiplies image *img* with mask *mask*. *mask* is a 2D numpy array of the same size as image.
+* __mask__(img, loc) : Generates a mask based on tuple *loc = (centreX, centreY, radius)* and then applies it to image *img*. 
+* __cropRect__(img, loc) : Extracts square region of interest around bundle in image *img* defined by tuple *loc = (centreX, centreY, radius)*. Returns tuple of *(newImage, newLoc)* where *newLoc* is a tuple of *(centreX, centreY, radius)* adjusted to still be corrected after the cropping.
 * __cropFilterMask__(img, loc, mask, filterSize) : Combined processing using previously located bundle at tuple *loc = (centreX, centreY, radius)* and previously calculated *mask*. Crops the *img* to a square around the bunldle, applies Gaussian filter of sigma *filterSize* and sets pixels outside bundle radius to 0.
-* __getMask__(img, loc) : Returns a numpy array which is 1 inside bundle and 0 outside, using bundle location tuple *loc = (centreX, centreY, radius)*. 
 
 ### Core Finding
 * __findCores__(img, coreSpacing) : Finds bundle cores in image *img* where the separation of the cores is *coreSpacing*. Use regional maxima approach and is fast.
 * __findCoresHough__(img, kwargs) : Experimental. Finds cores using Hough transform. Currently quite slow and not as accurate as findCores. See source for optional parameters.
+
+### Core Remova;
+* __calibTriInterp__(img, coreSize, gridSize, [centreX = -1], [centreY = -1], [radius = -1], [filterSize = 0=], [normalise = 0]) : Calibration to allow core removal by triangular linear interpolation. Image *img* should be a uniformly illuminated image of the bundle to allow cores to be located. *coreSize* is the estimated spacing between cores (used by core finding routines). *gridSize* is the number of pixels in the reconstructed images. The reconstructed image will be centred on *(centreX, centreY)* and cover radius *radius*. If any of these parameters are left as the default of -1 then they will be estimated based on the discoverd core positions. Function returns a tuple which is used by *reconTri_Interp*.
+* __initTriInterp__ : This is used by calibTriInterp, see source for parameters.
+* __reconTriInterp__(img, calib) : Removes core pattern from image *img* using prior calibration *calib* produced by *calibTriInterp*.
+* __coreValues__(img, coreX, coreY, filterSize) : Extracts intensity vales from cores in image *img*. *coreX* and *coreY* are vectors specifying locations of cores, *filterSize* is the sigma of a 2D Gaussian filter applied before extracting values (set to 0 for no filter).
 
 ## Mosaic Class
 The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, and either dead-leaf or alpha blended insertion of images into mosaic. The easiest way to use is to create instance of Mosaic class and then use __Mosaic.add(img)__ to sequentially register and add images to mosaic and __Mosaic.getMosaic()__ to get the latest mosaic image. Both *img* and the mosaic are 2D numpy arrays.
