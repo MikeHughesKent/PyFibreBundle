@@ -3,6 +3,8 @@ PyBundle is a Python library for basic image processing of fibre bundle images. 
 
 This library is currently under development and there is no stable release. Some functions reqquire the OpenCV library. The aim is to keep this fast enough for use in real-time image acquisition and display systems.
 
+__Acknowledgements__: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).
+
 ## Bundle Processing  
 * Locate bundle in image
 * Crop image to only show bundle
