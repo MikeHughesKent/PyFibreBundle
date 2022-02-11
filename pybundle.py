@@ -24,12 +24,18 @@ from scipy.spatial import Delaunay
 
 
 class PyBundle:
-    
-   
+       
     
     def __init__(self):
         pass
        
+    
+    #def to8bit(img):
+   #     img = img - np.min(img)
+   #     img = img / np.max(img)
+   #     img = img * 255
+   #     img = img.astype('uint8')
+   #     return img
 
     # Applies 2D Gaussian filter to image 'img'. 'filtersize' is the sigma
     # of the Gaussian. The kernel size is 8 times sigma.
@@ -114,7 +120,7 @@ class PyBundle:
         
         img, newLoc = PyBundle.cropRect(img, loc)
         img = PyBundle.gFilter(img, filterSize)
-        img = PyBundle.mask(img, mask)
+        img = PyBundle.mask(img, newLoc)
         if resize > 0:
             img = cv.resize(img, (resize,resize))
         
@@ -129,11 +135,15 @@ class PyBundle:
         cy = loc[1]
         rad = loc[2]
         mY,mX = np.meshgrid(range(img.shape[0]),range(img.shape[1]))
+       
         
         m = np.square(mX - cx) +  np.square(mY - cy)   
         imgMask = np.transpose(m < rad**2)
          
         return imgMask
+    
+    
+    
     
     
     # Find cores in bundle image using Hough transform. This generally
@@ -265,7 +275,7 @@ class PyBundle:
     # the core finding routine, and should be an estimate of the core spacing. 'centreX' and
     # 'centreY' are the positions in the original image that the reconstruction will be centred
     # on.
-    # Thanks to Cheng Yong Xin, Joseph, who 
+    # Thanks to Cheng Yong Xin, Joseph, who collaborated in implementation of this function.
     def calibTriInterp(img, coreSize, gridSize, **kwargs):
         
         
@@ -273,9 +283,14 @@ class PyBundle:
         centreY = kwargs.get('centreY', -1)
         radius = kwargs.get('radius', -1)
         filterSize = kwargs.get('filterSize', 0)
-        normalise = kwargs.get('normalise', 0)
-
-       
+        normalise = kwargs.get('normalise', None)
+        autoMask = kwargs.get('autoMask', False)
+        background = kwargs.get('background', None)
+        
+        if autoMask:
+            loc = PyBundle.findBundle(img)
+            img = PyBundle.mask(img, loc)
+                    
         
         # Find the cores in the calibration image
         coreX,coreY = PyBundle.findCores(img, coreSize)
@@ -292,7 +307,8 @@ class PyBundle:
 
 
         # Delaunay triangulation and find barycentric co-ordinates for each pixel
-        calib = PyBundle.initTriInterp(img, coreX, coreY, centreX, centreY, radius, gridSize, filterSize = filterSize, normalise = normalise)
+        calib = PyBundle.initTriInterp(img, coreX, coreY, centreX, centreY, radius, gridSize, filterSize = filterSize, background = background, normalise = normalise)
+
 
         return calib
     
@@ -305,7 +321,8 @@ class PyBundle:
    
                 
         filterSize = kwargs.get('filterSize', 0)
-        normalise = kwargs.get('normalise', 0)
+        normalise = kwargs.get('normalise', None)
+        background = kwargs.get('background', None)
 
         # Delaunay triangulation over core centre locations
         points = np.vstack((coreX, coreY)).T
@@ -332,12 +349,19 @@ class PyBundle:
         
         
         # Store background values
-        if normalise == 1:  
-            normaliseVals = PyBundle.coreValues(img, coreX,coreY,filterSize).astype('double')
+        if normalise is not None:  
+            normaliseVals = PyBundle.coreValues(normalise, coreX,coreY,filterSize).astype('double')
         else:
             normaliseVals = 0
+            
+        
+        if background is not None:  
+            backgroundVals = PyBundle.coreValues(background, coreX,coreY,filterSize).astype('double')
+        else:
+            backgroundVals = 0
+        
 
-        return coreX, coreY, gridSize, mapping, tri, baryCords , filterSize, normalise, normaliseVals
+        return coreX, coreY, gridSize, mapping, tri, baryCords , filterSize, normalise, normaliseVals, background, backgroundVals
     
         
     
@@ -347,11 +371,15 @@ class PyBundle:
     # calibration using calibTriInterp
     def reconTriInterp(img, calib):
         
-        (coreX, coreY, gridSize, mapping, tri, baryCords, filterSize, normalise, normaliseVals) = calib
+        (coreX, coreY, gridSize, mapping, tri, baryCords, filterSize, normalise, normaliseVals, background, backgroundVals) = calib
         
         # Extract intensity from each core
         cVals = PyBundle.coreValues(img, coreX,coreY, filterSize).astype('double')
-        if normalise == 1:
+        
+        if background is not None:
+            cVals = cVals - backgroundVals
+        
+        if normalise is not None:
             cVals = cVals / normaliseVals
         
         # Triangular linear interpolation
@@ -369,6 +397,31 @@ class PyBundle:
         return imgOut
     
     
+        # Returns an 8 bit representation of image. If min and max are specified,
+        # these pixel values in the original image are mapped to 0 and 255 
+        # respectively, otherwise the smallest and largest values in the 
+        # whole image are mapped to 0 and 255, respectively.
+    def to8bit(img, **kwargs):
+        minV = kwargs.get("minVal", None)
+        maxV = kwargs.get("maxVal", None)
+            
+            
+        img = img.astype('float64')
+           
+        if minV is None:
+            minV = np.min(img)
+                
+                        
+        img = img - minV
+            
+        if maxV is None:
+            maxV = np.max(img)
+        else:
+            maxV = maxV - minV
+            
+        img = img / maxV * 255
+        img = img.astype('uint8')
+        return img
     
         
 ##############################################################################        
