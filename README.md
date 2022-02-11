@@ -1,7 +1,7 @@
 # PyBundle
 PyBundle is a Python library for basic image processing of fibre bundle images. It is being developed mainly by Mike Hughes at the Applied Optics Group, University of Kent, but pull requests are welcome.
 
-This library is currently under development and there is no stable release. Some functions reqquire the OpenCV library. The aim is to keep this fast enough for use in real-time image acquisition and display systems.
+This library is currently under development and there is no stable release. Some functions require the OpenCV library. The aim is to keep this fast enough for use in real-time image acquisition and display systems.
 
 __Acknowledgements__: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).
 
@@ -42,6 +42,9 @@ PyBundle functions are static.
 * __initTriInterp__ : This is used by calibTriInterp, see source for parameters.
 * __reconTriInterp__(img, calib) : Removes core pattern from image *img* using prior calibration *calib* produced by *calibTriInterp*.
 * __coreValues__(img, coreX, coreY, filterSize) : Extracts intensity vales from cores in image *img*. *coreX* and *coreY* are vectors specifying locations of cores, *filterSize* is the sigma of a 2D Gaussian filter applied before extracting values (set to 0 for no filter).
+
+### Utility
+* __to8bit__(img, [minVal = None], [maxVal = None]) : Returns an image to 8 bit representation. If *minVal* and *maxVa*l are not specified, the minimum and maximum values in the image are scaled to 0 and 255 in the new image. If *minVal* and *maxVal* are specified then these pixel values are mapped to 0 and 255, respectively, and
 
 ## Mosaic Class
 The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, and either dead-leaf or alpha blended insertion of images into mosaic. The easiest way to use is to create instance of Mosaic class and then use __Mosaic.add(img)__ to sequentially register and add images to mosaic and __Mosaic.getMosaic()__ to get the latest mosaic image. Both *img* and the mosaic are 2D numpy arrays.
