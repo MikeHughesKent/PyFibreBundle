@@ -1,4 +1,4 @@
-# PyBundle
+# PyFibreBundle
 PyBundle is a Python library for basic image processing of fibre bundle images. It is being developed mainly by Mike Hughes at the Applied Optics Group, University of Kent, but pull requests are welcome.
 
 This library is currently under development and there is no stable release. Some functions require the OpenCV library. The aim is to keep this fast enough for use in real-time image acquisition and display systems.
@@ -18,11 +18,11 @@ __Acknowledgements__: Cheng Yong Xin, Joseph, contributed to triangular linear i
 * Insert image into mosaic either using dead-leaf or alpha blending.
 * Expand or scroll mosaic when the edge of the mosaic image is reached.
 
-## Currently being worked on
-* Speed improvement to triangular linear interpolation to remove core pattern. 
+## Super Resolution
+* Combine multiple fibre bundle images to improve resolution.
 
 ## PyBundle Class
-PyBundle functions are static.
+* Object oriented version of PyFibreBundle
 
 ### Bundle locating, masking and filtering
 * __gFilter__(img, filterSize) : Applies 2D Gaussian filter of sigma *filterSize* to *img*.
