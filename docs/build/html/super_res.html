@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Super Resolution &#8212; PyBundle  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Function Reference" href="functions.html" />
+    <link rel="prev" title="Mosaicing" href="mosaicing.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="super-resolution">
+<h1>Super Resolution<a class="headerlink" href="#super-resolution" title="Permalink to this headline">¶</a></h1>
+<p>Core super-resolution (i.e. overcoming the sampling limit of the fibre bundle) can be achieved by combining multiple images, with the object slightly shifted with respect to the fibre pattern. The super-resolution class of PyFibreBundle provides the ability to combine multiple images and generate an enhanced resolution using triangular linear interpolation. This functionality is not currently accessible in the PyBundle class and must be invoked using static functons within the SuperRes class.</p>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p>Import the pybundle libary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pybundle</span>
+</pre></div>
+</div>
+<p>First, perform the calibration. This requires a flat-field/background image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, a 2D numpy array, a stack of shifted images <code class="docutils literal notranslate"><span class="pre">imgs</span></code>, a 3D numpy array (x,y,n), an estimate of the core spacing <code class="docutils literal notranslate"><span class="pre">core</span> <span class="pre">size</span></code>, and the output image size <code class="docutils literal notranslate"><span class="pre">gridSize</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">calib</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">SuperRes</span><span class="o">.</span><span class="n">calib_multi_tri_interp</span><span class="p">(</span><span class="n">calibImg</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span> <span class="n">coreSize</span><span class="p">,</span> <span class="n">gridSize</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="n">calibImg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We have also specified an optional parameter, a normalisation image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, which prevents the images becoming grainy due to core-core variations. Note that <code class="docutils literal notranslate"><span class="pre">imgs</span></code> does not need to be the actual images to be used for reconstruction, but they must have the same relative shift as the the images. Alternatively, if the shifts are known, these can be specified using the optional parameter <code class="docutils literal notranslate"><span class="pre">shifts</span></code> which should be a 2D numpy array of the form (x_shift, y_shift, image_number).</p>
+<p>We then perform the super-resolution reconstruction using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reconImg</span> <span class="o">=</span> <span class="n">SuperRes</span><span class="o">.</span><span class="n">recon_multi_tri_interp</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">calib</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which returns <code class="docutils literal notranslate"><span class="pre">reconImg</span></code> a 2D numpy array representing the output image.</p>
+</section>
+<section id="implementation-details">
+<h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code> first calls <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> to perform the standard calibration for triangular linear interpolation. This obtains the core locations, using <code class="docutils literal notranslate"><span class="pre">find_cores</span></code>. If the optional parameters <code class="docutils literal notranslate"><span class="pre">normToImage</span></code> or <code class="docutils literal notranslate"><span class="pre">normToBackground</span></code> are set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the mean image intensity for ether the images stack or the background stack (supplied as a further optional parameter <code class="docutils literal notranslate"><span class="pre">backgroundImgs</span></code>) are calculated and stored. These are then later used to normalise each of the input images to a constant mean intensity. This is important for applications where the illumination intensity will be different for each image, but in most applications would not be needed.</p>
+<p><code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code> then calculates the relative shifts between the supplied images in <code class="docutils literal notranslate"><span class="pre">imgs</span></code> using <code class="docutils literal notranslate"><span class="pre">get_shifts</span></code> via normalised cross correlation. Alternatively, shifts can be provided via the optional optional parameter <code class="docutils literal notranslate"><span class="pre">shifts</span></code>. For each image, the recorded core positions are then translated by the measured shifts, and a single list of shifted core positions is assembled, containing the shifted core positions from all the images. <code class="docutils literal notranslate"><span class="pre">init_tri_interp</span></code> is then called, which forms a Delaunay triangulation over this set of core positions. For eacheach pixel in the reconstruction grid the enclosing triangle is identified and the pixel location in barycentric co-ordinates is recoreded.</p>
+<p>Reconstruction is performed using <code class="docutils literal notranslate"><span class="pre">recon_multi_tri_interp</span></code>.  The intensity value from each core in each of the images are extracted, and then pixel values in the final image are interpolated linearly from the three surrounding cores, using the pre-calculated barycentric distance weights.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyBundle</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Super Resolution</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#implementation-details">Implementation Details</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="mosaicing.html" title="previous chapter">Mosaicing</a></li>
+      <li>Next: <a href="functions.html" title="next chapter">Function Reference</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Mike Hughes.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/super_res.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

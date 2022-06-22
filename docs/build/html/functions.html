@@ -1,0 +1,272 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Function Reference &#8212; PyBundle  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Super Resolution" href="super_res.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="function-reference">
+<h1>Function Reference<a class="headerlink" href="#function-reference" title="Permalink to this headline">¶</a></h1>
+<p>A list of core functions is available below. Methods for the <a class="reference external" href="mosaicing.html">Mosaic</a> and <a class="reference external" href="super_res.html">SuperRes</a> classes are not listed here, please see the documentation pages for those classes separately.</p>
+<p>PyFibreBundle uses numpy arrays as images throughout, wherever ‘image’ is specified this refers to a 2D numpy array.</p>
+<section id="bundle-finding-cropping-masking">
+<h2>Bundle finding, cropping, masking<a class="headerlink" href="#bundle-finding-cropping-masking" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="crop_rect">
+<span class="sig-name descname"><span class="pre">crop_rect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crop_rect" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Crops a square image around bundle based on location specified by <code class="docutils literal notranslate"><span class="pre">loc</span></code>, a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_x,</span> <span class="pre">centre_y,</span> <span class="pre">radius)</span></code>. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="find_bundle">
+<span class="sig-name descname"><span class="pre">find_bundle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">img</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">searchFilterSize</span> <span class="pre">=</span> <span class="pre">4</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#find_bundle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Finds the bundle in an image. Image is initially smoothed with a Gaussian filter of sigma <code class="docutils literal notranslate"><span class="pre">searchFilterSize</span></code> which should be of the order of, or larger than, the core spacing. Returns <code class="docutils literal notranslate"><span class="pre">loc</span></code>, a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_x,</span> <span class="pre">centre_y,</span> <span class="pre">radius)</span></code>.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="get_mask">
+<span class="sig-name descname"><span class="pre">get_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#get_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Generates a mask image, 1 inside bundle and 0 outside of bundle, based on bundle location specified in <code class="docutils literal notranslate"><span class="pre">loc</span></code>, a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_x,</span> <span class="pre">centre_y,</span> <span class="pre">radius)</span></code>. <code class="docutils literal notranslate"><span class="pre">img</span></code> can be any numpy array and merely defines the size of the mask. (i.e. <code class="docutils literal notranslate"><span class="pre">mask</span></code> will be the same size as <code class="docutils literal notranslate"><span class="pre">img</span></code>). Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="apply_mask">
+<span class="sig-name descname"><span class="pre">apply_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#apply_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Applies a previously generated <code class="docutils literal notranslate"><span class="pre">mask</span></code> (e.g. from <code class="docutils literal notranslate"><span class="pre">get_mask</span></code>) to an image <code class="docutils literal notranslate"><span class="pre">img</span></code> by multlying the two arrays. <code class="docutils literal notranslate"><span class="pre">img</span></code> and <code class="docutils literal notranslate"><span class="pre">mask</span></code> must be the same size. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="auto_mask">
+<span class="sig-name descname"><span class="pre">auto_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">img</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">searchFilterSize</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#auto_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Locates and masks an image <code class="docutils literal notranslate"><span class="pre">img</span></code>. For meaning of <code class="docutils literal notranslate"><span class="pre">searchFilterSize</span></code> see <code class="docutils literal notranslate"><span class="pre">find_bundle</span></code>. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="auto_mask_crop">
+<span class="sig-name descname"><span class="pre">auto_mask_crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">img</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">searchFilterSize</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#auto_mask_crop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Locates, crops and masks an image <code class="docutils literal notranslate"><span class="pre">img</span></code>. For meaning of <code class="docutils literal notranslate"><span class="pre">searchFilterSize</span></code> see <code class="docutils literal notranslate"><span class="pre">find_bundle</span></code>. Returns numpy array.</p>
+</section>
+<section id="filtering">
+<h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="g_filter">
+<span class="sig-name descname"><span class="pre">g_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterSize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#g_filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Applies a Gaussian filter to image <code class="docutils literal notranslate"><span class="pre">img</span></code> of sigma <code class="docutils literal notranslate"><span class="pre">filterSize</span></code>. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="find_core_spacing">
+<span class="sig-name descname"><span class="pre">find_core_spacing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_core_spacing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Estimates the fibre core spacing in image <code class="docutils literal notranslate"><span class="pre">img</span></code> by looking for a peak in the power spectrum. Returns core spacing in pixels.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="crop_filter_mask">
+<span class="sig-name descname"><span class="pre">crop_filter_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">img</span></em>, <em class="sig-param"><span class="pre">loc</span></em>, <em class="sig-param"><span class="pre">mask</span></em>, <em class="sig-param"><span class="pre">filterSize</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">searchFilterSize</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#crop_filter_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Filters, crops and masks and image <code class="docutils literal notranslate"><span class="pre">img</span></code> using pre-defined mask <code class="docutils literal notranslate"><span class="pre">mask</span></code> and bundle location <code class="docutils literal notranslate"><span class="pre">loc</span></code>, a
+a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_x,</span> <span class="pre">centre_y,</span> <span class="pre">radius)</span></code>. A Gaussian filter is applied of sigma <code class="docutils literal notranslate"><span class="pre">filterSize</span></code>. For meaning of <code class="docutils literal notranslate"><span class="pre">searchFilterSize</span></code> see <code class="docutils literal notranslate"><span class="pre">find_bundle</span></code>. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="edge_filter">
+<span class="sig-name descname"><span class="pre">edge_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">imgSize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgePos</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edgeSlope</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#edge_filter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Creates a Fourier domain filter for core removal based on a cosine smoothed edge filter at a spatial frequency corresponding to spatial distance <code class="docutils literal notranslate"><span class="pre">edgePos</span></code>. The slope of the cut-off is given by <code class="docutils literal notranslate"><span class="pre">edgeSlope</span></code>. Typical values are 1.6 and 0.1 times the core spacing, respectively. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="filter_image">
+<span class="sig-name descname"><span class="pre">filter_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filt</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#filter_image" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Applies a Fourier domain filter <code class="docutils literal notranslate"><span class="pre">filt</span></code> (such as created by <code class="docutils literal notranslate"><span class="pre">edge_filter</span></code>) to an image <code class="docutils literal notranslate"><span class="pre">img</span></code>. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">smoothedImg</span> <span class="pre">=</span> <span class="pre">median_filter(img,</span> <span class="pre">filterSize)</span></span></dt>
+<dd></dd></dl>
+
+<p>Applies a median filter to image <code class="docutils literal notranslate"><span class="pre">img</span></code> of size <code class="docutils literal notranslate"><span class="pre">filterSize</span></code> which must be odd. Returns numpy array.</p>
+</section>
+<section id="triangular-linear-interpolation">
+<h2>Triangular Linear Interpolation<a class="headerlink" href="#triangular-linear-interpolation" title="Permalink to this headline">¶</a></h2>
+<section id="high-level-functions">
+<h3>High-level functions<a class="headerlink" href="#high-level-functions" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="calib_tri_interp">
+<span class="sig-name descname"><span class="pre">calib_tri_interp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">img</span></em>, <em class="sig-param"><span class="pre">coreSize</span></em>, <em class="sig-param"><span class="pre">gridSize</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">centreX</span></em>, <em class="sig-param"><span class="pre">centreY</span></em>, <em class="sig-param"><span class="pre">radius</span></em>, <em class="sig-param"><span class="pre">filterSize</span> <span class="pre">=</span> <span class="pre">0</span></em>, <em class="sig-param"><span class="pre">normalise</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">autoMask</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">mask</span> <span class="pre">=</span> <span class="pre">True</span></em>, <em class="sig-param"><span class="pre">background</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#calib_tri_interp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Calibration for triangular linear interpolation between cores. This returns a BundleCalibration, an object containig all the calibration information necessary for subsequent reconstructions.</p>
+<p>Required arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">img</span></code> calibraton image (2D numpy array)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coreSize</span></code> estimate core spacing to help with core finding.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gridSize</span></code> size of output image (square)</p></li>
+</ul>
+<p><em>Optional arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">centreX</span></code>, <code class="docutils literal notranslate"><span class="pre">centreY</span></code>, <code class="docutils literal notranslate"><span class="pre">radius</span></code> defines the area covered by the output image. If not specified, it will be centered on the bundle and include the full radius.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filterSize</span></code> sigma of Gaussian filter applied to images before extracting core intensities.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">normalise</span></code> if a reference image is provided here, core intensities at reconstruction will be normalised with respect the core intensities in the reference image. This is generally necessary for good quality results.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autoMask</span></code> if <code class="docutils literal notranslate"><span class="pre">true</span></code>, areas outside the bundle are set to 0 prior to locating cores. This generally helps to avoid spurious detections due to noise.</p></li>
+<li><p>`` mask`` if <code class="docutils literal notranslate"><span class="pre">true</span></code>, a circular mask will be drawn around the bundle following reconstruction - this gives a less jagged edge to the image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">background</span></code> if a background image is provided here, this will be subtracted from image during the reconstruction stage.</p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="recon_tri_interp">
+<span class="sig-name descname"><span class="pre">recon_tri_interp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">calib</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#recon_tri_interp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Performs triangular linear interpolation on an image <code class="docutils literal notranslate"><span class="pre">img</span></code> using a calibration <code class="docutils literal notranslate"><span class="pre">calib</span></code> obtained from <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code>. Returns a numpy array.</p>
+</section>
+<section id="low-level-functions">
+<h3>Low-level functions<a class="headerlink" href="#low-level-functions" title="Permalink to this headline">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="find_cores">
+<span class="sig-name descname"><span class="pre">find_cores</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coreSpacing</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_cores" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>A function used by <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> to locate the bundle cores in the image <code class="docutils literal notranslate"><span class="pre">img</span></code>. <code class="docutils literal notranslate"><span class="pre">coreSpacing</span></code> is the estimated core spacing in pixels which can be obtained using <code class="docutils literal notranslate"><span class="pre">get_core_spacing</span></code> if unknown. Returns tuple of <code class="docutils literal notranslate"><span class="pre">(core_x,</span> <span class="pre">core_u)</span></code>, both 1D numpy arrays containing co-ordinates of each core.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">core_values(img,</span> <span class="pre">coreX,</span> <span class="pre">coreY,</span> <span class="pre">filterSize):</span></span></dt>
+<dd></dd></dl>
+
+<p>A function used by <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> and <code class="docutils literal notranslate"><span class="pre">recon_tri_interp</span></code> to extract the intensity of each core in a image, based on core locations <code class="docutils literal notranslate"><span class="pre">coreX</span></code> and <code class="docutils literal notranslate"><span class="pre">coreY</span></code>, which are 1D  numpy array, and <code class="docutils literal notranslate"><span class="pre">filterSize</span></code> which is the size of the Gaussian smoothing filter applied before extracting the intensities.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">init_tri_interp(img,</span> <span class="pre">coreX,</span> <span class="pre">coreY,</span> <span class="pre">centreX,</span> <span class="pre">centreY,</span> <span class="pre">radius,</span> <span class="pre">gridSize,</span> <span class="pre">**kwargs):</span></span></dt>
+<dd></dd></dl>
+
+<p>A function used by <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> to perform Delaunay triangulation and to obtain the enclosing triangle for each reconstruction grid pixel.</p>
+</section>
+</section>
+<section id="utility-functions">
+<h2>Utility Functions<a class="headerlink" href="#utility-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="extract_central">
+<span class="sig-name descname"><span class="pre">extract_central</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boxSize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#extract_central" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Extracts a central square from an image, of size <code class="docutils literal notranslate"><span class="pre">boxSize</span></code>. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">to8bit(img</span> <span class="pre">[,minVal</span> <span class="pre">=</span> <span class="pre">None,</span> <span class="pre">maxVal</span> <span class="pre">=</span> <span class="pre">None]):</span></span></dt>
+<dd></dd></dl>
+
+<p>Converts an image to 8 bit. If <code class="docutils literal notranslate"><span class="pre">minVal</span></code> and <code class="docutils literal notranslate"><span class="pre">maxVal</span></code> are not specified, pixel values will be scaled so that everything lies in the range 0 to 255. Returns numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="radial_profile">
+<span class="sig-name descname"><span class="pre">radial_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centre</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#radial_profile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Takes a radial profiles, averaged over all angles, from an image, centred on <code class="docutils literal notranslate"><span class="pre">centre</span></code> a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_x,</span> <span class="pre">centre_y)</span></code>. Returns 1D numpy array.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyBundle</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Function Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#bundle-finding-cropping-masking">Bundle finding, cropping, masking</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#filtering">Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#triangular-linear-interpolation">Triangular Linear Interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#utility-functions">Utility Functions</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="super_res.html" title="previous chapter">Super Resolution</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Mike Hughes.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/functions.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

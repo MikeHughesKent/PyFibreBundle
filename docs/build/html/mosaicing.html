@@ -1,0 +1,190 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Mosaicing &#8212; PyBundle  documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Super Resolution" href="super_res.html" />
+    <link rel="prev" title="Linear Interpolation" href="linear_interp.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="mosaicing">
+<h1>Mosaicing<a class="headerlink" href="#mosaicing" title="Permalink to this headline">¶</a></h1>
+<p>The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, and either dead-leaf or alpha blended insertion of images into mosaic. The easiest way to use this functionality is to create instance of <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> class and then use <code class="docutils literal notranslate"><span class="pre">Mosaic.add(img)</span></code> to sequentially register and add image <code class="docutils literal notranslate"><span class="pre">img</span></code> to the mosaic and <code class="docutils literal notranslate"><span class="pre">Mosaic.getMosaic()</span></code> to get the latest mosaic image. Both <code class="docutils literal notranslate"><span class="pre">img</span></code> and the <code class="docutils literal notranslate"><span class="pre">mosaic</span></code> are 2D numpy arrays.</p>
+<section id="quickstart">
+<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline">¶</a></h2>
+<p>Instantiate an object of the <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> class using default options and with a mosaic image size of 1000:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mMosaic</span> <span class="o">=</span> <span class="n">Mosaic</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>Add an image <code class="docutils literal notranslate"><span class="pre">img</span></code> to the mosaic:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mMosaic</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Request the latest mosaic image:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mosaicImage</span> <span class="o">=</span> <span class="n">mMosaic</span><span class="o">.</span><span class="n">getMosaic</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="instantiation">
+<h2>Instantiation<a class="headerlink" href="#instantiation" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="Mosaic">
+<span class="sig-name descname"><span class="pre">Mosaic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">mosaicSize</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">resize=None</span></em>, <em class="sig-param"><span class="pre">imageType=None</span></em>, <em class="sig-param"><span class="pre">templateSize=None</span></em>, <em class="sig-param"><span class="pre">refSize</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">cropSize</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">blend</span> <span class="pre">=</span> <span class="pre">False</span></em>, <em class="sig-param"><span class="pre">minDistForAdd</span> <span class="pre">=</span> <span class="pre">5</span></em>, <em class="sig-param"><span class="pre">currentX</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">currentY</span> <span class="pre">=</span> <span class="pre">None</span></em>, <em class="sig-param"><span class="pre">boundaryMethod</span> <span class="pre">=</span> <span class="pre">CROP</span></em>, <em class="sig-param"><span class="pre">expandStep</span> <span class="pre">=</span> <span class="pre">50</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#Mosaic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p><em>Required arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mosaicSize</span></code> Size of mosaic image in pixels. This may later change depending on which <code class="docutils literal notranslate"><span class="pre">boundaryMethod</span></code> is set.</p></li>
+</ul>
+<p><em>Optional arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">resize</span></code> Images are resized to this size before insertion (default is same as size of first image added to mosaic, i.e. no resizing).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">imageType</span></code> Image type for mosaic image (default is same as first image added to mosaic).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">templateSize</span></code> Size of ROI taken from second image when calculating shift between two images. (default is 1/4 of size of first image added).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">refSize</span></code> Size of ROI taken from first image when calculating shift between two images. (default is 1/2 of size of first image added).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cropSize</span></code> Input images are cropped to a circle of this diameter before insertion. (default is 0.9 x size of first image added).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">blend</span></code> If <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses distance-weighted alpha blending, if <code class="docutils literal notranslate"><span class="pre">False</span></code> uses dead-leaf (default).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">blendDist</span></code> If using alpha blending, determines how strong the distance weighting is (default = 40 pixels).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minDistForAdd</span></code> Only add an image to the mosaic if it has moved this far in pixels since last image was added (default = 5 pixels).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">currentX</span></code> Initial x position of first image in mosaic (default is centre of image).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">currentY</span></code> Initial y position of first image in mosaic (default is centre of image).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">boundaryMethod</span></code> Detremines what happenswhen edge of mosaic image is reached. Mosaic.CROP [Default] = images go out of image, <code class="docutils literal notranslate"><span class="pre">Mosaic.EXPAND</span></code>: mosaic image is made larger, <code class="docutils literal notranslate"><span class="pre">Mosaic.SCROLL</span></code>: mosaic image is scrolled, with loss of data on the opposite edge.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expandStep</span></code> If boundaryMethod is <code class="docutils literal notranslate"><span class="pre">Mosaic.EXPAND</span></code>, mosaic will be expanded by this amount when the edge is reached (default is 50).</p></li>
+</ul>
+</section>
+<section id="methods">
+<h2>Methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#add" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Adds an image <code class="docutils literal notranslate"><span class="pre">img</span></code> to the current mosaic. <code class="docutils literal notranslate"><span class="pre">img</span></code> should be a 2D numpy array.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="get_mosaic">
+<span class="sig-name descname"><span class="pre">get_mosaic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#get_mosaic" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<p>Returns a copy of the current mosaic as a 2D numpy array.</p>
+</section>
+<section id="methods-low-level">
+<h2>Methods - Low Level<a class="headerlink" href="#methods-low-level" title="Permalink to this headline">¶</a></h2>
+<p>These static methods are used internally and would normally not need to be called. Check the source for arguments.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">initialise</span></code> This is called the first time an image is added using <code class="docutils literal notranslate"><span class="pre">add</span></code>. It cannot be called beforehand since some details of the images, such as the size, are required.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">find_shift</span></code> Computes shift between two images using normalised cross correlation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">insert_into_mosaic</span></code> Adds an image to the mosaic dead leaf.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">insert_into_mosaic_blended</span></code> Adds an image to the mosaic with distance-weighted alpha-blending.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cosin_window</span></code> Generates circular cosine window, used in blending.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">is_outside_mosaic</span></code> Returns true if intended image insert will go outside of mosaic image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expand_mosaic</span></code> Expands mosaic image.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scroll_mosaic</span></code> Scrolls the mosaic image.</p></li>
+</ul>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">PyBundle</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Mosaicing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instantiation">Instantiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#methods">Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#methods-low-level">Methods - Low Level</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="linear_interp.html" title="previous chapter">Linear Interpolation</a></li>
+      <li>Next: <a href="super_res.html" title="next chapter">Super Resolution</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Mike Hughes.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/mosaicing.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
