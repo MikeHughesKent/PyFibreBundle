@@ -28,8 +28,8 @@ img = img[:,:,0]
 
 # Parameters for reconstruction
 coreSize = 3        # Estimated core size used when searching for cores
-gridSize = 400      # Number of pixels in reconstructed image
-filterSize = 1      # Pre-Gaussian filter sigma
+gridSize = 512      # Number of pixels in reconstructed image
+filterSize = None     # Pre-Gaussian filter sigma
 
 
 # One-time calibration
@@ -39,12 +39,20 @@ t2 = time.perf_counter()
 print('Calibration took:', round(t2-t1,3),' s')
 
 
-# Image recostruction
+
+# Image recostruction without Numba
 t1 = time.perf_counter()
 imgRecon = pybundle.recon_tri_interp(img, calib)
 t2 = time.perf_counter()
-print('Reconstruction took:', round(t2-t1,3),' s')
+print('Reconstruction (no numba) took:', round(t2-t1,4),' s')
 
+
+# Image recostruction with Numba
+temp = pybundle.recon_tri_interp(img, calib, numba = True)  # one time init
+t1 = time.perf_counter()
+imgRecon = pybundle.recon_tri_interp(img, calib, numba = True)
+t2 = time.perf_counter()
+print('Reconstruction (numba) took:', round(t2-t1,4),' s')
 
 # Display the cores
 plt.figure(dpi = 600)

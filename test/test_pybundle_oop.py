@@ -25,8 +25,6 @@ calibImg = cv.imread("data/usaf1_background.tif")
 calibImg = calibImg[:,:,0]
 
 
-
-# Create an instance of PyBundle object
 pyb = PyBundle()
 
 
@@ -40,7 +38,10 @@ pyb.set_auto_contrast(True)
 pyb.set_filter_size(2.5)
 pyb.set_crop(True)
 
+t1 = time.perf_counter()
 imgProc = pyb.process(img)
+print(time.perf_counter() - t1)
+
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Gaussian Filter')

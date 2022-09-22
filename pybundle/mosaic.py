@@ -14,12 +14,14 @@ https://github.com/mikehugheskent
     
 import numpy as np
 import math
+import time
 import cv2 as cv
 from pybundle import pybundle
 
 ##############################################################################        
 class Mosaic:
     
+    # Constants for method of dealing with reaching the edge of the mosaic image
     CROP = 0
     EXPAND = 1
     SCROLL = 2
@@ -29,28 +31,39 @@ class Mosaic:
     RIGHT = 2
     BOTTOM = 3  
     
-      
+    lastImageAdded = None
+          
     def __init__(self, mosaicSize, **kwargs):
         
         self.mosaicSize = mosaicSize
         self.prevImg = []
 
-        # If the default value of -1 is used for the following
+        # If None is used for the following
         # sensible values will be selected after the first image
         # is received
-        self.resize = kwargs.get('resize', -1)
-        self.templateSize = kwargs.get('templateSize', -1)
-        self.refSize = kwargs.get('refSize', -1)
-        self.cropSize = kwargs.get('cropSize', -1)
+        self.resize = kwargs.get('resize', None)
+        self.templateSize = kwargs.get('templateSize', None)
+        self.refSize = kwargs.get('refSize', None)
+        self.cropSize = kwargs.get('cropSize', None)
+        self.imageType = kwargs.get('imageType', None)
         
+        # Blending control
         self.blend = kwargs.get('blend', True)
         self.blendDist = kwargs.get('blendDist', 40)
-        self.minDistForAdd = kwargs.get('mindDistForAdd', 5)
-        self.currentX = kwargs.get('initialX', round(mosaicSize /  2))
-        self.currentY = kwargs.get('initialY', round(mosaicSize /  2))
+        self.minDistForAdd = kwargs.get('mindDistForAdd', 25)
+        
+        # Start of mosaic position
+        self.initialX = kwargs.get('initialX', round(mosaicSize /  2))
+        self.initialY = kwargs.get('initialY', round(mosaicSize /  2))
+                
+        # Handling of reaching mosaic image edge
+        self.boundaryMethod = kwargs.get('boundaryMethod', self.CROP)
         self.expandStep = kwargs.get('expandStep', 50)
-        self.imageType = kwargs.get('imageType', -1)
 
+        # Detection of mosaicing failure
+        self.resetThresh = kwargs.get('resetThresh', None)
+        self.resetIntensity = kwargs.get('resetIntensity', None)
+        self.resetSharpness = kwargs.get('resetSharpness', None)
         
         # These are created the first time they are needed
         self.mosaic = []
@@ -62,10 +75,9 @@ class Mosaic:
         self.lastXAdded = 0
         self.lastYAdded = 0
         self.nImages = 0        
-        self.imSize = -1  # -1 tell us to read this from the first image
+        self.imSize = None  # -1 tell us to read this from the first image
         
       
-        self.boundaryMethod = kwargs.get('boundaryMethod', self.CROP)
    
         
         return
@@ -74,22 +86,24 @@ class Mosaic:
        
     def initialise(self, img):
         
-        if self.imSize < 0:
-            if self.resize < 0:
+        # Choose sensible values for non-specified parameters
+        
+        if self.imSize is None:
+            if self.resize is None:
                 self.imSize = min(img.shape)
             else:
                 self.imSize = self.resize
 
-        if self.cropSize < 0:
+        if self.cropSize is None:
             self.cropSize = round(self.imSize * .9)            
         
-        if self.templateSize < 0:
+        if self.templateSize is None:
             self.templateSize = round(self.imSize / 4)
             
-        if self.refSize < 0:
+        if self.refSize is None:
             self.refSize = round(self.imSize / 2)
             
-        if self.imageType == -1:
+        if self.imageType is None:
             self.imageType = img.dtype
         
         if np.size(self.mask) == 0:
@@ -97,24 +111,57 @@ class Mosaic:
        
         self.mosaic = np.zeros((self.mosaicSize, self.mosaicSize), dtype = self.imageType)
 
+        self.currentX = self.initialX
+        self.currentY = self.initialY
+        
+        self.nImages = 0
+        
         return 
     
     
     # Add image to current mosaic
     def add(self, img):
 
-        # Before we have first image, can't choose sensible default values
+        # Before we have first image we can't choose sensible default values, so
+        # initialisation is called here if we are on the first image
         if self.nImages == 0:
             self.initialise(img) 
 
                   
-        if self.resize > 0:  #-1 means no resize
+        if self.resize is not None: 
             imgResized = cv.resize(img, (self.resize, self.resize))
         else:
             imgResized = img
             
         if self.nImages > 0:
-            self.lastShift = Mosaic.find_shift(self.prevImg, imgResized, self.templateSize, self.refSize)
+            
+            self.lastShift, self.shiftConf = Mosaic.find_shift(self.prevImg, imgResized, self.templateSize, self.refSize)
+           
+            if self.resetThresh is not None:
+                if self.shiftConf < self.resetThresh:
+                    self.initialise(img)
+                    Mosaic.insert_into_mosaic(self.mosaic, imgResized, self.mask, (self.currentX, self.currentY))
+
+                    return
+            
+            if self.resetIntensity is not None:
+                if np.mean(imgResized) < self.resetIntensity:
+                    self.initialise(img)
+                    Mosaic.insert_into_mosaic(self.mosaic, imgResized, self.mask, (self.currentX, self.currentY))
+
+                    return
+                
+            if self.resetSharpness is not None:
+                refIm = pybundle.extract_central(imgResized, self.refSize)
+
+                gx, gy = np.gradient(refIm)
+                gnorm = np.sqrt(gx**2 + gy**2)
+                gav = np.mean(gnorm)
+                if gav < self.resetSharpness:   
+                    self.initialise(img)
+                    Mosaic.insert_into_mosaic(self.mosaic, imgResized, self.mask, (self.currentX, self.currentY))
+                    return
+
             self.currentX = self.currentX + self.lastShift[1]
             self.currentY = self.currentY + self.lastShift[0]
             
@@ -129,16 +176,18 @@ class Mosaic:
     
                     if outside == True:
                         if self.boundaryMethod == self.EXPAND: 
-                            self.mosaic, self.mosaicWidth, self.mosaicHeight, self.currentX, self.currentY = Mosaic.expandMosaic(self.mosaic, max(outsideBy, self.expandStep), direction, self.currentX, self.currentY)
+                            self.mosaic, self.mosaicWidth, self.mosaicHeight, self.currentX, self.currentY = Mosaic.expand_mosaic(self.mosaic, max(outsideBy, self.expandStep), direction, self.currentX, self.currentY)
                             outside = False
                         elif self.boundaryMethod == self.SCROLL:
                             self.mosaic, self.currentX, self.currentY = Mosaic.scroll_mosaic(self.mosaic, outsideBy, direction, self.currentX, self.currentY)
                             outside = False
                     
- 
                 if outside == False:
                     if self.blend:
+                        #t1 = time.perf_counter()
                         Mosaic.insert_into_mosaic_blended(self.mosaic, imgResized, self.mask, self.blendMask, self.cropSize, self.blendDist, (self.currentX, self.currentY))
+                        #print("Time add to mosaic:", str(time.perf_counter() -t1))
+
                     else:
                         Mosaic.insert_into_mosaic(self.mosaic, imgResized, self.mask, (self.currentX, self.currentY))
                             
@@ -159,7 +208,11 @@ class Mosaic:
         return self.mosaic
         
 
+
+    def reset(self):
+        self.nImages = 0
             
+        
     # Dead leaf insertion of image into a mosaic at position. Only pixels for
     # which mask == 1 are copied
     def insert_into_mosaic(mosaic, img, mask, position):
@@ -205,8 +258,7 @@ class Mosaic:
         mosaicMask = 1- imgMask          
 
         # Modify region to include blended values from image
-        oldRegion = oldRegion * mosaicMask + img * imgMask
-       
+        oldRegion = oldRegion * mosaicMask + img * imgMask       
 
         # Insert it back in
         mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]] = oldRegion
@@ -219,19 +271,21 @@ class Mosaic:
     
     # Calculates how far img2 has shifted relative to img1
     def find_shift(img1, img2, templateSize, refSize):
-        pass
     
         if refSize < templateSize or min(np.shape(img1)) < refSize or min(np.shape(img2)) < refSize:
              return -1
         else:
              template = pybundle.extract_central(img2, templateSize)  
              refIm = pybundle.extract_central(img1, refSize)
-             res = cv.matchTemplate(template, refIm, cv.TM_CCORR_NORMED)
+
+             res = cv.matchTemplate(pybundle.to8bit(template), pybundle.to8bit(refIm), cv.TM_CCORR_NORMED)
              min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
              shift = [max_loc[0] - (refSize - templateSize), max_loc[1] - (refSize - templateSize)]
              #shift = 0
-             return shift
+             return shift, max_val
                 
+         
+            
     
     # Extracts sqaure of size boxSize from centre of img
     def extract_central(img, boxSize):
@@ -265,14 +319,16 @@ class Mosaic:
     
     
     # Checks if position of image to insert into mosaic will result in 
-    # part of inserted images being outside of mosaic
+    # part of inserted images being outside of mosaic. Returns tuple of 
+    # boolean (true if outside), side it leaves (using consts defined above)
+    # and distance is has strayed over the edge. e.g. (True, Mosaic.Top, 20).
     def is_outside_mosaic(mosaic, img, position):
+        
         imgW = np.shape(img)[0] 
         imgH = np.shape(img)[1] 
         
         mosaicW = np.shape(mosaic)[0]
-        mosaicH = np.shape(mosaic)[1]
-        
+        mosaicH = np.shape(mosaic)[1]        
                 
         left = math.floor(position[0] - imgW / 2)
         top = math.floor(position[1] - imgH / 2)

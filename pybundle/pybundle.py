@@ -34,6 +34,7 @@ class PyBundle:
     coreMethod = None
     autoContrast = False
     outputType = 'uint8'
+    doAutoMask = True
     calibImage = None
     coreSize = 3
     gridSize  = 512
@@ -71,14 +72,24 @@ class PyBundle:
     # Optionally provide a radius rather than using radius of determined
     # bundle location
     def set_auto_mask(self, img, **kwargs):
-        
-        if self.loc is not None:
-            radius = kwargs.get('radius', self.loc[2])
-            self.mask = pybundle.get_mask(img, (self.loc[0], self.loc[1], radius))
-           
+        #print("auto mask create")
+        #print(self.loc)
+        #print(np.shape(img))
+        if img is not None:
+
+            if self.loc is not None:
+
+               radius = kwargs.get('radius', self.loc[2])
+               self.mask = pybundle.get_mask(img, (self.loc[0], self.loc[1], radius))
+               self.doAutoMask = False
+               #print(np.shape(self.mask))
+            else:
+               self.mask = None
+               self.doAutoMask = True   # Flag means we come back once we have an image
         else:
             self.mask = None
-    
+            self.doAutoMask = True      # Flag means we come back once we have a loc
+        
     def set_auto_loc(self, img):
         self.loc = pybundle.find_bundle(img)
                     
@@ -118,27 +129,39 @@ class PyBundle:
     
     # Process fibre bundle image using current settings    
     def process(self, img):
-        imgOut = img.astype('float')
-       
-        if self.coreMethod == self.FILTER:
+        
+        method = self.coreMethod  #in case of a change during processing
+        
+        imgOut = img
+        
+        
+        if self.doAutoMask:
+            self.set_auto_mask(img)
+
+        if method == self.FILTER:
             if self.background is not None:
                 imgOut = imgOut - self.background
             if self.filterSize is not None:
+                t1 = time.perf_counter()
                 imgOut = pybundle.g_filter(imgOut, self.filterSize)
-        if self.coreMethod == self.EDGE_FILTER:
+
+        if method == self.EDGE_FILTER:
             if self.background is not None:
                 imgOut = imgOut - self.background
             if self.edgeFilter is not None and self.loc is not None:
                 imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
                 imgOut = pybundle.filter_image(imgOut, self.edgeFilter)
-                
-        if self.coreMethod == self.TRILIN:
+        
+        if method == self.TRILIN:
             if self.calibration is not None:
+                t1 = time.perf_counter()
                 imgOut = pybundle.recon_tri_interp(imgOut, self.calibration)
+                print(time.perf_counter() - t1)
             else:
                 return None
         
         if self.autoContrast:
+            t1 = time.perf_counter()
             imgOut = imgOut - np.min(imgOut)
             imgOut = imgOut / np.max(imgOut)
             if self.outputType == 'uint8':
@@ -147,24 +170,23 @@ class PyBundle:
                 imgOut = imgOut * (2**16 - 1)
             elif self.outputType == 'float':
                 imgOut = imgOut
-        
-        if self.coreMethod == self.FILTER and self.mask is not None:
+        if method == self.FILTER and self.mask is not None:
             imgOut = pybundle.apply_mask(imgOut, self.mask)
             
         #if self.coreMethod == self.EDGE_FILTER and self.mask is not None:
         #    imgOut = pybundle.apply_mask(imgOut, self.mask)
             
-        if self.coreMethod == self.TRILIN and self.calibration.mask is not None:
+        if method == self.TRILIN and self.calibration.mask is not None:
             imgOut = pybundle.apply_mask(imgOut, self.calibration.mask)
             
-        if self.coreMethod == self.FILTER and self.crop and self.loc is not None:
+        if method == self.FILTER and self.crop and self.loc is not None:
             imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
         
         
         
         imgOut = imgOut.astype(self.outputType)        
-                
-            
+        #print(time.perf_counter() - t1)
+        #print(np.max(imgOut))    
         return imgOut
 
 

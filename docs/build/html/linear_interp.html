@@ -1,43 +1,83 @@
-
 <!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
-    <title>Linear Interpolation &#8212; PyBundle  documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Linear Interpolation &mdash; PyFibreBundle  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Mosaicing" href="mosaicing.html" />
-    <link rel="prev" title="Basic Processing" href="core.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+    <link rel="prev" title="Basic Processing" href="core.html" /> 
+</head>
 
-  </head><body>
-  
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> PyFibreBundle
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Linear Interpolation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart-static-methods">Quickstart - Static Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quickstart-object-oriented">Quickstart - Object Oriented</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
+</ul>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          
+        </div>
+      </div>
+    </nav>
 
-          <div class="body" role="main">
-            
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">PyFibreBundle</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Linear Interpolation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/linear_interp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
   <section id="linear-interpolation">
-<h1>Linear Interpolation<a class="headerlink" href="#linear-interpolation" title="Permalink to this headline">¶</a></h1>
+<h1>Linear Interpolation<a class="headerlink" href="#linear-interpolation" title="Permalink to this headline"></a></h1>
 <p>Triangular linear interpolation can be used to remove the fibre bundle core pattern. Using a calibration image, usually acquired with no object in view (i.e. a flat field) the location of each core is determined. A Delaunay triangulation is performed over the core locations. A reconstruction grid is then defined, and the enclosing triangle for each pixel is determined. Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. Although calibration can take a few seconds, processing of images can then be video rate.</p>
 <section id="quickstart-static-methods">
-<h2>Quickstart - Static Methods<a class="headerlink" href="#quickstart-static-methods" title="Permalink to this headline">¶</a></h2>
+<h2>Quickstart - Static Methods<a class="headerlink" href="#quickstart-static-methods" title="Permalink to this headline"></a></h2>
 <p>Using static methods, first perform a calibration using the calibration image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, a 2D numpy array:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coreSize</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="n">gridSize</span> <span class="o">=</span> <span class="mi">512</span>
@@ -55,7 +95,7 @@
 <p>For all optional parameters refer to the functon reference for <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> and <code class="docutils literal notranslate"><span class="pre">recon_tri_interp</span></code>.</p>
 </section>
 <section id="quickstart-object-oriented">
-<h2>Quickstart - Object Oriented<a class="headerlink" href="#quickstart-object-oriented" title="Permalink to this headline">¶</a></h2>
+<h2>Quickstart - Object Oriented<a class="headerlink" href="#quickstart-object-oriented" title="Permalink to this headline"></a></h2>
 <p>Instantiate the PyBundle object:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">PyBundle</span><span class="p">()</span>
 </pre></div>
@@ -89,79 +129,34 @@
 </section>
 
 
+           </div>
           </div>
-          
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="core.html" class="btn btn-neutral float-left" title="Basic Processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="mosaicing.html" class="btn btn-neutral float-right" title="Mosaicing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Mike Hughes.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
         </div>
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="index.html">PyBundle</a></h1>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
 
-
-
-
-
-
-
-
-<h3>Navigation</h3>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Linear Interpolation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#quickstart-static-methods">Quickstart - Static Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#quickstart-object-oriented">Quickstart - Object Oriented</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
-<li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="core.html" title="previous chapter">Basic Processing</a></li>
-      <li>Next: <a href="mosaicing.html" title="next chapter">Mosaicing</a></li>
-  </ul></li>
-</ul>
-</div>
-<div id="searchbox" style="display: none" role="search">
-  <h3 id="searchlabel">Quick search</h3>
-    <div class="searchformwrapper">
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
-      <input type="submit" value="Go" />
-    </form>
-    </div>
-</div>
-<script>$('#searchbox').show(0);</script>
-
-
-
-
-
-
-
-
-        </div>
-      </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2022, Mike Hughes.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
-      |
-      <a href="_sources/linear_interp.rst.txt"
-          rel="nofollow">Page source</a>
-    </div>
-
-    
-
-    
-  </body>
+</body>
 </html>
