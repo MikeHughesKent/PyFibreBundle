@@ -6,7 +6,7 @@ The package was originally developed mostly for applications in endoscopic micro
 
 The package supports fibre core pattern removal by filtering and triangular linear interpolation, background correction and flat fielding, as well as automatic bundle location, cropping and masking. The :doc:`PyBundle<core>` class is the preferred way to access this functionality, but the lower level functions can also be used directly for greater customisation. The :doc:`Mosaic<mosaicing>` class provides mosaicing via normalised cross correlation, and the :doc:`SuperRes<super_res>` class allows multiple shifted images to be combined to improve resolution.
 
-The library is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
+The package is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
 
 ^^^^^^^^
 Contents
@@ -20,6 +20,7 @@ Contents
    mosaicing
    super_res
    functions
+   
 * :ref:`genindex`
 
 

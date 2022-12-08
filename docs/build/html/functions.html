@@ -18,7 +18,6 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Function Reference" href="reference.html" />
     <link rel="prev" title="Super Resolution" href="super_res.html" /> 
 </head>
 
@@ -43,6 +42,8 @@
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Function Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pybundle-class">PyBundle class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions-for-bundle-finding-cropping-masking">Functions for Bundle finding, cropping, masking</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#static-methods-for-filtering">Static Methods for Filtering</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#static-methods-for-triangular-linear-interpolation">Static Methods for Triangular Linear Interpolation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#high-level-functions">High-level functions</a></li>
@@ -52,7 +53,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#utility-functions">Utility Functions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="reference.html">Function Reference</a></li>
 </ul>
 
         </div>
@@ -84,6 +84,8 @@
 <p>A list of core functions is available below. Methods for the <a class="reference external" href="mosaicing.html">Mosaic</a> and <a class="reference external" href="super_res.html">SuperRes</a> classes are not listed here, please see the documentation pages for those classes separately.</p>
 <p>The pybundle class implements most of the functionality of the package and is the preferred approach for most applications.</p>
 <p>PyFibreBundle uses numpy arrays as images throughout, wherever ‘image’ is specified this refers to a 2D numpy array.</p>
+<section id="pybundle-class">
+<h2>PyBundle class<a class="headerlink" href="#pybundle-class" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="init">
 <span class="sig-name descname"><span class="pre">init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#init" title="Permalink to this definition"></a></dt>
@@ -204,9 +206,9 @@
 <dd></dd></dl>
 
 <p>Determines whether Numba package is used for faster reconstruction for TRILIN method. <code class="docutils literal notranslate"><span class="pre">useNumba</span></code> is a booleab. Default is <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p>
-<p>^^^^^^^^^^^^^^^^^^&amp;^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Static Methods for Bundle finding, cropping, masking
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</p>
+</section>
+<section id="functions-for-bundle-finding-cropping-masking">
+<h2>Functions for Bundle finding, cropping, masking<a class="headerlink" href="#functions-for-bundle-finding-cropping-masking" title="Permalink to this headline"></a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="crop_rect">
 <span class="sig-name descname"><span class="pre">crop_rect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#crop_rect" title="Permalink to this definition"></a></dt>
@@ -243,6 +245,7 @@ Static Methods for Bundle finding, cropping, masking
 <dd></dd></dl>
 
 <p>Locates, crops and masks an image <code class="docutils literal notranslate"><span class="pre">img</span></code>. For meaning of <code class="docutils literal notranslate"><span class="pre">searchFilterSize</span></code> see <code class="docutils literal notranslate"><span class="pre">find_bundle</span></code>. Returns numpy array.</p>
+</section>
 <section id="static-methods-for-filtering">
 <h2>Static Methods for Filtering<a class="headerlink" href="#static-methods-for-filtering" title="Permalink to this headline"></a></h2>
 <dl class="py function">
@@ -365,7 +368,6 @@ a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="super_res.html" class="btn btn-neutral float-left" title="Super Resolution" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="reference.html" class="btn btn-neutral float-right" title="Function Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
