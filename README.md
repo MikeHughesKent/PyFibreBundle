@@ -1,9 +1,14 @@
 # PyFibreBundle
-PyBundle is a Python library for image processing of images acquired through fibre imaging bundles. It is being developed mainly by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), University of Kent. Contributions and pull requests are welcome.
-
-This library is currently under active development and there is no stable release. Note that some functions require the OpenCV library. 
+PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. It is developed mainly by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), School of Physics and Astronomy, University of Kent. Bug reports, contributions and pull requests are welcome.
 
 Full documentation is available [here](http://PyFibreBundle.readthedocs.io) and a summary of the current functionality is below:
+
+The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and holographic endomicroscopy, but there are also potential applications in endoscopy. The package is under active development, with one stable release (v1.0). 
+
+The package is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
+
+The package is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
+
 
 ## Core Functions  
 * Locate bundle in image
@@ -23,7 +28,5 @@ Full documentation is available [here](http://PyFibreBundle.readthedocs.io) and 
 ## Super Resolution
 * Combine multiple fibre bundle images to improve resolution.
 
-## PyBundle Class
-* Object oriented version of PyFibreBundle
 
 __Acknowledgements__: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).
