@@ -3,6 +3,9 @@
 Test removal of fibre bundle core pattern by 
 Delaunay triangulation and triangular linear interpolation.
 
+This also tests the faster numba-based option. If numba is not available,
+comment the relevant lines.
+
 @author: Mike Hughes
 Applied Optics Group
 University of Kent
@@ -27,8 +30,8 @@ img = img[:,:,0]
 
 
 # Parameters for reconstruction
-coreSize = 3        # Estimated core size used when searching for cores
-gridSize = 512      # Number of pixels in reconstructed image
+coreSize = 3          # Estimated core size used when searching for cores
+gridSize = 512        # Number of pixels in reconstructed image
 filterSize = None     # Pre-Gaussian filter sigma
 
 
@@ -40,7 +43,7 @@ print('Calibration took:', round(t2-t1,3),' s')
 
 
 
-# Image recostruction without Numba
+# Image reconstruction without Numba
 t1 = time.perf_counter()
 imgRecon = pybundle.recon_tri_interp(img, calib)
 t2 = time.perf_counter()
@@ -48,7 +51,8 @@ print('Reconstruction (no numba) took:', round(t2-t1,4),' s')
 
 
 # Image recostruction with Numba
-temp = pybundle.recon_tri_interp(img, calib, numba = True)  # one time init
+temp = pybundle.recon_tri_interp(img, calib, numba = True)  # one time init which is slower
+
 t1 = time.perf_counter()
 imgRecon = pybundle.recon_tri_interp(img, calib, numba = True)
 t2 = time.perf_counter()
@@ -58,12 +62,12 @@ print('Reconstruction (numba) took:', round(t2-t1,4),' s')
 plt.figure(dpi = 600)
 plt.imshow(calibImg, cmap='gray')
 plt.plot(calib.coreX,calib.coreY,'.', markersize = .2, markeredgecolor="r")
-plt.title('Reconstruction by interpolation')
+plt.title('Core locations')
 
 
 # Display reconstructed image
 plt.figure(dpi = 300)
 plt.imshow(imgRecon, cmap='gray')
-plt.title('Core locations')
+plt.title('Reconstruction by interpolation')
 
 

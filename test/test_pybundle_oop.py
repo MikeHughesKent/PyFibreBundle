@@ -10,24 +10,17 @@ University of Kent
 from matplotlib import pyplot as plt
 import numpy as np
 import time
-import sys
-import math
-import cv2 as cv
-import time
+
+from PIL import Image
 
 import context
 import pybundle
 from pybundle import PyBundle
 
-img = cv.imread("data/usaf1.tif")
-img = img[:,:,0]
-calibImg = cv.imread("data/usaf1_background.tif")
-calibImg = calibImg[:,:,0]
-
+img = np.array(Image.open("data/usaf1.tif"))
+calibImg = np.array(Image.open("data/usaf1_background.tif"))
 
 pyb = PyBundle()
-
-
 
 # Recon using Gaussian filter
 pyb.set_auto_loc(img)
@@ -40,13 +33,11 @@ pyb.set_crop(True)
 
 t1 = time.perf_counter()
 imgProc = pyb.process(img)
-print(time.perf_counter() - t1)
+print("Time for Gaussian filter processing:", round(time.perf_counter() - t1,4), "s")
 
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Gaussian Filter')
-
-
 
 
 # Recon using a Gaussian filter, specify a specific bundle radius
@@ -56,10 +47,8 @@ plt.figure(dpi=300)
 plt.imshow(imgProcRadius, cmap='gray')
 plt.title('Gaussian Filter, small radius')
 
+
 pyb.set_auto_mask(calibImg)   # Set mask back to full image
-
-
-
 
 
 # Recon using Gaussian filter and obtain a 16 bit output
@@ -79,8 +68,9 @@ pyb.set_auto_loc(calibImg)
 pyb.set_crop(True)
 coreSpacing = pybundle.find_core_spacing(calibImg)
 pyb.set_edge_filter(coreSpacing * 1.8, coreSpacing * 0.2)
+t1 = time.perf_counter()
 imgProc = pyb.process(img)
-
+print("Time for edge filter processing:", round(time.perf_counter() - t1,4), "s")
 
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
@@ -97,8 +87,11 @@ pyb.set_grid_size(512)
 pyb.set_normalise_image(calibImg)
 pyb.calibrate()
 pyb.set_auto_contrast(True)
+pyb.set_use_numba(False)
 
+t1 = time.perf_counter()
 imgProc = pyb.process(img)
+print("Time for tri linear interp processing:", round(time.perf_counter() - t1,4), "s")
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Tri Lin Interp, normalisation')
@@ -113,17 +106,27 @@ plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Tri Lin Interp, no normalisation')
 
+
+
 pyb.set_normalise_image(calibImg)   # Put the normalisation back in
 
 
 
-
 # Triangular Linear Interpolation with auto contrast off, but output turned
-# to float. This is needed if 'normalise image' is used as otherwise the 
+# to float. This is needed if 'normalise image' is used.
 pyb.set_auto_contrast(False)
 pyb.set_output_type('float')
+pyb.set_use_numba(True)
 
 imgProc = pyb.process(img)
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Tri Lin Interp, not a.c., float')
+
+
+t1 = time.perf_counter()
+imgProc = pyb.process(img)
+print("Time for tri linear interp processing with numba:", round(time.perf_counter() - t1,4), "s")
+plt.figure(dpi=300)
+plt.imshow(imgProc, cmap='gray')
+plt.title('Tri Lin Interp, not a.c., float, numba')

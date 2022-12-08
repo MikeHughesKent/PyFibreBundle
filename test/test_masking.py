@@ -6,7 +6,10 @@ Tests the cropping and mask functionality of pybundle
 Applied Optics Group
 University of Kent
 """
+
 from matplotlib import pyplot as plt
+
+from PIL import Image
 import numpy as np
 import time
 import sys
@@ -19,10 +22,8 @@ from pybundle import pybundle
 filterSize = 2.5
 
 # Load test images
-img = cv.imread("data/usaf1.tif")
-img = img[:,:,0]
-calibImg = cv.imread("data/usaf1_background.tif")
-calibImg = calibImg[:,:,0]
+img = np.array(Image.open("data/usaf1.tif"))
+calibImg = np.array(Image.open("data/usaf1_background.tif"))
 
 
 # Locate the bundle
@@ -33,7 +34,7 @@ loc = pybundle.find_bundle(calibImg)
 mask1 = pybundle.get_mask(calibImg, loc)
 
 
-# Generate a mask without specifying the location of the bundle and applies it to image
+# Generate a mask without specifying the location of the bundle and apply it to image
 imgProc1 = pybundle.auto_mask(img)
 
 

@@ -38,12 +38,14 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Image Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Super Resolution</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#function-reference">Function Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#implementation-details">Implementation Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
@@ -75,29 +77,92 @@
              
   <section id="super-resolution">
 <h1>Super Resolution<a class="headerlink" href="#super-resolution" title="Permalink to this headline"></a></h1>
-<p>Core super-resolution (i.e. overcoming the sampling limit of the fibre bundle) can be achieved by combining multiple images, with the object slightly shifted with respect to the fibre pattern. The super-resolution class of PyFibreBundle provides the ability to combine multiple images and generate an enhanced resolution using triangular linear interpolation. This functionality is not currently accessible in the PyBundle class and must be invoked using static functons within the SuperRes class.</p>
-<section id="quickstart">
-<h2>Quickstart<a class="headerlink" href="#quickstart" title="Permalink to this headline"></a></h2>
-<p>Import the pybundle libary:</p>
+<p>Core super-resolution (i.e. overcoming the sampling limit of the fibre bundle) can be achieved by combining
+multiple images, with the object slightly shifted with respect to the fibre pattern. The super-resolution
+sub-package of PyFibreBundle provides the ability to combine multiple images and generate an enhanced resolution
+using triangular linear interpolation. This functionality is not currently accessible in the PyBundle class
+and must be invoked using functions wihtin the <code class="docutils literal notranslate"><span class="pre">SuperRes</span></code> class.</p>
+<section id="getting-started">
+<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h2>
+<p>Import the pybundle and pybundle super_res packages:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pybundle</span>
+<span class="kn">from</span> <span class="nn">pybundle</span> <span class="kn">import</span> <span class="n">SuperRes</span>
 </pre></div>
 </div>
-<p>First, perform the calibration. This requires a flat-field/background image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, a 2D numpy array, a stack of shifted images <code class="docutils literal notranslate"><span class="pre">imgs</span></code>, a 3D numpy array (x,y,n), an estimate of the core spacing <code class="docutils literal notranslate"><span class="pre">core</span> <span class="pre">size</span></code>, and the output image size <code class="docutils literal notranslate"><span class="pre">gridSize</span></code></p>
+<p>First, perform the calibration. This requires a flat-field/background image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code> (a 2D numpy array), a stack of shifted images <code class="docutils literal notranslate"><span class="pre">imgs</span></code> (a 3D numpy array - [x,y,n]), an estimate of the core spacing <code class="docutils literal notranslate"><span class="pre">core</span> <span class="pre">size</span></code>, and the output image size <code class="docutils literal notranslate"><span class="pre">gridSize</span></code></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">calib</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">SuperRes</span><span class="o">.</span><span class="n">calib_multi_tri_interp</span><span class="p">(</span><span class="n">calibImg</span><span class="p">,</span> <span class="n">imgs</span><span class="p">,</span> <span class="n">coreSize</span><span class="p">,</span> <span class="n">gridSize</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="n">calibImg</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We have also specified an optional parameter, a normalisation image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, which prevents the images becoming grainy due to core-core variations. Note that <code class="docutils literal notranslate"><span class="pre">imgs</span></code> does not need to be the actual images to be used for reconstruction, but they must have the same relative shift as the the images. Alternatively, if the shifts are known, these can be specified using the optional parameter <code class="docutils literal notranslate"><span class="pre">shifts</span></code> which should be a 2D numpy array of the form (x_shift, y_shift, image_number).</p>
+<p>We have also specified an optional parameter, a normalisation image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, which prevents the images becoming grainy due to core-core variations. Note that <code class="docutils literal notranslate"><span class="pre">imgs</span></code> does not need to be the actual images to be used for reconstruction, but they must have the same relative shift as the the images. Alternatively, if the shifts are known, these can be specified using the optional parameter <code class="docutils literal notranslate"><span class="pre">shifts</span></code> which should be a 2D numpy array of the form (x_shift, y_shift, image_number). If <code class="docutils literal notranslate"><span class="pre">shifts</span></code> is specified then <code class="docutils literal notranslate"><span class="pre">imgs</span></code> can be <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <p>We then perform the super-resolution reconstruction using:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">reconImg</span> <span class="o">=</span> <span class="n">SuperRes</span><span class="o">.</span><span class="n">recon_multi_tri_interp</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="n">calib</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>which returns <code class="docutils literal notranslate"><span class="pre">reconImg</span></code> a 2D numpy array representing the output image.</p>
 </section>
+<section id="function-reference">
+<h2>Function Reference<a class="headerlink" href="#function-reference" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="calib_multi_tri_interp">
+<span class="sig-name descname"><span class="pre">calib_multi_tri_interp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">calibImg</span></em>, <em class="sig-param"><span class="pre">imgs</span></em>, <em class="sig-param"><span class="pre">coreSize</span></em>, <em class="sig-param"><span class="pre">gridSize</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">optional</span> <span class="pre">arguments</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#calib_multi_tri_interp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p><em>Required arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">calibImg</span></code> Calibration image of fibre bundle, 2D numpy array</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">imgs</span></code> Example set of images with the same set of mutual shifts as the images to later be used to recover an enhanced resolution image from. 3D numpy array. Can be <code class="docutils literal notranslate"><span class="pre">None</span></code> if <code class="docutils literal notranslate"><span class="pre">shifts</span></code> is specified instead.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">coreSize</span></code> Estimate of average spacing between cores</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gridSize</span></code> Output size of image, supply a single value, image will be square</p></li>
+</ul>
+<p><em>Optional arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">background</span></code> Image used for background subtraction as 2D numpy array, defaults to no background</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">normalise</span></code> Image used for normalisation of core intensities, as 2D numpy array. Can be same as calibration image, defaults to no normalisation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">shifts</span></code> Known x and y shifts between images as 2D numpy array of size (numImages,2). Will override <code class="docutils literal notranslate"><span class="pre">imgs</span></code> if specified as anything other than <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">centreX</span></code> X centre location of bundle, if not specified will be determined automatically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">centreY</span></code> Y centre location of bundle, if not specified will be determined automatically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">radius</span></code> Radius of bundle, if not specified will be determined automatically.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filterSize</span></code> Sigma of Gaussian filter applied during core-finding, defaults to no filter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">normToImage</span></code> If <code class="docutils literal notranslate"><span class="pre">true</span></code> each image will be normalised to have the same mean intensity. Defaults to <code class="docutils literal notranslate"><span class="pre">false</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">normToBackground</span></code> If <code class="docutils literal notranslate"><span class="pre">true</span></code>, each image will be normalised with respect to the corresponding background image from a stack of background images (one for each shift position) provided in <code class="docutils literal notranslate"><span class="pre">backgroundImgs</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">backgroundImgs</span></code> Stack of images, same size as <code class="docutils literal notranslate"><span class="pre">imgs</span></code> which are used to normalise</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">imageScaleFactor</span></code> If normToBackground and normToImage are False (default), use this to specify the normalisation factors for each image. Provide a 1D array the same size as the number of shifted images. Each image will be multiplied by the corresponding factor prior to reconstruction. Default is None (i.e. no scaling).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">postFilterSize</span></code> Sigma of Gaussian filter applied to image after reconstruction, defaults to no filter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">autoMask</span></code> Whether to mask pixels outside bundle when searching for cores. Defualts to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mask</span></code> Whether to mask pixels outside of bundle in reconstructed image. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
+</ul>
+<p><em>Returns:</em></p>
+<ul class="simple">
+<li><p>Instance of <code class="docutils literal notranslate"><span class="pre">BundleCalibration</span></code></p></li>
+</ul>
+<dl class="py function">
+<dt class="sig sig-object py" id="recon_multi_tri_interp">
+<span class="sig-name descname"><span class="pre">recon_multi_tri_interp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">imgs</span></em>, <em class="sig-param"><span class="pre">calib</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">optional</span> <span class="pre">arguments</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#recon_multi_tri_interp" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p><em>Required arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">imgs</span></code> Stack of shifted images as 3D numpy array. The third axis is image number.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">calib</span></code> Instance of <code class="docutils literal notranslate"><span class="pre">bundleCalibration</span></code> returned by <code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code>.</p></li>
+</ul>
+<p><em>Optional arguments:</em></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">useNumba</span></code> Boolean, whether to use Numba package to speed up reconstruction if available. Defaults to <code class="docutils literal notranslate"><span class="pre">true</span></code>.</p></li>
+</ul>
+<p><em>Returns:</em></p>
+<ul class="simple">
+<li><p>Reconstructed image as 2D numpy array.</p></li>
+</ul>
+</section>
 <section id="implementation-details">
 <h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline"></a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code> first calls <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> to perform the standard calibration for triangular linear interpolation. This obtains the core locations, using <code class="docutils literal notranslate"><span class="pre">find_cores</span></code>. If the optional parameters <code class="docutils literal notranslate"><span class="pre">normToImage</span></code> or <code class="docutils literal notranslate"><span class="pre">normToBackground</span></code> are set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the mean image intensity for ether the images stack or the background stack (supplied as a further optional parameter <code class="docutils literal notranslate"><span class="pre">backgroundImgs</span></code>) are calculated and stored. These are then later used to normalise each of the input images to a constant mean intensity. This is important for applications where the illumination intensity will be different for each image, but in most applications would not be needed.</p>
-<p><code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code> then calculates the relative shifts between the supplied images in <code class="docutils literal notranslate"><span class="pre">imgs</span></code> using <code class="docutils literal notranslate"><span class="pre">get_shifts</span></code> via normalised cross correlation. Alternatively, shifts can be provided via the optional optional parameter <code class="docutils literal notranslate"><span class="pre">shifts</span></code>. For each image, the recorded core positions are then translated by the measured shifts, and a single list of shifted core positions is assembled, containing the shifted core positions from all the images. <code class="docutils literal notranslate"><span class="pre">init_tri_interp</span></code> is then called, which forms a Delaunay triangulation over this set of core positions. For eacheach pixel in the reconstruction grid the enclosing triangle is identified and the pixel location in barycentric co-ordinates is recoreded.</p>
-<p>Reconstruction is performed using <code class="docutils literal notranslate"><span class="pre">recon_multi_tri_interp</span></code>.  The intensity value from each core in each of the images are extracted, and then pixel values in the final image are interpolated linearly from the three surrounding cores, using the pre-calculated barycentric distance weights.</p>
+<p><code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code> first calls <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> to perform the standard calibration for triangular linear interpolation. This obtains the core locations, using <code class="docutils literal notranslate"><span class="pre">find_cores</span></code>. If the optional parameters <code class="docutils literal notranslate"><span class="pre">normToImage</span></code> or <code class="docutils literal notranslate"><span class="pre">normToBackground</span></code> are set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the mean image intensity for ether the images stack or the background stack (supplied as a further optional parameter <code class="docutils literal notranslate"><span class="pre">backgroundImgs</span></code>) are calculated and stored. These are then later used to normalise each of the input images to a constant mean intensity. This is important for applications where the illumination intensity will be different for each image, but in most applications would not be needed. It is also possible to provide a 1D array of normalisation factors directly as the <code class="docutils literal notranslate"><span class="pre">imageScaleFactor</span></code> parameter.</p>
+<p><code class="docutils literal notranslate"><span class="pre">calib_multi_tri_interp</span></code> then calculates the relative shifts between the supplied images in <code class="docutils literal notranslate"><span class="pre">imgs</span></code> using <code class="docutils literal notranslate"><span class="pre">get_shifts</span></code> via normalised cross correlation. Alternatively, shifts can be provided via the optional parameter <code class="docutils literal notranslate"><span class="pre">shifts</span></code>. For each image, the recorded core positions are then translated by the measured shifts, and a single list of shifted core positions is assembled, containing the shifted core positions from all the images. <code class="docutils literal notranslate"><span class="pre">init_tri_interp</span></code> is then called, which forms a Delaunay triangulation over this set of core positions. For each pixel in the reconstruction grid the enclosing triangle is identified and the pixel location in barycentric co-ordinates is recorded.</p>
+<p>Reconstruction is performed using <code class="docutils literal notranslate"><span class="pre">recon_multi_tri_interp</span></code>.  The intensity value from each core in each of the images are extracted, and then pixel values in the final image are interpolated linearly from the three surrounding (shifted) cores, using the pre-calculated barycentric distance weights.</p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
+<p>An example is provided in “examples\super_res_example.py”</p>
 </section>
 </section>
 

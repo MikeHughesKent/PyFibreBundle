@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Basic Processing &mdash; PyFibreBundle  documentation</title>
+  <title>Basic Image Processing &mdash; PyFibreBundle  documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -38,9 +38,10 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Processing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#masking-and-cropping">Masking and Cropping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#filtering">Filtering</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Image Processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started-using-oop">Getting Started using OOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#getting-started-using-lower-level-functions">Getting Started Using Lower-Level Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
@@ -63,7 +64,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Basic Processing</li>
+      <li>Basic Image Processing</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/core.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -73,11 +74,81 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="basic-processing">
-<h1>Basic Processing<a class="headerlink" href="#basic-processing" title="Permalink to this headline"></a></h1>
-<p>PyFibreBundle includes several functions for basic processing of bundle images, including locating, cropping and masking the bundle and removing the core pattern using spatial filtering.</p>
-<section id="masking-and-cropping">
-<h2>Masking and Cropping<a class="headerlink" href="#masking-and-cropping" title="Permalink to this headline"></a></h2>
+  <section id="basic-image-processing">
+<h1>Basic Image Processing<a class="headerlink" href="#basic-image-processing" title="Permalink to this headline"></a></h1>
+<p>PyFibreBundle includes several functions for basic processing of bundle images, including locating, cropping and masking the bundle and removing the core pattern using spatial filtering. The easiest way to use this functionality is via the PyBundle class, but it is also possible to use the lower-level functions directly.</p>
+<section id="getting-started-using-oop">
+<h2>Getting Started using OOP<a class="headerlink" href="#getting-started-using-oop" title="Permalink to this headline"></a></h2>
+<p>Begin by importing the libary:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pybundle</span> <span class="kn">import</span> <span class="n">PyBundle</span>
+</pre></div>
+</div>
+<p>Instantiate an object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span> <span class="o">=</span> <span class="n">PyBundle</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To process an image <code class="docutils literal notranslate"><span class="pre">img</span></code> we then use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">procImage</span> <span class="o">=</span> <span class="n">pyb</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>However, this will do nothing to the raw image unless we first set some parameters. First we define what type of core-removal we would like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_core_method</span><span class="p">(</span><span class="n">pyb</span><span class="o">.</span><span class="n">FILTER</span><span class="p">)</span>   <span class="c1"># Choose to use a Gaussian filter</span>
+<span class="n">pyb</span><span class="o">.</span><span class="n">set_filter_size</span><span class="p">(</span><span class="mf">2.5</span><span class="p">)</span>          <span class="c1"># Gaussian filter sigma is 2.5 pixels</span>
+</pre></div>
+</div>
+<p>We might also want to crop the image to the bundle. This can be done automically using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_auto_loc</span><span class="p">(</span><span class="n">calibImg</span><span class="p">)</span>        <span class="c1"># Automatically locate bundle in image</span>
+<span class="n">pyb</span><span class="o">.</span><span class="n">set_crop</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>                <span class="c1"># Output images will be cropped to a square around the bundle</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">calibImg</span></code> is a well-illuminated image which will allow the bundle to be located. This may be the same image as <code class="docutils literal notranslate"><span class="pre">img</span></code>.</p>
+<p>Alternatively, we can specify the location of the bundle using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_bundle_loc</span><span class="p">(</span><span class="n">loc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">loc</span></code> is a tuple of (xCentre, yCentre, radius) for the bundle.</p>
+<p>It is often useful to set all pixels outside the bundle to 0, which will be done if we set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_auto_mask</span><span class="p">(</span><span class="n">calibImg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output image type can be set using, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_output_type</span><span class="p">(</span><span class="s1">&#39;uint8&#39;</span><span class="p">)</span>      <span class="c1"># Output images will be 8 bit</span>
+</pre></div>
+</div>
+<p>where any numpy data type can be used. The output will simply be cast to this format without any scaling, unless we set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_auto_contrast</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>in which case the image will be first scaled to between 0 and 255 if an 8 bit output type is set, or between 0 and 65535 if a 16 bit output type is set, or between 0 and 1 if a non-integer output type is set.</p>
+<p>To use triangular linear interpolation rather than Gaussian filtering, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_core_method</span><span class="p">(</span><span class="n">pyb</span><span class="o">.</span><span class="n">TRILIN</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and provide a calibration image which has all cores illuminated using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_calib_image</span><span class="p">(</span><span class="n">calibImg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The output image size is set by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_grid_size</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is usually preferable to provide a normalisation image with uniform illumination to minimise grainyness to due variations between cores, this can usually be the same image as used for calibration:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_normalise_image</span><span class="p">(</span><span class="n">calibImage</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(Note UK spelling of normalise). Calibration then needs to be called one-time:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">calibrate</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(If not called explicitly it will be called the first time you attempt to reconstruct an image). We are then ready to reconstruct:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">procImg</span> <span class="o">=</span> <span class="n">pyb</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>See the <a class="reference internal" href="linear_interp.html"><span class="doc">Linear Interpolation</span></a>  page for more details.</p>
+</section>
+<section id="getting-started-using-lower-level-functions">
+<h2>Getting Started Using Lower-Level Functions<a class="headerlink" href="#getting-started-using-lower-level-functions" title="Permalink to this headline"></a></h2>
+<p>The lower-level functions can be called directly if greater control is needed.</p>
 <p>Begin by importing the library:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pybundle</span>
 </pre></div>
@@ -109,9 +180,6 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">croppedImg</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">auto_mask_crop</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="filtering">
-<h2>Filtering<a class="headerlink" href="#filtering" title="Permalink to this headline"></a></h2>
 <p>Spatial filtering can be used to remove the core pattern (alternatively, linear interpolation is also available). To apply a Gaussian smoothing filter, use:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">smoothedImg</span> <span class="o">=</span> <span class="n">pubundle</span><span class="o">.</span><span class="n">g_filter</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">filterSize</span><span class="p">)</span>
 </pre></div>
@@ -133,6 +201,25 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">smoothedImg</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">filter_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">filter</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>To perform linear interpolation using static methods, first perform a calibration using the calibration image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, a 2D numpy array:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coreSize</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">gridSize</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">calib</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">calib_tri_interp</span><span class="p">(</span><span class="n">calibImg</span><span class="p">,</span> <span class="n">coreSize</span><span class="p">,</span> <span class="n">gridSize</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="n">calibImg</span><span class="p">,</span> <span class="n">automask</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we have specified <code class="docutils literal notranslate"><span class="pre">coreSize</span> <span class="pre">=</span> <span class="pre">3</span></code> which is the approximate core spacing in the image. This assists the calibration routine in finding all cores. If unknown it can be estimate using <code class="docutils literal notranslate"><span class="pre">find_core_spacing</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">gridSize</span></code> is the number of pixels in each dimensions of the reconstructed image, which is square.</p>
+<p>Finally, we have specified to use the <code class="docutils literal notranslate"><span class="pre">calibImg</span></code> for normalisation. This means that the intensity extracted from each core during imaging will be normalised with respect to the intensity from the calibration image, removing effects due to non-uniform cores. If this is not done (i.e. normalise is left as the default <code class="docutils literal notranslate"><span class="pre">None</span></code>) then images may appear grainy.</p>
+<p>To reconstruct an image <code class="docutils literal notranslate"><span class="pre">img</span></code>, a 2D numpy array, we then call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgRecon</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">recon_tri_interp</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">calib</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This returns a 2D numpy array of size <code class="docutils literal notranslate"><span class="pre">(gridSize,</span> <span class="pre">gridSize)</span></code> containing the image with the core pattern removed.</p>
+<p>For all optional parameters refer to the <a class="reference internal" href="functions.html"><span class="doc">function reference</span></a> for <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> and <code class="docutils literal notranslate"><span class="pre">recon_tri_interp</span></code>.</p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
+<p>An example is provided in “examples\mosaicing_example.py”</p>
 </section>
 </section>
 

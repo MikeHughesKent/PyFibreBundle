@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Basic tests of the Mosaic functionality of PyFibreBundle
+Full tests of the Mosaic functionality of PyFibreBundle
 
 @author: Mike Hughes
 Applied Optics Group
@@ -16,13 +16,11 @@ import cv2 as cv
 
 import context    # For paths to library
 
-
 import pybundle
 from pybundle import Mosaic
 
 
 filterSize = 1.5    # Size of Gaussian filter to preprocess bundle images
-
 
 # Load in a fibre bundle endomicroscopy video
 cap = cv.VideoCapture('data/raw_example.avi')
@@ -56,23 +54,60 @@ for i in range(1,nFrames):
     img = pybundle.crop_filter_mask(img, loc, mask, filterSize)
     imgStack[i,:,:] = img
 
-t0 = time.time()
 
-
-# Do the mosaicing
-for i in range(nFrames):
+# Test routine. Once a mosaic object is created with the desired parameters
+# it is passed here as 'mosaic' with a 'description' used to label the output
+def test_mosaic(mosaic, description):
    
-    img = imgStack[i,:,:]
-    
-    mosaic.add(img)   
-        
-    m = mosaic.get_mosaic()
-
-    cv.imshow('ImageWindow',cv.resize(m,(400,400)).astype('uint8'))
-    
-    cv.waitKey(1)
-        
+    mosaic.reset()
+    t0 = time.time()
+    for i in range(nFrames):   
+        img = imgStack[i,:,:]
+        mosaic.add(img)   
+        mosaicImage = mosaic.get_mosaic()
+        #cv.imshow('ImageWindow',cv.resize(mosaicImage,(400,400)).astype('uint8'))
+        #cv.waitKey(1)
+    plt.figure()
+    plt.imshow(mosaicImage, cmap = 'gray') 
+    plt.title(description)
  
-print("Average time to add a frame: " + str(1000 * round( (time.time() - t0)/nFrames,3)) + " ms.")
+    print(description + ": Average time to add a frame to mosaic: " + str(1000 * round( (time.time() - t0)/nFrames,3)) + " ms.")
 
-cv.waitKey(0)
+
+# The tests
+
+mosaic = Mosaic(1000)
+test_mosaic(mosaic, "Default")
+
+mosaic = Mosaic(1000, resize = 250)
+test_mosaic(mosaic, "Default with resize to 250")
+
+mosaic = Mosaic(10000, resize = 250)
+test_mosaic(mosaic, "Default with 10k x 10k image, resize to 250")
+
+mosaic = Mosaic(1000, resize = 250, blend = False)
+test_mosaic(mosaic, "No Blend")
+
+mosaic = Mosaic(1000, resize = 250, blend = True)
+test_mosaic(mosaic, "Blend")
+
+mosaic = Mosaic(1000, resize = 250, blend = True, blendDist = 5)
+test_mosaic(mosaic, "Blend distance of 5 px")
+
+mosaic = Mosaic(500, resize = 250)
+test_mosaic(mosaic, "Crop at Edge (Default)")
+
+mosaic = Mosaic(500, resize = 250, boundaryMethod = mosaic.EXPAND)
+test_mosaic(mosaic, "Expand at Edge")
+
+mosaic = Mosaic(500, resize = 250, boundaryMethod = mosaic.SCROLL)
+test_mosaic(mosaic, "Scroll at Edge")
+
+mosaic = Mosaic(1000, resize = 250, resetThresh = .985)
+test_mosaic(mosaic, "Reset on threshold")
+
+mosaic = Mosaic(1000, resize = 250, resetIntensity = 80)
+test_mosaic(mosaic, "Reset on intensity")
+
+mosaic = Mosaic(1000, resize = 250, resetSharpness = 3)
+test_mosaic(mosaic, "Reset on sharpness")

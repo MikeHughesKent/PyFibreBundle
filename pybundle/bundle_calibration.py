@@ -30,6 +30,7 @@ class BundleCalibration:
     normaliseVals = None
     background = None
     backgroundVals = None
+    radius = None
     
     def __init__(self):
         return

@@ -2,9 +2,9 @@ Mosaicing
 ====================================
 The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, and either dead-leaf or alpha-blended insertion of images into a mosaic. The easiest way to use this functionality is to create an instance of ``Mosaic`` class and then use ``Mosaic.add(img)`` to sequentially register and add image ``img`` to the mosaic,	 and ``Mosaic.getMosaic()`` to get the latest mosaic image. Both ``img`` and the ``mosaic`` are 2D numpy arrays.
 
-^^^^^^^^^^^
-Quickstart
-^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+Getting Started
+^^^^^^^^^^^^^^^
 
 Instantiate an object of the ``Mosaic`` class using default options and with a mosaic image size of 1000x1000::
 
@@ -48,17 +48,15 @@ Instantiation
 * ``resetThresh`` If set to value other than None (default), mosaic will reset when correlation between two frames is below this value.
 * ``resetIntensity`` If set to value other than None (default), mosaic will reset when mean intensity of a supplied frame is less than this value.
 * ``resetSharpness`` If set to value other than None (default), mosaic will reset when sharpness (image gradient) of a supplied frame is less than this value.
+
 ^^^^^^^^^^^^^^^^^^^^
-Methods
+Function Reference
 ^^^^^^^^^^^^^^^^^^^^
 
-.. py:function:: add(img)
+.. py:function:: add(img) 
+Adds an image ``img`` to the current mosaic.
 
-Adds an image ``img`` to the current mosaic. ``img`` should be a 2D numpy array.
-
-
-.. py:function:: get_mosaic()
-
+.. py:function:: get_mosaic() 
 Returns a copy of the current mosaic as a 2D numpy array.
 
 ^^^^^^^^^^^^^^^^^^^^
@@ -70,16 +68,16 @@ Usually it is beneficial to resize the input images to prevent the need for a ve
 
     mMosaic = Mosaic(1000, resize = 250)
 
-The reset methods (resetThresh, resetIntensity and resetSharpness) are normally required when used with a handheld probe to handle instances where tissue contact is lost or the probe is moved too quickly. For optical sectioning endomicroscope, a combination of correlation based thresholding ('resetThresh') and intensity based thresholding ('resetIntensity') works well. For non-sectioning endomicroscopes, moving out of focus does not sufficiently reduce either, and so it may be necessary to use sharpness thresholding ('resetSharpness') as well. The best values to use must be determined empirically and will depend on pre-processing steps.
+The reset methods (``resetThresh``, ``resetIntensity`` and ``resetSharpness``) are normally required when used with a handheld probe to handle instances where tissue contact is lost or the probe is moved too quickly. For optical sectioning endomicroscope, a combination of correlation based thresholding (``resetThresh``) and intensity based thresholding (``resetIntensity``) works well. For non-sectioning endomicroscopes, moving out of focus does not sufficiently reduce either, and so it may be necessary to use sharpness thresholding (``resetSharpness``) as well. The best values to use must be determined empirically and will depend on pre-processing steps.
 
-For slow moving probes, 'minDistForAdd' may need to be adjusted particularly when using blending to prevent undesirable effects of the same image being blended with itself.
+For slow moving probes, ``minDistForAdd`` may need to be adjusted particularly when using blending to prevent undesirable effects of the same image being blended with itself.
 
 
 
 ^^^^^^^^^^^^^^^^^^^
-Methods - Low Level
+Low Level Functions
 ^^^^^^^^^^^^^^^^^^^
-These static methods are used internally and would normally not need to be called. Check the source for arguments.
+These functions are used internally and would normally not need to be called directly. Check the source for arguments.
 
 * ``initialise`` This is called the first time an image is added using ``add``. It cannot be called beforehand since some details of the images, such as the size, are required.
 * ``find_shift`` Computes shift between two images using normalised cross correlation.
@@ -89,3 +87,9 @@ These static methods are used internally and would normally not need to be calle
 * ``is_outside_mosaic`` Returns true if intended image insert will go outside of mosaic image.
 * ``expand_mosaic`` Expands mosaic image.
 * ``scroll_mosaic`` Scrolls the mosaic image.
+
+^^^^^^^
+Example
+^^^^^^^
+
+An example is provided in "examples\\mosaicing_example.py"

@@ -19,7 +19,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Mosaicing" href="mosaicing.html" />
-    <link rel="prev" title="Basic Processing" href="core.html" /> 
+    <link rel="prev" title="Basic Image Processing" href="core.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -38,10 +38,11 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Image Processing</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Linear Interpolation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#quickstart-static-methods">Quickstart - Static Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#quickstart-object-oriented">Quickstart - Object Oriented</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#object-oriented-approach">Object Oriented Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#lower-level-functions">Lower level functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
@@ -75,29 +76,12 @@
              
   <section id="linear-interpolation">
 <h1>Linear Interpolation<a class="headerlink" href="#linear-interpolation" title="Permalink to this headline"></a></h1>
-<p>Triangular linear interpolation can be used to remove the fibre bundle core pattern. Using a calibration image, usually acquired with no object in view (i.e. a flat field) the location of each core is determined. A Delaunay triangulation is performed over the core locations. A reconstruction grid is then defined, and the enclosing triangle for each pixel is determined. Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. Although calibration can take a few seconds, processing of images can then be video rate.</p>
-<section id="quickstart-static-methods">
-<h2>Quickstart - Static Methods<a class="headerlink" href="#quickstart-static-methods" title="Permalink to this headline"></a></h2>
-<p>Using static methods, first perform a calibration using the calibration image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, a 2D numpy array:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coreSize</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">gridSize</span> <span class="o">=</span> <span class="mi">512</span>
-<span class="n">calib</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">calib_tri_interp</span><span class="p">(</span><span class="n">calibImg</span><span class="p">,</span> <span class="n">coreSize</span><span class="p">,</span> <span class="n">gridSize</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="n">calibImg</span><span class="p">,</span> <span class="n">automask</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Here we have specified <code class="docutils literal notranslate"><span class="pre">coreSize</span> <span class="pre">=</span> <span class="pre">3</span></code> which is the approximate core spacing in the image. This assists the calibration routine in finding all cores. If unknown it can be estimate using <code class="docutils literal notranslate"><span class="pre">find_core_spacing</span></code>.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">gridSize</span></code> is the number of pixels in each dimensions of the reconstructed image, which is square.</p>
-<p>Finally, we have specified to use the <code class="docutils literal notranslate"><span class="pre">calibImg</span></code> for normalisation. This means that the intensity extracted from each core during imaging will be normalised with respect to the intensity from the calibration image, removing effects due to non-uniform cores. If this is not done (i.e. normalise is left as the default <code class="docutils literal notranslate"><span class="pre">None</span></code>) then images may appear grainy.</p>
-<p>To reconstruct an image <code class="docutils literal notranslate"><span class="pre">img</span></code>, a 2D numpy array, we then call:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgRecon</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">recon_tri_interp</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">calib</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This returns a 2D numpy array of size <code class="docutils literal notranslate"><span class="pre">(gridSize,</span> <span class="pre">gridSize)</span></code> containing the image with the core pattern removed.</p>
-<p>For all optional parameters refer to the functon reference for <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> and <code class="docutils literal notranslate"><span class="pre">recon_tri_interp</span></code>.</p>
-</section>
-<section id="quickstart-object-oriented">
-<h2>Quickstart - Object Oriented<a class="headerlink" href="#quickstart-object-oriented" title="Permalink to this headline"></a></h2>
-<p>Instantiate the PyBundle object:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">PyBundle</span><span class="p">()</span>
+<p>Triangular linear interpolation can be used to remove the fibre bundle core pattern. Using a calibration image, usually acquired with no object in view (i.e. a flat field), the location of each core is determined. A Delaunay triangulation is performed over the core locations. A reconstruction grid is then defined, and the enclosing triangle for each pixel is determined. Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. Although calibration can take a few seconds, processing of images can then be at video rate.</p>
+<section id="object-oriented-approach">
+<h2>Object Oriented Approach<a class="headerlink" href="#object-oriented-approach" title="Permalink to this headline"></a></h2>
+<p>Import the PyBundle class and instantiate a PyBundle object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pybundle</span> <span class="kn">import</span> <span class="n">PyBundle</span>
+<span class="n">pyb</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">PyBundle</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>Set the core removal method to triangular linear interpolation:</p>
@@ -125,6 +109,34 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgProc</span> <span class="o">=</span> <span class="n">pyb</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>For real-time processing, a speed-up of approx X4 in reconstruction can be obtained if the Numba package is installed. To disable use of Numba, call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_use_numba</span><span class="p">(</span><span class="n">false</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="lower-level-functions">
+<h2>Lower level functions<a class="headerlink" href="#lower-level-functions" title="Permalink to this headline"></a></h2>
+<p>For greater customisation, the static functions can be called directly. First perform a calibration using the calibration image <code class="docutils literal notranslate"><span class="pre">calibImg</span></code>, a 2D numpy array:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coreSize</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">gridSize</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">calib</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">calib_tri_interp</span><span class="p">(</span><span class="n">calibImg</span><span class="p">,</span> <span class="n">coreSize</span><span class="p">,</span> <span class="n">gridSize</span><span class="p">,</span> <span class="n">normalise</span> <span class="o">=</span> <span class="n">calibImg</span><span class="p">,</span> <span class="n">automask</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here we have specified <code class="docutils literal notranslate"><span class="pre">coreSize</span> <span class="pre">=</span> <span class="pre">3</span></code> which is the approximate core spacing in the image. This assists the calibration routine in finding all cores. If unknown it can be estimate using <code class="docutils literal notranslate"><span class="pre">find_core_spacing</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">gridSize</span></code> is the number of pixels in each dimensions of the reconstructed image, which is square.</p>
+<p>Finally, we have specified to use the <code class="docutils literal notranslate"><span class="pre">calibImg</span></code> for normalisation. This means that the intensity extracted from each core during imaging will be normalised with respect to the intensity from the calibration image, removing effects due to non-uniform cores. If this is not done (i.e. normalise is left as the default <code class="docutils literal notranslate"><span class="pre">None</span></code>) then images may appear grainy.</p>
+<p>To reconstruct an image <code class="docutils literal notranslate"><span class="pre">img</span></code>, a 2D numpy array, we then call:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">imgRecon</span> <span class="o">=</span> <span class="n">pybundle</span><span class="o">.</span><span class="n">recon_tri_interp</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">calib</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This returns a 2D numpy array of size <code class="docutils literal notranslate"><span class="pre">(gridSize,</span> <span class="pre">gridSize)</span></code> containing the image with the core pattern removed.</p>
+<p>For all optional parameters refer to the functon reference for <code class="docutils literal notranslate"><span class="pre">calib_tri_interp</span></code> and <code class="docutils literal notranslate"><span class="pre">recon_tri_interp</span></code>.</p>
+</section>
+<section id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
+<p>An example using OOP is in “examples\linear_interp_example.py”.</p>
+<p>An example using OOP and showing the difference in speed if Numba is used is in “examples\linear_interp_numba_example.py”.</p>
+<p>Linear interpolation is compared with other core method removal techniques in “examples\compare_recons.py”</p>
 </section>
 </section>
 
@@ -132,7 +144,7 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="core.html" class="btn btn-neutral float-left" title="Basic Processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="core.html" class="btn btn-neutral float-left" title="Basic Image Processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="mosaicing.html" class="btn btn-neutral float-right" title="Mosaicing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

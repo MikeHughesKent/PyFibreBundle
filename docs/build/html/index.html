@@ -18,7 +18,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Basic Processing" href="core.html" /> 
+    <link rel="next" title="Basic Image Processing" href="core.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -37,7 +37,7 @@
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul>
-<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Image Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
@@ -70,57 +70,62 @@
              
   <section id="pyfibrebundle">
 <h1>PyFibreBundle<a class="headerlink" href="#pyfibrebundle" title="Permalink to this headline"></a></h1>
-<p>PyFibreBundle is a Python library for image processing of fibre bundle images. It is being developed mainly by <a class="reference external" href="https://research.kent.ac.uk/applied-optics/hughes/">Mike Hughes</a> at the <a class="reference external" href="https://research.kent.ac.uk/applied-optics">Applied Optics Group</a>, University of Kent, but contributions and pull requests are welcome.</p>
-<p>This library is currently under development and there is no stable release. Some functions require the OpenCV library. The library is designed to be fast enough for use in imaging GUIs as well as for offline research.</p>
+<p>PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. It is developed mainly by <a class="reference external" href="https://research.kent.ac.uk/applied-optics/hughes/">Mike Hughes</a>’s lab in the <a class="reference external" href="https://research.kent.ac.uk/applied-optics">Applied Optics Group</a>, School of Physics and Astronomy, University of Kent. Bug reports, contributions and pull requests are welcome.</p>
+<p>The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and holographic endomicroscopy, but there are also potential applications in endoscopy. The package is under active development, with one stable release (v1.0).</p>
+<p>The package supports fibre core pattern removal by filtering and triangular linear interpolation, background correction and flat fielding, as well as automatic bundle location, cropping and masking. The <a class="reference internal" href="core.html"><span class="doc">PyBundle</span></a> class is the preferred way to access this functionality, but the lower level functions can also be used directly for greater customisation. The <a class="reference internal" href="mosaicing.html"><span class="doc">Mosaic</span></a> class provides mosaicing via normalised cross correlation, and the <a class="reference internal" href="super_res.html"><span class="doc">SuperRes</span></a> class allows multiple shifted images to be combined to improve resolution.</p>
+<p>The library is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.</p>
+<section id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline"></a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Processing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="core.html#masking-and-cropping">Masking and Cropping</a></li>
-<li class="toctree-l2"><a class="reference internal" href="core.html#filtering">Filtering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core.html">Basic Image Processing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="core.html#getting-started-using-oop">Getting Started using OOP</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#getting-started-using-lower-level-functions">Getting Started Using Lower-Level Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="linear_interp.html#quickstart-static-methods">Quickstart - Static Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="linear_interp.html#quickstart-object-oriented">Quickstart - Object Oriented</a></li>
+<li class="toctree-l2"><a class="reference internal" href="linear_interp.html#object-oriented-approach">Object Oriented Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="linear_interp.html#lower-level-functions">Lower level functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="linear_interp.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#getting-started">Getting Started</a></li>
 <li class="toctree-l2"><a class="reference internal" href="mosaicing.html#instantiation">Instantiation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#methods">Methods</a></li>
-<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#methods-low-level">Methods - Low Level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#function-reference">Function Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#usage-notes">Usage Notes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#low-level-functions">Low Level Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="mosaicing.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="super_res.html#quickstart">Quickstart</a></li>
+<li class="toctree-l2"><a class="reference internal" href="super_res.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="super_res.html#function-reference">Function Reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="super_res.html#implementation-details">Implementation Details</a></li>
+<li class="toctree-l2"><a class="reference internal" href="super_res.html#example">Example</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="functions.html#bundle-finding-cropping-masking">Bundle finding, cropping, masking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="functions.html#filtering">Filtering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="functions.html#triangular-linear-interpolation">Triangular Linear Interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#static-methods-for-filtering">Static Methods for Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#static-methods-for-triangular-linear-interpolation">Static Methods for Triangular Linear Interpolation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="functions.html#utility-functions">Utility Functions</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<p><em>Acknowledgements: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).</em></p>
-</section>
-<section id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline"></a></h1>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
 </ul>
+<p><em>Acknowledgements: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding to Mike Hughes’s lab from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).</em></p>
+</section>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="core.html" class="btn btn-neutral float-right" title="Basic Processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="core.html" class="btn btn-neutral float-right" title="Basic Image Processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

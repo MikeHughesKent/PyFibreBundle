@@ -3,12 +3,79 @@ Function Reference
 ------------------
 A list of core functions is available below. Methods for the `Mosaic <mosaicing.html>`_ and `SuperRes <super_res.html>`_ classes are not listed here, please see the documentation pages for those classes separately.
 
+The pybundle class implements most of the functionality of the package and is the preferred approach for most applications.
+
 PyFibreBundle uses numpy arrays as images throughout, wherever 'image' is specified this refers to a 2D numpy array.
 
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Bundle finding, cropping, masking
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
+PyBundle class
+^^^^^^^^^^^^^^
+
+.. py:function:: init()
+
+Instantiates an object of the PyBundle class.
+
+.. py:function:: process(img)
+Process a raw image ``Img`` which should be a 2D numpy array. Returns a processed image as a 2D numpy array.
+
+.. py:function:: calibrate()
+Performs the prior calibration necessary for `TRILIN` method.
+
+.. py:function:: get_pixel_scale()
+Returns the scaling factor between pixels in the raw images and pixels in the processed images. This is always 1 for `FILTER` and `EDGE_FILTER` methods. For `TRILIN` method this will only return a valid value once ``calibrate()`` has been called, otherwise it will return ``None``.
+
+.. py:function:: set_auto_loc(img)
+Determine the location of the bundle automically.
+
+.. py:function:: create_and_set_mask(img, [radius])
+Determine the location of the bundle in ``img`` and then automically create a mask. Optionally specify a different ``radius`` in pixels.
+
+.. py:function:: set_auto_contrast(ac)
+Determines whether the processed image is scaled to use the full dynamic range. ``ac`` is boolean. The actual values depend on the set output type.
+
+.. py:function:: set_auto_mask(img, [radius])
+Sets to automatically create a mask using the previously determined bundle location. Optionally specify a different ``radius`` in pixels.
+
+.. py:function:: set_background(background)
+Stores an image to be used for background subtraction. ``background`` should be a 2D numpy array, the same size as the raw images to be processed.
+
+.. py:function:: set_bundle_loc(loc)
+Sets the stored location of the fibre bundle. ``loc`` is a tuples of (centreX, centreY, radius).
+
+.. py:function:: set_calib_image(calibImg)
+Stores the image to be used for calibration for TRILIN method. ``calibImg`` should be a 2D numpy array of the same size as images to be processed, ideally showing the bundle with uniform illumination.
+
+.. py:function:: set_core_method(coreMethod)
+Sets which method will be used for core remove, ``coreMethod`` can be 'FILTER', 'TRILIN' or 'EDGE_FILTER'.
+
+.. py:function:: set_crop(crop)
+Determines whether images are cropped to size of bundle (FILTER, EDGE_FILTER methods). ``crop`` is boolean.
+
+.. py:function:: set_edge_filter(edgePos, edgeSlope)
+Creates an edge filter for use with EDGE method. ``edgePos`` is the spatial frequency of the edge in pixels of FFT of image, ``edgeSlope`` is the steepness of slope (range from 10% to 90%) in pixels of the FFT of the image.
+
+.. py:function:: set_filter_size(filterSize)
+Sets the size of the Gaussian filter used by `FILTER` method in pixels.
+
+.. py:function:: set_grid_size(gridSize)
+Sets the size of the square output image for TRILIN method. ``gridsize`` should be an integer.
+
+.. py:function:: set_mask(mask)
+Sets the mask to applied during processing to set areas outside bundle to 0. ``Mask`` is a 2D numpy array the same size as the raw images to be processed.
+
+.. py:function:: set_normalise_image(normaliseImage)
+Stores an image to be used for normalisation if TRILIN method is being used. ``normaliseImage`` should be a 2D numpy array, the same size as the raw images to be processed.
+
+.. py:function:: set_output_type(outputType)
+Set the data type of input images from 'process'. ``outputType`` should be one of 'uint8', 'unit16' or 'float'.
+
+.. py:function:: set_use_numba(useNumba)
+Determines whether Numba package is used for faster reconstruction for TRILIN method. ``useNumba`` is a booleab. Default is ``true``.
+
+^^^^^^^^^^^^^^^^^^&^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Static Methods for Bundle finding, cropping, masking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. py:function:: crop_rect(img, loc)
 
@@ -41,9 +108,9 @@ Locates, crops and masks an image ``img``. For meaning of ``searchFilterSize`` s
 
 
 
-^^^^^^^^^
-Filtering
-^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Static Methods for Filtering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. py:function::  g_filter(img, filterSize)
 
@@ -74,9 +141,9 @@ Applies a Fourier domain filter ``filt`` (such as created by ``edge_filter``) to
 
 Applies a median filter to image ``img`` of size ``filterSize`` which must be odd. Returns numpy array.
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Triangular Linear Interpolation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Static Methods for Triangular Linear Interpolation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 """"""""""""""""""""
 High-level functions
 """"""""""""""""""""
@@ -84,8 +151,6 @@ High-level functions
 .. py:function::  calib_tri_interp(img, coreSize, gridSize[, centreX, centreY, radius, filterSize = 0,      normalise = None, autoMask = True, mask = True, background = None])
 
 Calibration for triangular linear interpolation between cores. This returns a BundleCalibration, an object containig all the calibration information necessary for subsequent reconstructions.
-
-
 
 Required arguments: 
 
@@ -99,12 +164,13 @@ Required arguments:
 * ``filterSize`` sigma of Gaussian filter applied to images before extracting core intensities.
 * ``normalise`` if a reference image is provided here, core intensities at reconstruction will be normalised with respect the core intensities in the reference image. This is generally necessary for good quality results.
 * ``autoMask`` if ``true``, areas outside the bundle are set to 0 prior to locating cores. This generally helps to avoid spurious detections due to noise.
-* `` mask`` if ``true``, a circular mask will be drawn around the bundle following reconstruction - this gives a less jagged edge to the image.
+* ``mask`` if ``true``, a circular mask will be drawn around the bundle following reconstruction - this gives a less jagged edge to the image.
 * ``background`` if a background image is provided here, this will be subtracted from image during the reconstruction stage.
 
-.. py:function::  recon_tri_interp(img, calib)
 
-Performs triangular linear interpolation on an image ``img`` using a calibration ``calib`` obtained from ``calib_tri_interp``. Returns a numpy array.
+.. py:function::  recon_tri_interp(img, calib, [useNumba = False])
+
+Performs triangular linear interpolation on an image ``img`` using a calibration ``calib`` obtained from ``calib_tri_interp``. Set ``useNumba = True`` to use JIT compiler for speed-up (requires numba library to be installed). Returns a numpy array.
 
 """""""""""""""""""
 Low-level functions

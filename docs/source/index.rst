@@ -1,30 +1,31 @@
-.. PyBundle documentation master file, created by
-   sphinx-quickstart on Wed Jun 15 17:44:50 2022.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 PyFibreBundle
 ====================================
-PyFibreBundle is a Python library for image processing of fibre bundle images. It is being developed mainly by `Mike Hughes <https://research.kent.ac.uk/applied-optics/hughes/>`_ at the `Applied Optics Group <https://research.kent.ac.uk/applied-optics>`_, University of Kent, but contributions and pull requests are welcome.
+PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. It is developed mainly by `Mike Hughes <https://research.kent.ac.uk/applied-optics/hughes/>`_'s lab in the `Applied Optics Group <https://research.kent.ac.uk/applied-optics>`_, School of Physics and Astronomy, University of Kent. Bug reports, contributions and pull requests are welcome. 
 
-This library is currently under development and there is no stable release. Some functions require the OpenCV library. The library is designed to be fast enough for use in imaging GUIs as well as for offline research.
+The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and holographic endomicroscopy, but there are also potential applications in endoscopy. The package is under active development, with one stable release (v1.0). 
+
+The package supports fibre core pattern removal by filtering and triangular linear interpolation, background correction and flat fielding, as well as automatic bundle location, cropping and masking. The :doc:`PyBundle<core>` class is the preferred way to access this functionality, but the lower level functions can also be used directly for greater customisation. The :doc:`Mosaic<mosaicing>` class provides mosaicing via normalised cross correlation, and the :doc:`SuperRes<super_res>` class allows multiple shifted images to be combined to improve resolution.
+
+The library is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
+
+^^^^^^^^
+Contents
+^^^^^^^^
 
 .. toctree::
    :maxdepth: 2
-
+   
    core
    linear_interp
    mosaicing
    super_res
    functions
-
-
-*Acknowledgements: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).*   
-
-
-Indices and tables
-==================
-
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+
+*Acknowledgements: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding to Mike Hughes's lab from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).*   
+
+
+
+
+
