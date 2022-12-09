@@ -39,6 +39,7 @@
               <ul>
 <li class="toctree-l1"><a class="reference internal" href="core.html">Basic Image Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pybundle_class.html">PyBundle class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
@@ -72,7 +73,7 @@
 <h1>PyFibreBundle<a class="headerlink" href="#pyfibrebundle" title="Permalink to this headline"></a></h1>
 <p>PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. It is developed mainly by <a class="reference external" href="https://research.kent.ac.uk/applied-optics/hughes/">Mike Hughes</a>’s lab in the <a class="reference external" href="https://research.kent.ac.uk/applied-optics">Applied Optics Group</a>, School of Physics and Astronomy, University of Kent. Bug reports, contributions and pull requests are welcome.</p>
 <p>The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and holographic endomicroscopy, but there are also potential applications in endoscopy. The package is under active development, with one stable release (v1.0).</p>
-<p>The package supports fibre core pattern removal by filtering and triangular linear interpolation, background correction and flat fielding, as well as automatic bundle location, cropping and masking. The <a class="reference internal" href="core.html"><span class="doc">PyBundle</span></a> class is the preferred way to access this functionality, but the lower level functions can also be used directly for greater customisation. The <a class="reference internal" href="mosaicing.html"><span class="doc">Mosaic</span></a> class provides mosaicing via normalised cross correlation, and the <a class="reference internal" href="super_res.html"><span class="doc">SuperRes</span></a> class allows multiple shifted images to be combined to improve resolution.</p>
+<p>The package supports fibre core pattern removal by filtering and triangular linear interpolation, background correction and flat fielding, as well as automatic bundle location, cropping and masking. The <a class="reference internal" href="pybundle_class.html"><span class="doc">PyBundle</span></a> class is the preferred way to access this functionality, but the lower level functions can also be used directly for greater customisation. The <a class="reference internal" href="mosaicing.html"><span class="doc">Mosaic</span></a> class provides mosaicing via normalised cross correlation, and the <a class="reference internal" href="super_res.html"><span class="doc">SuperRes</span></a> class allows multiple shifted images to be combined to improve resolution.</p>
 <p>The package is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.</p>
 <section id="contents">
 <h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline"></a></h2>
@@ -88,6 +89,10 @@
 <li class="toctree-l2"><a class="reference internal" href="linear_interp.html#object-oriented-approach">Object Oriented Approach</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linear_interp.html#lower-level-functions">Lower level functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="linear_interp.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="pybundle_class.html">PyBundle class</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="pybundle_class.html#default-settings">Default Settings</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a><ul>
@@ -109,8 +114,8 @@
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="functions.html#pybundle-class">PyBundle class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="functions.html#functions-for-bundle-finding-cropping-masking">Functions for Bundle finding, cropping, masking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="functions.html#static-methods-for-filtering">Static Methods for Filtering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="functions.html#static-methods-for-triangular-linear-interpolation">Static Methods for Triangular Linear Interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#functions-for-filtering">Functions for Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html#functions-for-triangular-linear-interpolation">Functions for Triangular Linear Interpolation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="functions.html#utility-functions">Utility Functions</a></li>
 </ul>
 </li>

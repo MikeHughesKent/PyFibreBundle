@@ -7,7 +7,7 @@ Triangular linear interpolation can be used to remove the fibre bundle core patt
 Object Oriented Approach
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Import the PyBundle class and instantiate a PyBundle object::
+Import the ``PyBundle`` class and instantiate an object::
 
     from pybundle import PyBundle
     pyb = pybundle.PyBundle()
@@ -52,7 +52,7 @@ For greater customisation, the static functions can be called directly. First pe
     gridSize = 512    
     calib = pybundle.calib_tri_interp(calibImg, coreSize, gridSize, normalise = calibImg, automask = True)  
 
-Here we have specified ``coreSize = 3`` which is the approximate core spacing in the image. This assists the calibration routine in finding all cores. If unknown it can be estimate using ``find_core_spacing``.
+Here we have specified ``coreSize = 3`` which is the approximate core spacing in the image. This assists the calibration routine in finding all cores. If unknown it can be estimated using ``find_core_spacing``.
 
 The ``gridSize`` is the number of pixels in each dimensions of the reconstructed image, which is square.
 
@@ -75,4 +75,4 @@ An example using OOP is in "examples\\linear_interp_example.py".
 
 An example using OOP and showing the difference in speed if Numba is used is in "examples\\linear_interp_numba_example.py".
 
-Linear interpolation is compared with other core method removal techniques in "examples\\compare_recons.py"
+Linear interpolation is compared with other core method removal techniques in "examples\\compare_recons.py".

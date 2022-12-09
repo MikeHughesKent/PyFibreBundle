@@ -26,6 +26,9 @@ pyb = PyBundle()
 # Set to remove core pattern by trianglar linear interpolation
 pyb.set_core_method(pyb.TRILIN)
 
+# Providing an estimate of the core spacing in pixels help to identify core locations robustly
+pyb.set_core_size(3)
+
 # Disable Numba
 pyb.set_use_numba(False)
 

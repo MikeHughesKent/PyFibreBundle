@@ -17,7 +17,7 @@ Import the pybundle and pybundle super_res packages::
    
 First, perform the calibration. This requires a flat-field/background image ``calibImg`` (a 2D numpy array), a stack of shifted images ``imgs`` (a 3D numpy array - [x,y,n]), an estimate of the core spacing ``core size``, and the output image size ``gridSize`` ::
 
-    calib = pybundle.SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, normalise = calibImg)
+    calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, normalise = calibImg)
 
 We have also specified an optional parameter, a normalisation image ``calibImg``, which prevents the images becoming grainy due to core-core variations. Note that ``imgs`` does not need to be the actual images to be used for reconstruction, but they must have the same relative shift as the the images. Alternatively, if the shifts are known, these can be specified using the optional parameter ``shifts`` which should be a 2D numpy array of the form (x_shift, y_shift, image_number). If ``shifts`` is specified then ``imgs`` can be ``None``.
 

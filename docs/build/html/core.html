@@ -45,6 +45,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pybundle_class.html">PyBundle class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
 <li class="toctree-l1"><a class="reference internal" href="functions.html">Function Reference</a></li>
@@ -124,26 +125,6 @@
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_core_method</span><span class="p">(</span><span class="n">pyb</span><span class="o">.</span><span class="n">TRILIN</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and provide a calibration image which has all cores illuminated using:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_calib_image</span><span class="p">(</span><span class="n">calibImg</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The output image size is set by:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_grid_size</span><span class="p">(</span><span class="mi">512</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>It is usually preferable to provide a normalisation image with uniform illumination to minimise grainyness to due variations between cores, this can usually be the same image as used for calibration:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">set_normalise_image</span><span class="p">(</span><span class="n">calibImage</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>(Note UK spelling of normalise). Calibration then needs to be called one-time:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyb</span><span class="o">.</span><span class="n">calibrate</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>(If not called explicitly it will be called the first time you attempt to reconstruct an image). We are then ready to reconstruct:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">procImg</span> <span class="o">=</span> <span class="n">pyb</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-</pre></div>
-</div>
 <p>See the <a class="reference internal" href="linear_interp.html"><span class="doc">Linear Interpolation</span></a>  page for more details.</p>
 </section>
 <section id="getting-started-using-lower-level-functions">
@@ -219,7 +200,7 @@
 </section>
 <section id="example">
 <h2>Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
-<p>An example is provided in “examples\mosaicing_example.py”</p>
+<p>An example is provided in “examples\filtering_example.py”</p>
 </section>
 </section>
 

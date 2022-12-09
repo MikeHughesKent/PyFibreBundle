@@ -60,6 +60,10 @@ Stores the image to be used for calibration for TRILIN method. ``calibImg`` shou
 
 Sets which method will be used for core remove, ``coreMethod`` can be 'FILTER', 'TRILIN' or 'EDGE_FILTER'.
 
+.. py:function:: set_core_size(coreSize)
+
+Sets the estimated core spacing in the calibration image which helps with core finding as part of the TRILIN calibration process.
+
 .. py:function:: set_crop(crop)
 
 Determines whether images are cropped to size of bundle (FILTER, EDGE_FILTER methods). ``crop`` is boolean.
@@ -126,19 +130,18 @@ Locates and masks an image ``img``. For meaning of ``searchFilterSize`` see ``fi
 Locates, crops and masks an image ``img``. For meaning of ``searchFilterSize`` see ``find_bundle``. Returns numpy array.
 
 
+.. py:function:: find_core_spacing(img)
+
+Estimates the fibre core spacing in image ``img`` by looking for a peak in the power spectrum. Returns core spacing in pixels.
+
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Static Methods for Filtering
+Functions for Filtering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. py:function::  g_filter(img, filterSize)
 
 Applies a Gaussian filter to image ``img`` of sigma ``filterSize``. Returns numpy array.
-
-
-.. py:function:: find_core_spacing(img)
-
-Estimates the fibre core spacing in image ``img`` by looking for a peak in the power spectrum. Returns core spacing in pixels.
 
 
 .. py:function:: crop_filter_mask(img, loc, mask, filterSize, [,searchFilterSize])
@@ -161,7 +164,7 @@ Applies a Fourier domain filter ``filt`` (such as created by ``edge_filter``) to
 Applies a median filter to image ``img`` of size ``filterSize`` which must be odd. Returns numpy array.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Static Methods for Triangular Linear Interpolation
+Functions for Triangular Linear Interpolation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 """"""""""""""""""""
 High-level functions

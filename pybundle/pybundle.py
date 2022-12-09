@@ -4,7 +4,7 @@ PyFibreBundle is an open source Python package for image processing of
 fibre bundle images.
 
 This file contains the PyBundle class which provides object oriented
-usage of the key functionality of pybundle
+usage of the key functionality.
 
 @author: Mike Hughes
 Applied Optics Group, University of Kent
@@ -66,7 +66,12 @@ class PyBundle:
         """ Set the method to use to remove cores, FILTER, TRILIN or EDGE_FILTER"""
         self.coreMethod = coreMethod
         
-            
+        
+    def set_core_size(self, coreSize):
+        """ Set the estimated centre-centre core spacing used to help find cores as part of TRILIN method"""
+        self.coreSize = coreSize
+        
+    
     def set_mask(self, mask):
         """ Provide a mask to be used. Mask must be a 2D numpy array of same size as images to be processed"""
         self.mask = mask

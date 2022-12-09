@@ -39,13 +39,14 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="core.html">Basic Image Processing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="linear_interp.html">Linear Interpolation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pybundle_class.html">PyBundle class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mosaicing.html">Mosaicing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="super_res.html">Super Resolution</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Function Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#pybundle-class">PyBundle class</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#functions-for-bundle-finding-cropping-masking">Functions for Bundle finding, cropping, masking</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#static-methods-for-filtering">Static Methods for Filtering</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#static-methods-for-triangular-linear-interpolation">Static Methods for Triangular Linear Interpolation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#functions-for-filtering">Functions for Filtering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#functions-for-triangular-linear-interpolation">Functions for Triangular Linear Interpolation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#high-level-functions">High-level functions</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#low-level-functions">Low-level functions</a></li>
 </ul>
@@ -159,6 +160,12 @@
 
 <p>Sets which method will be used for core remove, <code class="docutils literal notranslate"><span class="pre">coreMethod</span></code> can be ‘FILTER’, ‘TRILIN’ or ‘EDGE_FILTER’.</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="set_core_size">
+<span class="sig-name descname"><span class="pre">set_core_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coreSize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_core_size" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>Sets the estimated core spacing in the calibration image which helps with core finding as part of the TRILIN calibration process.</p>
+<dl class="py function">
 <dt class="sig sig-object py" id="set_crop">
 <span class="sig-name descname"><span class="pre">set_crop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crop</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#set_crop" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
@@ -245,21 +252,21 @@
 <dd></dd></dl>
 
 <p>Locates, crops and masks an image <code class="docutils literal notranslate"><span class="pre">img</span></code>. For meaning of <code class="docutils literal notranslate"><span class="pre">searchFilterSize</span></code> see <code class="docutils literal notranslate"><span class="pre">find_bundle</span></code>. Returns numpy array.</p>
-</section>
-<section id="static-methods-for-filtering">
-<h2>Static Methods for Filtering<a class="headerlink" href="#static-methods-for-filtering" title="Permalink to this headline"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="g_filter">
-<span class="sig-name descname"><span class="pre">g_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterSize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#g_filter" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<p>Applies a Gaussian filter to image <code class="docutils literal notranslate"><span class="pre">img</span></code> of sigma <code class="docutils literal notranslate"><span class="pre">filterSize</span></code>. Returns numpy array.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="find_core_spacing">
 <span class="sig-name descname"><span class="pre">find_core_spacing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#find_core_spacing" title="Permalink to this definition"></a></dt>
 <dd></dd></dl>
 
 <p>Estimates the fibre core spacing in image <code class="docutils literal notranslate"><span class="pre">img</span></code> by looking for a peak in the power spectrum. Returns core spacing in pixels.</p>
+</section>
+<section id="functions-for-filtering">
+<h2>Functions for Filtering<a class="headerlink" href="#functions-for-filtering" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="g_filter">
+<span class="sig-name descname"><span class="pre">g_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filterSize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#g_filter" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<p>Applies a Gaussian filter to image <code class="docutils literal notranslate"><span class="pre">img</span></code> of sigma <code class="docutils literal notranslate"><span class="pre">filterSize</span></code>. Returns numpy array.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="crop_filter_mask">
 <span class="sig-name descname"><span class="pre">crop_filter_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">img</span></em>, <em class="sig-param"><span class="pre">loc</span></em>, <em class="sig-param"><span class="pre">mask</span></em>, <em class="sig-param"><span class="pre">filterSize</span></em><span class="optional">[</span>, <em class="sig-param"><span class="pre">searchFilterSize</span></em><span class="optional">]</span><span class="sig-paren">)</span><a class="headerlink" href="#crop_filter_mask" title="Permalink to this definition"></a></dt>
@@ -286,8 +293,8 @@ a tuple of <code class="docutils literal notranslate"><span class="pre">(centre_
 
 <p>Applies a median filter to image <code class="docutils literal notranslate"><span class="pre">img</span></code> of size <code class="docutils literal notranslate"><span class="pre">filterSize</span></code> which must be odd. Returns numpy array.</p>
 </section>
-<section id="static-methods-for-triangular-linear-interpolation">
-<h2>Static Methods for Triangular Linear Interpolation<a class="headerlink" href="#static-methods-for-triangular-linear-interpolation" title="Permalink to this headline"></a></h2>
+<section id="functions-for-triangular-linear-interpolation">
+<h2>Functions for Triangular Linear Interpolation<a class="headerlink" href="#functions-for-triangular-linear-interpolation" title="Permalink to this headline"></a></h2>
 <section id="high-level-functions">
 <h3>High-level functions<a class="headerlink" href="#high-level-functions" title="Permalink to this headline"></a></h3>
 <dl class="py function">

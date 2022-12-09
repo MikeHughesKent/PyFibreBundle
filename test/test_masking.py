@@ -8,16 +8,12 @@ University of Kent
 """
 
 from matplotlib import pyplot as plt
-
 from PIL import Image
 import numpy as np
-import time
-import sys
-import cv2 as cv
 
 import context
 
-from pybundle import pybundle
+import pybundle
 
 filterSize = 2.5
 

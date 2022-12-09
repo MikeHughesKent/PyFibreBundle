@@ -55,26 +55,6 @@ To use triangular linear interpolation rather than Gaussian filtering, set::
 
     pyb.set_core_method(pyb.TRILIN)
     
-and provide a calibration image which has all cores illuminated using::
-    
-    pyb.set_calib_image(calibImg)
-
-The output image size is set by::
-
-    pyb.set_grid_size(512)
-    
-It is usually preferable to provide a normalisation image with uniform illumination to minimise grainyness to due variations between cores, this can usually be the same image as used for calibration::
-
-    pyb.set_normalise_image(calibImage)
-   
-(Note UK spelling of normalise). Calibration then needs to be called one-time::
-
-    pyb.calibrate()
-    
-(If not called explicitly it will be called the first time you attempt to reconstruct an image). We are then ready to reconstruct::
-
-    procImg = pyb.process(img)      
-    
 See the :doc:`Linear Interpolation<linear_interp>`  page for more details.   
     
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -164,4 +144,4 @@ For all optional parameters refer to the :doc:`function reference<functions>` fo
 Example
 ^^^^^^^
 
-An example is provided in "examples\\mosaicing_example.py"
+An example is provided in "examples\\filtering_example.py"
