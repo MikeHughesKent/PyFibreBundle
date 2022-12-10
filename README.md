@@ -9,24 +9,41 @@ The package is designed to be fast enough for use in imaging GUIs as well as for
 
 The package is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
 
+## Capabilities
 
-## Core Functions  
-* Locate bundle in image
-* Crop image to only show bundle
-* Mask areas outside of bundle
-* Gaussian spatial filtering to remove core pattern
-* Determine core spacing
-* Define and apply custom edge filter to remove core pattern
-* Find centers of all cores in bundle (two implementations: regional maxima and Hough transform)
+### Core Functions  
+* Locate bundle in image.
+* Crop image to only show bundle.
+* Mask areas outside of bundle.
+* Gaussian spatial filtering to remove core pattern.
+* Determine core spacing.
+* Define and apply custom edge filter to remove core pattern.
+* Find centers of all cores in bundle (two implementations: regional maxima and Hough transform).
 * Core removal using triangular linear interpolation following Delaunay triangulation. 
 
-## Mosaicing
+### Mosaicing
 * Detect image to image shift using normalised cross correlation.
 * Insert image into mosaic either using dead-leaf or alpha blending.
 * Expand or scroll mosaic when the edge of the mosaic image is reached.
 
-## Super Resolution
+### Super Resolution
 * Combine multiple fibre bundle images to improve resolution.
 
+Read the [full documentation](http://PyFibreBundle.readthedocs.io) for more details.
 
-__Acknowledgements__: Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy).
+## Requirements
+
+Required Packages:
+
+* Numpy
+* OpenCV
+* Pillow
+* Scipy
+
+Optional Packages:
+
+* Numba (for faster linear interpolation)
+* Matplotlib (to run examples and tests)
+
+## Acknowlegements
+Cheng Yong Xin, Joseph, contributed to triangular linear interpolation; Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy) and University of Kent.
