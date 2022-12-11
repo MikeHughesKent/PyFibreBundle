@@ -1,3 +1,18 @@
+Metadata-Version: 2.1
+Name: PyFibreBundle
+Version: 1.0.0
+Summary: Image processing of images acquired through fibre imaging bundle, including core removal, mosaicing and super-resolution..
+Author-email: Michael Hughes <m.r.hughes@kent.ac.uk>
+Project-URL: Homepage, https://github.com/MikeHughesKent/PyFibreBundle/
+Keywords: fibre,fiber,bundle,endomicroscopy,endoscopic microscopy,imaging
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+License-File: LICENSE.py
+
 # PyFibreBundle
 PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. It is developed mainly by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), School of Physics and Astronomy, University of Kent. Bug reports, contributions and pull requests are welcome.
 
