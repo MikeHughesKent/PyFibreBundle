@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Example of using super-resolution package of PyFibreBundle to enhance resolution
-by combining shifted images.
-
-         IT IS RECOMMENDED THAT YOU USE THE PYBUNDLE CLASS INSTEAD 
-         - see super_res_example_oop.py
+Example of use super-resolution functionality of PyFibreBundle using PyBundle Class.
 
 @author: Mike Hughes
 Applied Optics Group
@@ -12,32 +8,30 @@ University of Kent
 """
 
 import os
+import sys
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
 import context    # For paths to library
 
 import pybundle
-from pybundle import SuperRes
+from pybundle import PyBundle
 
 dataFolder = r"..\test\data\super_res\data"
 backFile =  r"..\test\data\super_res\background.tif"
 
-nImages = 4        # We will use just four of the images from the folder 
+nImages = 8        # Means all files in folder will be used
 coreSize = 3       # Estimate, used by core finding
 gridSize = 800     # Reconstruction grid size
 shift = None       # If shifts are known, can specify them here
 filterSize = None  # Filter applied prior to extracting core values
-
 
 # Find images in folder
 files = [f.path for f in os.scandir(dataFolder)]
 
 if nImages is None:
     nImages = len(files)
-
 
 # Load images
 img = np.array(Image.open(files[0]))
@@ -50,26 +44,31 @@ for idx, fName in enumerate(files[:nImages]):
 
 calibImg = np.array(Image.open(backFile))
 
- 
+pyb = PyBundle()
+
+pyb.set_core_method(pyb.TRILIN)
+pyb.set_grid_size(gridSize)
+pyb.set_auto_contrast(True)
+pyb.set_calib_image(calibImg)
+pyb.set_background(calibImg)
+pyb.set_normalise_image(calibImg)
+
+
 """ Single image recon for comparison """
-calibSingle = pybundle.calib_tri_interp(calibImg, coreSize, gridSize, filterSize = filterSize, normalise = calibImg, mask = True, autoMask = True)
-reconSingle = pybundle.recon_tri_interp(imgs[:,:,0], calibSingle)
+pyb.calibrate()
+reconSingle = pyb.process(imgs[:,:,0])
+
+""" Super Resolution Recon """
+pyb.set_super_res(True)
+pyb.set_sr_calib_images(imgs)
+pyb.calibrate_sr()
+reconSR = pyb.process(imgs)
 
 plt.figure(dpi = 150)
 plt.imshow(reconSingle, cmap='gray')
 plt.title('Single Image')
- 
-
-""" Super Resolution Recon with Intensity Normalisation"""
-t1 = time.perf_counter()
-calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, filterSize = filterSize, normalise = calibImg, mask = True, autoMask = True)
-print("Calibration time:", round(time.perf_counter() - t1, 3))
-
-t1 = time.perf_counter()
-reconImg = SuperRes.recon_multi_tri_interp(imgs, calib)
-print("Reconstruction time:", round(time.perf_counter() - t1, 3))
 
 plt.figure(dpi = 150)
-plt.imshow(reconImg, cmap='gray')
+plt.imshow(reconSR, cmap='gray')
 plt.title('SR Image')
 

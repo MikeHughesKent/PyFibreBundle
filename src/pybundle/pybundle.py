@@ -40,10 +40,22 @@ class PyBundle:
     calibration = None
     useNumba = True  
     
+    # Super Resolution
+    superRes = False
+    srShifts = None
+    srCalibImages = None
+    calibrationSR = None
+    srBackgrounds = None
+    srNormalisationImgs = None
+    srNormToBackgrounds = False
+    srNormToImages = True
+    srMultiBackgrounds = False
+    srMultiNormalisation = False
+    
     # Constants for core processing method
     FILTER = 1
     TRILIN = 2
-    EDGE_FILTER = 3    
+    EDGE_FILTER = 3   
     
     
     def __init__(self):
@@ -100,7 +112,6 @@ class PyBundle:
                radius = kwargs.get('radius', self.loc[2])
                self.mask = pybundle.get_mask(img, (self.loc[0], self.loc[1], radius))
                self.doAutoMask = False
-               #print(np.shape(self.mask))
             else:
                self.mask = None
                self.doAutoMask = True   # Flag means we come back once we have an image
@@ -178,6 +189,7 @@ class PyBundle:
         self.calibImage = calibImg.astype('float')
         
         
+        
     def set_grid_size(self, gridSize):
         """ Set output image size if TRLIN method used. If not called prior to calling 'calibrate', the default value of 512 will be used.
         :param gridSize: size of square image output size
@@ -195,14 +207,73 @@ class PyBundle:
         
     def set_use_numba(self, useNumba):
         """ Sets whether Numba should be used for JIT compiler acceleration for functionality which support this. Boolean"""
-        self.useNumba = useNumba    
-     
+        self.useNumba = useNumba  
+
+    def set_sr_calib_images(self, calibImages):
+        """ Provides the calibration images, a stack of shifted images used to determine shifts between images for super-resolution
+        """
+        self.srCalibImages = calibImages
+        
+        
+    def set_sr_norm_to_images(self, normToImages):
+        """ Sets whether super-resolution recon should normalise each input image to have the same mean intensity. Boolean"""
+
+        self.srNormToImages = normToImages         
+        
+        
+    def set_sr_norm_to_backgrounds(self, normToBackgrounds):
+        """ Sets whether super-resolution recon should normalise each input image w.r.t. a stack of backgrounds in srBackgrounds to have the same mean intensity. Boolean"""
+        self.srNormToBackgrouds = normToBackgrounds  
+        
+    
+    def set_sr_multi_backgrounds(self, mb):
+        """ Sets whether super-resolution should normalise each core in each image"""
+        self.srMultiBackgrounds = mb
+        
+        
+    def set_sr_multi_normalisation(self, mn):
+        self.srMultiNormalisation = mn
+
+        
+    def set_sr_backgrounds(self, backgrounds):
+        """ Provide a set of background images for background correction of each SR shifted image.
+        """
+        self.srBackgrounds = backgrounds  
+        if self.calibrationSR is not None:
+            self.calibrationSR = pybundle.tri_interp_background(self.calibrationSR, self.background)
+    
+    def set_sr_normalisation_images(self, normalisationImages):
+        """ Provide a set of normalisation images for normalising intensity of each SR shifted image.
+        """
+        self.srNormalisationImgs = normalisationImages
+
+    def set_sr_shifts(self, shifts):
+        """ Provide shifts between SR images"""
+        self.srShifts = shifts
+        
         
     def calibrate(self):
         """ Creates calibration for TRILIN method. A calibration image, coreSize and griSize must have been set prior to calling this."""
         if self.calibImage is not None:
             self.calibration = pybundle.calib_tri_interp(self.calibImage, self.coreSize, self.gridSize, background = self.background, normalise = self.normaliseImage)
     
+    
+    def calibrate_sr(self):
+        """ Creates calibration for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
+        if self.srCalibImages is not None or self.srShifts is not None:
+            self.calibrationSR = pybundle.SuperRes.calib_multi_tri_interp(
+                self.calibImage, self.srCalibImages,                                                                           
+                self.coreSize, self.gridSize, 
+                background = self.background, 
+                normalise = self.normaliseImage,
+                backgroundImgs = self.srBackgrounds,
+                normalisationImgs = self.srNormalisationImgs,
+                normToBackground = self.srNormToBackgrounds,
+                normToImage = self.srNormToImages,
+                shifts = self.srShifts,
+                multiBackgrounds = self.srMultiBackgrounds,
+                multiNormalisation = self.srMultiNormalisation)
+
     
     def process(self, img):
         """ Process fibre bundle image using current settings .
@@ -222,21 +293,33 @@ class PyBundle:
                 imgOut = imgOut - self.background
             if self.filterSize is not None:
                 imgOut = pybundle.g_filter(imgOut, self.filterSize)
+                
 
         if method == self.EDGE_FILTER:
             if self.background is not None:
                 imgOut = imgOut - self.background
             if self.edgeFilter is not None and self.loc is not None:
                 imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
-                imgOut = pybundle.filter_image(imgOut, self.edgeFilter)        
+                imgOut = pybundle.filter_image(imgOut, self.edgeFilter)       
                 
-        if method == self.TRILIN:
+        if method == self.TRILIN and not self.superRes:
             if self.calibration is None and self.calibImage is not None:
                 self.calibrate()
-            if self.calibration is not None:
-                imgOut = pybundle.recon_tri_interp(imgOut, self.calibration, numba = self.useNumba)
-            else:
-                return None
+            if self.calibration is None: return None
+            if imgOut.ndim != 2: return None
+            
+            imgOut = pybundle.recon_tri_interp(imgOut, self.calibration, numba = self.useNumba)
+           
+        if method == self.TRILIN and self.superRes:
+            if self.calibrationSR is None and ( (self.srCalibImages is not None) or (self.srShifts is not None)):
+                self.calibrate_sr()
+ 
+            if self.calibrationSR is None: return None
+            if imgOut.ndim != 3: return None
+            if np.shape(imgOut)[2] != self.calibrationSR.nShifts: return None
+            
+            imgOut = pybundle.SuperRes.recon_multi_tri_interp(imgOut, self.calibrationSR, numba = self.useNumba)
+       
         
         if self.autoContrast:
             t1 = time.perf_counter()
@@ -257,8 +340,11 @@ class PyBundle:
         #if self.coreMethod == self.EDGE_FILTER and self.mask is not None:
         #    imgOut = pybundle.apply_mask(imgOut, self.mask)
             
-        if method == self.TRILIN and self.calibration.mask is not None:
+        if method == self.TRILIN and not self.superRes and self.calibration.mask is not None:
             imgOut = pybundle.apply_mask(imgOut, self.calibration.mask)
+            
+        if method == self.TRILIN and self.superRes and self.calibrationSR.mask is not None:
+            imgOut = pybundle.apply_mask(imgOut, self.calibrationSR.mask)
             
         if method == self.FILTER and self.crop and self.loc is not None:
             imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
@@ -272,12 +358,26 @@ class PyBundle:
         """ Returns the scaling factor between the pixel size in the raw image
         and the pixel size in the processed image. If the TRILIN method is
         selected, but a calibration has not yet been performed, returns None.
-        """
+        """        
         if self.coreMethod == self.TRILIN:
-            if self.calibration is not None:
-                scale = (2 * self.calibration.radius) / self.calibration.gridSize
-                return scale
+            
+            if not self.superRes:
+                if self.calibration is not None:
+                    scale = (2 * self.calibration.radius) / self.calibration.gridSize
+                    return scale
+                else:
+                    return None
             else:
-                return None
-        else:
-            return 1    
+           
+                if self.calibrationSR is not None:
+                    scale = (2 * self.calibrationSR.radius) / self.calibrationSR.gridSize
+                    return scale
+                else:
+                    return None
+        else:    
+            return 1  
+        
+        
+    def set_super_res(self, sr):
+        """ Enables or disables super resoution, sr is boolean"""
+        self.superRes = sr

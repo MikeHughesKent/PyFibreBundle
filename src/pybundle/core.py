@@ -141,6 +141,7 @@ def find_bundle(img, **kwargs):
     # Threshold to binarise and then look for connected regions
     thres, imgBinary = cv.threshold(imgFilt,0,1,cv.THRESH_BINARY+cv.THRESH_OTSU)
     #plt.imshow(imgBinary)
+
     num_labels, labels, stats, centroid  = cv.connectedComponentsWithStats(imgBinary, 8, cv.CV_32S)
     
     # Region 0 is background, so find largest of other regions

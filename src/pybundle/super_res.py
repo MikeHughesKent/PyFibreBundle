@@ -7,6 +7,9 @@ This file contains the SuperRes class which has functions for improving
 resolution of fibre bundle images by combining multiple images of the 
 object shifted with respect to the bundle core pattern.
 
+The preferred way to use the functionality is via the PyBundle class rather 
+than calling these functions directly.
+
 @author: Mike Hughes
 Applied Optics Group
 University of Kent
@@ -46,7 +49,7 @@ class SuperRes:
         :param coreSize: estimate of average spacing between cores
         :param gridSize: output size of image, supply a single value, image will be square
         :param normalise: optional, image used for normalisation, as 2D numpy array. Can be same as calibration image, defaults to no normalisation
-        :param background: image used for background subtraction as 2D numpy array, defaults to no background
+        :param background: image used for calibration and , optionally, for background subtraction, as 2D numpy array, defaults to no background
         :param shifts: optional, known x and y shifts between images as 2D numpy array of size (numImages,2). 
                        Will override 'imgs' if specified as anything other than None.
         :param centreX: optional, x centre location of bundle, if not specified will be determined automatically
@@ -57,7 +60,8 @@ class SuperRes:
         :param normToBackground: optional, if true, each image will be normalised with respect to the corresponding 
                        background image from a stack of background images (one for each shift position) provided in backgroundImgs. 
                        Defaults to False.
-        :param backgroundImgs: optional, stack of images, same size as imgs which are used to normalise. Defaults to None.
+        :param backgroundImgs: optional, stack of images, same size as imgs which are used to normalise or for image by image background subtraction. Defaults to None.
+        :param multiBackgrounds: boolean, if True and backgroundImgs is defined, each image will have its own background image subtracted rather than using backgroundImg
         :param imageScaleFactor: If normToBackground and normToImage are False (default), use this to specify the normalisation factors for each image. Provide a 1D array the same size as the number of shifted images. Each image will be multiplied by the corresponding factor prior to reconstruction. Default is None (i.e. no scaling).
         :param autoMask: optional, mask pixels outside bundle when searching for cores. Defualts to True.
         :param mask: optional, boolean, when reconstructing output image will be masked outside of bundle. Defaults to True
@@ -69,13 +73,16 @@ class SuperRes:
         centreY = kwargs.get('centreY', None)
         radius = kwargs.get('radius', None)
         filterSize = kwargs.get('filterSize', 0)
-        normToImage = kwargs.get('normToImage', None)
-        normToBackground = kwargs.get('normToBackground', None)
+        normToImage = kwargs.get('normToImage', False)
+        normToBackground = kwargs.get('normToBackground', False)
         backgroundImgs = kwargs.get('backgroundImgs', None)
+        normalisationImgs = kwargs.get('normalisationImgs', None)
+        multiBackgrounds = kwargs.get('multiBackgrounds', False)
+        multiNormalisation = kwargs.get('multiNormalisation', False)
+        
         postFilterSize = kwargs.get('postFilterSize', None)
         imageScaleFactor = kwargs.get('imageScaleFactor', None)
         mask = kwargs.get('mask', True)
-
         singleCalib = pybundle.calib_tri_interp(
             calibImg, coreSize, gridSize, **kwargs)
 
@@ -94,7 +101,7 @@ class SuperRes:
         else:
             nImages = np.shape(imgs)[2]
 
-        if normToImage is not None and imgs is not None:
+        if normToImage and imgs is not None:
 
             imageScaleFactor = np.array(())
 
@@ -107,7 +114,7 @@ class SuperRes:
                 imageScaleFactor = np.append(
                     imageScaleFactor, refMean / meanVal)
 
-        if normToBackground is not None:
+        if normToBackground:
             imageScaleFactor = np.array(())
 
             refMean = np.mean(pybundle.core_values(
@@ -133,6 +140,7 @@ class SuperRes:
             # Since we have done the shift estimation on a different sized grid
             # to the original image, need to scale the values
             shifts = shifts * radius * 2 / gridSize
+       
 
         coreXList = singleCalib.coreX
         coreYList = singleCalib.coreY
@@ -143,17 +151,44 @@ class SuperRes:
                 coreXList, singleCalib.coreX + shifts[idx + 1][0])
             coreYList = np.append(
                 coreYList, singleCalib.coreY + shifts[idx + 1][1])
+        #breakpoint()    
 
         calib = pybundle.init_tri_interp(calibImg, coreXList, coreYList, centreX, centreY,
                                          radius, gridSize, filterSize=filterSize, background=None, normalise=None)
 
+        # We store the number of cores in a single image
+        calib.nCores = np.shape(singleCalib.coreX)[0]
+        
+        # If we are doing multi-background we need to pull out the core values from each of the
+        # background images to use later for image-by-image background subtraction
+        if multiBackgrounds:
+            
+            multiBackgroundVals = np.zeros((calib.nCores, nImages))
+            for idx in range(nImages):
+                multiBackgroundVals[:, idx] = pybundle.core_values(backgroundImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double')
+        
+            calib.multiBackgroundVals = multiBackgroundVals
+        
+        if multiNormalisation:
+            
+            multiNormalisationVals = np.zeros((calib.nCores, nImages))
 
+            for idx in range(nImages):
+                multiNormalisationVals[:, idx] = pybundle.core_values(normalisationImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double')
+        
+            calib.multiNormalisationVals = multiNormalisationVals
+
+       
         # Have to set 'background' and 'normalise' to None in previous line as the cores are the shifted
         # positions in the full set from all the images and not the actual core position in each images.
         # We later copy across the background/normalise values from the single image calibration.
 
-        calib.coreXInitial = singleCalib.coreX
-        calib.coreYInitial = singleCalib.coreY
+        calib.coreXShifted = calib.coreX
+        calib.coreYShifted = calib.coreY
+        
+
+        calib.coreX = singleCalib.coreX
+        calib.coreY = singleCalib.coreY
 
         calib.background = singleCalib.background
         calib.normalise = singleCalib.normalise
@@ -163,9 +198,13 @@ class SuperRes:
 
         calib.shifts = shifts
         calib.imageScaleFactor = imageScaleFactor
+        
+        calib.nShifts = nImages
 
         calib.postFilterSize = postFilterSize
-
+        
+        calib.multiBackgrounds = multiBackgrounds
+        calib.multiNormalisation = multiNormalisation
         if mask:
             calib.mask = pybundle.get_mask(
                 np.zeros((gridSize, gridSize)), (gridSize/2, gridSize/2, gridSize/2))
@@ -183,7 +222,6 @@ class SuperRes:
             created by calib_multi_tri_interp and not calib_tri_interp).
         :return: reconstructed image as 2D numpy array
         """
-        
         numba = kwargs.get('numba', True)
 
         nImages = np.shape(imgs)[2]
@@ -194,25 +232,33 @@ class SuperRes:
 
             # Extract intensity from each core
             cValsThis = (pybundle.core_values(
-                imgs[:, :, i], calib.coreXInitial, calib.coreYInitial, calib.filterSize).astype('double'))
+                imgs[:, :, i], calib.coreX, calib.coreY, calib.filterSize).astype('double'))
 
-            if calib.imageScaleFactor is not None:
+            if calib.multiBackgrounds:
+                #print("subtracting multi background")
+                cValsThis = cValsThis - calib.multiBackgroundVals[:,i]
+                 
+            if calib.multiNormalisation:
+                #print("multi normalisation")
+                cValsThis = cValsThis / calib.multiNormalisationVals[:,i]
+                 
+
+            if calib.imageScaleFactor is not None and calib.multiNormalisation is False:
+                #print("Basic image scaling")
                 cValsThis = cValsThis * calib.imageScaleFactor[i]
-
-            if calib.background is not None:
-
+                
+                
+            if calib.background is not None and calib.multiBackgrounds is False:
+                #print("subtracting single background")
                 cValsThis = cValsThis - calib.backgroundVals
-
-            if calib.normalise is not None:
+                
+         
+            if calib.normalise is not None and calib.multiNormalisation is False:
+                #print("normalising")
                 cValsThis = cValsThis / calib.normaliseVals
 
             cVals = np.append(cVals, cValsThis)
-
-        # Triangular linear interpolation
-        #pixelVal = np.zeros_like(calib.mapping, dtype='double')
-        #val = calib.baryCoords * cVals[calib.coreIdx]
-        #pixelVal = np.sum(val, 1)
-        #pixelVal[calib.mapping < 0] = 0
+               
 
         # Triangular linear interpolation
         if numba and numbaAvailable:
@@ -306,3 +352,58 @@ class SuperRes:
             shift = [(max_loc[0] - (refSize - templateSize) * upsample)/upsample,
                      (max_loc[1] - (refSize - templateSize) * upsample)/upsample]
             return shift
+
+
+    def sort_sr_stack(stack, stackLength):
+        """ Takes a stack of images and extracts an ordered set
+        of images relative to a reference 'blank' frame which is much lower intensity than
+        the other frames. 
+
+        The blank frame can be anywhere in the stack, and the output stack will be formed cyclically
+        from frames before and after the blank frame. For example, if we have frames:
+           1  2  3  B  4  5
+        where B is the blank frame, the function will return a stack in the following order:
+           4  5  1  2  3
+                   
+        The input stack, 'stack' should should have (stackLength + 1)  frames to ensure that a 
+        and there must be stackLength + 1 images in each cycle
+        (i.e. stackLength useful images plus one blank reference image).
+        The blank reference image is not returned, i.e the returned stack has stackLength frames.
+        
+        Input stack should have frame number in third dimension.
+        """
+        
+        meanVal = np.mean(np.mean(stack,1),0)        
+        blankFrame = np.argmin(meanVal)
+        
+        outOrder = np.arange(blankFrame + 1, blankFrame + 1 + stackLength)
+        
+        # Now we allow for images before the blank frame
+        outOrderWrapped = np.remainder(outOrder, stackLength + 1)
+        
+        outStack = np.zeros((np.shape(stack)[0], np.shape(stack)[1], stackLength))                         
+        
+        for idx in range(stackLength):
+            
+            outStack[:,:,idx] = stack[:,:,outOrderWrapped[idx]] 
+    
+        return outStack
+    
+        
+    def multi_tri_backgrounds(calibIn, backgrounds) :
+         """ Updates a multi_tri calibration with a new set of backgrounds without requiring
+         full recalibration
+         :param calibIn: bundle calibration, instance of BundleCalibration
+         :param background: background image as 2D numpy array
+         """
+         calibOut = calibIn
+    
+         if background is not None:
+             calibOut.backgroundVals = pybundle.core_values(background, calibOut.coreX, calibOut.coreY,calibOut.filterSize).astype('double')
+             calibOut.background = background
+    
+         else:
+             calibOut.backgroundVals = 0
+             calibOut.background = None
+             
+         return calibOut        

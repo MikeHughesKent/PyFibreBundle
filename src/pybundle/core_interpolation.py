@@ -102,6 +102,7 @@ def core_values(img, coreX, coreY, filterSize, **kwargs):
     :param numba: optional, if true numba JIT used for faster executio, defaults to False.
     """
     numba = kwargs.get('numba', False)
+    
      
     if filterSize is not None:
         img = pybundle.g_filter(img, filterSize)
@@ -140,7 +141,6 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
                  bundle, defaults to True
     :return: instance of BundleCalibration
     """
-
     centreX = kwargs.get('centreX', -1)
     centreY = kwargs.get('centreY', -1)
     radius = kwargs.get('radius', -1)
@@ -152,10 +152,9 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
 
     if autoMask:
         img = pybundle.auto_mask(img)
-
     # Find the cores in the calibration image
     coreX, coreY = pybundle.find_cores(img, coreSize)
-     
+
     coreX = np.round(coreX).astype('uint16')
     coreY = np.round(coreY).astype('uint16')
 
@@ -171,6 +170,9 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     # Delaunay triangulation and find barycentric co-ordinates for each pixel
     calib = pybundle.init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, filterSize= filterSize, background = background, normalise = normalise, mask = mask)
 
+
+    calib.nCores = np.shape(coreX)
+    
     return calib
 
  
@@ -204,7 +206,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     # Delaunay triangulation over core centre locations
     points = np.vstack((coreX, coreY)).T
     tri = Delaunay(points)
-    
+
     # Make a vector of all the pixels in the reconstruction grid
     xPoints = np.linspace(centreX - radius, centreX + radius, gridSize)
     yPoints = np.linspace(centreY - radius, centreY + radius, gridSize)
@@ -218,15 +220,15 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     # Write each pixel position in terms of barycentric co-ordinates w.r.t
     # enclosing triangle.
     baryCoords = barycentric(nPixels, tri, mapping, interpPoints)
-   
+  
     # Store background values
     if normalise is not None:
-        normaliseVals = pybundle.core_values(normalise, coreX, coreY,filterSize).astype('double')
+        normaliseVals = pybundle.core_values(normalise, coreX, coreY, filterSize).astype('double')
     else:
         normaliseVals = 0
 
     if background is not None:
-        backgroundVals = pybundle.core_values(background, coreX, coreY,filterSize).astype('double')
+        backgroundVals = pybundle.core_values(background, coreX, coreY, filterSize).astype('double')
     else:
         backgroundVals = 0
 
@@ -295,7 +297,7 @@ def tri_interp_normalise(calibIn, normalise):
     return calibOut
 
 
-def tri_interp_background(calibIn, background) :
+def tri_interp_background(calibIn, background):
      """ Updates a calibration with a new background without requiring
      full recalibration
      :param calibIn: bundle calibration, instance of BundleCalibration
@@ -331,7 +333,7 @@ def recon_tri_interp(img, calib, **kwargs):
 
      if calib.background is not None:
          cVals = cVals - calib.backgroundVals
-
+    
       
      if calib.normalise is not None:
          cVals = (cVals / calib.normaliseVals * 255) 

@@ -1,7 +1,7 @@
 ----------------------
 PyBundle class
 ----------------------
-The PyBundle class is the recommended way to use most functionality of the package (other than Super Resolution and Mosacing which have their own classes.)
+The PyBundle class is the recommended way to use most functionality of the package (other than Mosacing which has its own classes.)
 
 Import the class using::
 
@@ -38,7 +38,8 @@ A full list of all functions of the PyBundle class is in :doc:`Function Referenc
 ^^^^^^^^^^^^^^^^
 Default Settings
 ^^^^^^^^^^^^^^^^
-The default settings, and the associated setter methods are listed below. Setters should be used rather than changing the settings directly to avoid unexpected results and forwards compatibility. The meaning of each setting is explained in the :doc:`Function Reference<functions>`.
+The default settings, and the associated setter methods are listed below. Setters should be used rather than changing the settings directly to avoid unexpected results and to maintain forwards compatibility. 
+The meaning of each setting is explained in the :doc:`Function Reference<functions>`.
 
 General Settings:
 
@@ -69,3 +70,12 @@ TRILIN Settings:
 * gridSize  = 512 (``set_grid_size``)
 * useNumba = True  (``set_use_numba``)
     
+SUPER RESOLUTION Settings: 
+   
+* superRes = False (``set_super_res``)
+* srShifts = None (``set_sr_shifts``)
+* srCalibImages = None (``set_sr_calib_images``)
+* srNormToBackgrounds = False (``set_sr_norm_to_backgrounds``)
+* srNormToImages = True (``set_sr_norm_to_images``)
+* srMultiBackgrounds = False (``set_sr_multi_backgrounds``)
+* srMultiNormalisation = False (``set_sr_multi_normalisation``)

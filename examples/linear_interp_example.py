@@ -16,6 +16,7 @@ import context
 from pybundle import PyBundle
 
 img = np.array(Image.open("../test/data/usaf1.tif"))
+
 calibImg = np.array(Image.open("../test/data/usaf1_background.tif"))
 
 # Create an instance of the PyBundle class 

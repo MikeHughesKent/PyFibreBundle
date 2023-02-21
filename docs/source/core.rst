@@ -1,7 +1,9 @@
 ----------------------
 Basic Image Processing
 ----------------------
-PyFibreBundle includes several functions for basic processing of bundle images, including locating, cropping and masking the bundle and removing the core pattern using spatial filtering. The easiest way to use this functionality is via the PyBundle class, but it is also possible to use the lower-level functions directly.
+PyFibreBundle includes several functions for basic processing of bundle images, including locating, cropping and masking the bundle and 
+removing the core pattern using spatial filtering. The easiest way to use this functionality is via the :doc:`PyBundle<pybundle_class>` class, 
+but it is also possible to use the lower-level functions directly.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 Getting Started using OOP
@@ -11,11 +13,11 @@ Begin by importing the libary::
 
     from pybundle import PyBundle
     
-Instantiate an object::
+Instantiate a PyBundle object::
 
     pyb = PyBundle()
     
-To process an image ``img`` we then use::
+To process an image ``img``, a 2D numpy array, we then use::
 
     procImage = pyb.process(img)
 
@@ -55,7 +57,7 @@ To use triangular linear interpolation rather than Gaussian filtering, set::
 
     pyb.set_core_method(pyb.TRILIN)
     
-See the :doc:`Linear Interpolation<linear_interp>`  page for more details.   
+This requires a calibration - see the :doc:`Linear Interpolation<linear_interp>`  page for more details.   
     
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Getting Started Using Lower-Level Functions

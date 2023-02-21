@@ -1,7 +1,7 @@
 ------------------
 Function Reference
 ------------------
-A list of core functions is available below. Methods for the `Mosaic <mosaicing.html>`_ and `SuperRes <super_res.html>`_ classes are not listed here, please see the documentation pages for those classes separately.
+A list of core functions is available below. Methods for the `Mosaic <mosaicing.html>`_ class are not listed here, please see the documentation pages for those classes separately.
 
 The pybundle class implements most of the functionality of the package and is the preferred approach for most applications.
 
@@ -50,7 +50,7 @@ Stores an image to be used for background subtraction. ``background`` should be 
 
 .. py:function:: set_bundle_loc(loc)
 
-Sets the stored location of the fibre bundle. ``loc`` is a tuples of (centreX, centreY, radius).
+Sets the stored location of the fibre bundle. ``loc`` is a tuple of (centreX, centreY, radius).
 
 .. py:function:: set_calib_image(calibImg)
 
@@ -58,7 +58,7 @@ Stores the image to be used for calibration for TRILIN method. ``calibImg`` shou
 
 .. py:function:: set_core_method(coreMethod)
 
-Sets which method will be used for core remove, ``coreMethod`` can be 'FILTER', 'TRILIN' or 'EDGE_FILTER'.
+Sets which method will be used for core pattern removal, ``coreMethod`` can be ``FILTER``, ``TRILIN`` or ``EDGE_FILTER``.
 
 .. py:function:: set_core_size(coreSize)
 
@@ -66,7 +66,7 @@ Sets the estimated core spacing in the calibration image which helps with core f
 
 .. py:function:: set_crop(crop)
 
-Determines whether images are cropped to size of bundle (FILTER, EDGE_FILTER methods). ``crop`` is boolean.
+Determines whether images are cropped to size of bundle when using ``FILTER`` or ``EDGE_FILTER`` methods. ``crop`` is boolean.
 
 .. py:function:: set_edge_filter(edgePos, edgeSlope)
 
@@ -90,7 +90,39 @@ Stores an image to be used for normalisation if TRILIN method is being used. ``n
 
 .. py:function:: set_output_type(outputType)
 
-Set the data type of input images from 'process'. ``outputType`` should be one of 'uint8', 'unit16' or 'float'.
+Set the data type of input images from 'process'. ``outputType`` should be one of ``'uint8'``, ``'unit16'`` or ``'float'``.
+
+.. py:function:: set_sr_calib_images(calibImages)
+
+Provides the calibration images, a stack of shifted images used to determine shifts between images for super-resolution. ``calibImages`` is a 2D numpy array (x,y,nImages).
+ 
+.. py:function:: set_sr_norm_to_images(normToImages)
+
+Sets whether super-resolution recon should normalise each input image to have the same mean intensity. ``normToImages`` is Boolean.
+
+.. py:function::  set_sr_norm_to_backgrounds(normToBackgrounds)
+
+Sets whether super-resolution recon should normalise each input image with respect to a stack of backgrounds (provided using ``set_sr_backgrounds``) so as to have the same mean intensity. ``normToBackgrounds`` is Boolean.
+
+.. py:function::  set_sr_multi_backgrounds(mb)
+
+Sets whether super-resolution should perform background subtraction for each core in each image using a stack of background images ((provided using ``set_sr_backgrounds``). ``mb`` is Boolean.
+    
+.. py:function:: set_sr_multi_normalisation(mn)
+
+Sets whether super-resolution should normalise each core in each image using a stack of normalisation images (provided using ``set_sr_normalisation_images``). ``mn`` is Boolean.
+    
+.. py:function:: set_sr_backgrounds(backgrounds)
+
+Provide a set of background images for normalising intensity of each SR shifted image.
+
+.. py:function:: set_sr_normalisation_images(normalisationImages)
+
+Provide a set of normalisation images for normalising intensity of each SR shifted image.
+
+.. py:function:: set_sr_shifts(shifts)
+
+Provide known shifts between SR images instad of calculating them from a calibration stack. ``shifts`` is a 2D numpy array of (nImages,2). If set to ``None`` (defualt) then the shifts are calculated from the calibration stack.
 
 .. py:function:: set_use_numba(useNumba)
 
