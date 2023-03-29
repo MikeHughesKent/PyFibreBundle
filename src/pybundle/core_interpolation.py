@@ -99,11 +99,10 @@ def core_values(img, coreX, coreY, filterSize, **kwargs):
     :param coreX: 1D numpy array giving x co-ordinates of core centres
     :param coreY: 1D numpy array giving y co-ordinates of core centres
     :param filterSize: sigma of Gaussian filter
-    :param numba: optional, if true numba JIT used for faster executio, defaults to False.
+    :param numba: optional, if true numba JIT used for faster execution, defaults to False.
     """
     numba = kwargs.get('numba', False)
     
-     
     if filterSize is not None:
         img = pybundle.g_filter(img, filterSize)
 
@@ -196,7 +195,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     :return: instance of BundleCalibration
     
     """
-    filterSize = kwargs.get('filterSize', 0)
+    filterSize = kwargs.get('filterSize', None)
     normalise = kwargs.get('normalise', None)
     background = kwargs.get('background', None)
     mask = kwargs.get('mask', True)

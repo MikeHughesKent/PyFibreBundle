@@ -51,6 +51,7 @@ class PyBundle:
     srNormToImages = True
     srMultiBackgrounds = False
     srMultiNormalisation = False
+    srDarkFrame = None
     
     # Constants for core processing method
     FILTER = 1
@@ -223,7 +224,7 @@ class PyBundle:
         
     def set_sr_norm_to_backgrounds(self, normToBackgrounds):
         """ Sets whether super-resolution recon should normalise each input image w.r.t. a stack of backgrounds in srBackgrounds to have the same mean intensity. Boolean"""
-        self.srNormToBackgrouds = normToBackgrounds  
+        self.srNormToBackgrounds = normToBackgrounds  
         
     
     def set_sr_multi_backgrounds(self, mb):
@@ -239,18 +240,22 @@ class PyBundle:
         """ Provide a set of background images for background correction of each SR shifted image.
         """
         self.srBackgrounds = backgrounds  
-        if self.calibrationSR is not None:
-            self.calibrationSR = pybundle.tri_interp_background(self.calibrationSR, self.background)
-    
+       
+        
     def set_sr_normalisation_images(self, normalisationImages):
         """ Provide a set of normalisation images for normalising intensity of each SR shifted image.
         """
         self.srNormalisationImgs = normalisationImages
+        
 
     def set_sr_shifts(self, shifts):
         """ Provide shifts between SR images"""
         self.srShifts = shifts
-        
+     
+     
+    def set_sr_dark_frame(self, darkFrame):
+        """ Provide a dark frame for super-resolution calibration"""
+        self.srDarkFrame = darkFrame
         
     def calibrate(self):
         """ Creates calibration for TRILIN method. A calibration image, coreSize and griSize must have been set prior to calling this."""
@@ -272,7 +277,9 @@ class PyBundle:
                 normToImage = self.srNormToImages,
                 shifts = self.srShifts,
                 multiBackgrounds = self.srMultiBackgrounds,
-                multiNormalisation = self.srMultiNormalisation)
+                multiNormalisation = self.srMultiNormalisation,
+                darkFrame = self.srDarkFrame,
+                filterSize = self.filterSize)
 
     
     def process(self, img):

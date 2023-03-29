@@ -72,13 +72,15 @@ class SuperRes:
         centreX = kwargs.get('centreX', None)
         centreY = kwargs.get('centreY', None)
         radius = kwargs.get('radius', None)
-        filterSize = kwargs.get('filterSize', 0)
+        filterSize = kwargs.get('filterSize', None)
         normToImage = kwargs.get('normToImage', False)
         normToBackground = kwargs.get('normToBackground', False)
         backgroundImgs = kwargs.get('backgroundImgs', None)
         normalisationImgs = kwargs.get('normalisationImgs', None)
         multiBackgrounds = kwargs.get('multiBackgrounds', False)
         multiNormalisation = kwargs.get('multiNormalisation', False)
+        darkFrame = kwargs.get('darkFrame', None)
+
         
         postFilterSize = kwargs.get('postFilterSize', None)
         imageScaleFactor = kwargs.get('imageScaleFactor', None)
@@ -101,28 +103,39 @@ class SuperRes:
         else:
             nImages = np.shape(imgs)[2]
 
+
+        # If a dark frame has been provided, extract core values when no illumination
+        if darkFrame is not None:
+            darkVals = pybundle.core_values(darkFrame, singleCalib.coreX, singleCalib.coreY, filterSize).astype('double')
+        else:
+            darkVals = 0
+
+
         if normToImage and imgs is not None:
+            print("norm to images")
 
             imageScaleFactor = np.array(())
 
             refMean = np.mean(pybundle.core_values(
-                imgs[:, :, 0], singleCalib.coreX, singleCalib.coreY, filterSize))
+                imgs[:, :, 0], singleCalib.coreX, singleCalib.coreY, filterSize) - darkVals)
 
             for idx in range(nImages):
                 meanVal = np.mean(pybundle.core_values(
-                    imgs[:, :, idx], singleCalib.coreX, singleCalib.coreY, filterSize))
+                    imgs[:, :, idx], singleCalib.coreX, singleCalib.coreY, filterSize) - darkVals )
                 imageScaleFactor = np.append(
                     imageScaleFactor, refMean / meanVal)
 
         if normToBackground:
+            print("norm to backgrounds")
+
             imageScaleFactor = np.array(())
 
             refMean = np.mean(pybundle.core_values(
-                backgroundImgs[:, :, 0], singleCalib.coreX, singleCalib.coreY, filterSize))
+                backgroundImgs[:, :, 0], singleCalib.coreX, singleCalib.coreY, filterSize) - darkVals)
 
             for idx in range(nImages):
                 meanVal = np.mean(pybundle.core_values(
-                    backgroundImgs[:, :, idx], singleCalib.coreX, singleCalib.coreY, filterSize))
+                    backgroundImgs[:, :, idx], singleCalib.coreX, singleCalib.coreY, filterSize) - darkVals)
                 imageScaleFactor = np.append(
                     imageScaleFactor, refMean / meanVal)
 
@@ -165,7 +178,7 @@ class SuperRes:
             
             multiBackgroundVals = np.zeros((calib.nCores, nImages))
             for idx in range(nImages):
-                multiBackgroundVals[:, idx] = pybundle.core_values(backgroundImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double')
+                multiBackgroundVals[:, idx] = pybundle.core_values(backgroundImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double') - darkVals
         
             calib.multiBackgroundVals = multiBackgroundVals
         
@@ -174,11 +187,13 @@ class SuperRes:
             multiNormalisationVals = np.zeros((calib.nCores, nImages))
 
             for idx in range(nImages):
-                multiNormalisationVals[:, idx] = pybundle.core_values(normalisationImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double')
+                multiNormalisationVals[:, idx] = pybundle.core_values(normalisationImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double') - darkVals
         
             calib.multiNormalisationVals = multiNormalisationVals
 
        
+            
+            
         # Have to set 'background' and 'normalise' to None in previous line as the cores are the shifted
         # positions in the full set from all the images and not the actual core position in each images.
         # We later copy across the background/normalise values from the single image calibration.
@@ -192,9 +207,11 @@ class SuperRes:
 
         calib.background = singleCalib.background
         calib.normalise = singleCalib.normalise
+        calib.darkVals = darkVals
 
-        calib.backgroundVals = singleCalib.backgroundVals
-        calib.normaliseVals = singleCalib.normaliseVals
+        # Single calibration 
+        calib.backgroundVals = singleCalib.backgroundVals - darkVals
+        calib.normaliseVals = singleCalib.normaliseVals - darkVals
 
         calib.shifts = shifts
         calib.imageScaleFactor = imageScaleFactor
@@ -227,12 +244,12 @@ class SuperRes:
         nImages = np.shape(imgs)[2]
 
         cVals = []
-
+        #print("recon filter", str(calib.filterSize))
         for i in range(nImages):
 
             # Extract intensity from each core
-            cValsThis = (pybundle.core_values(
-                imgs[:, :, i], calib.coreX, calib.coreY, calib.filterSize).astype('double'))
+            cValsThis = pybundle.core_values(
+                imgs[:, :, i], calib.coreX, calib.coreY, calib.filterSize).astype('double') - calib.darkVals
 
             if calib.multiBackgrounds:
                 #print("subtracting multi background")
@@ -244,7 +261,7 @@ class SuperRes:
                  
 
             if calib.imageScaleFactor is not None and calib.multiNormalisation is False:
-                #print("Basic image scaling")
+                print("Basic image scaling")
                 cValsThis = cValsThis * calib.imageScaleFactor[i]
                 
                 
@@ -319,7 +336,7 @@ class SuperRes:
         return shifts
     
 
-    def find_shift(img1, img2, templateSize, refSize, upsample):
+    def find_shift(img1, img2, templateSize, refSize, upsample, **kwargs):
         """ Determines shift between two images by Normalised Cross Correlation (NCC). A sqaure template extracted
         from the centre of img2 is compared with a sqaure region extracted from the reference image img1. The size 
         of the template (templateSize) must be less than the size of the reference (refSize). The maximum
@@ -331,13 +348,14 @@ class SuperRes:
         : upsample : factor to scale images by prior to template matching to
                      allow for sub-pixel registration.        
         """
+        
+        returnMax = kwargs.get('returnMax', False)
 
         if refSize < templateSize or min(np.shape(img1)) < refSize or min(np.shape(img2)) < refSize:
             return -1
         else:
 
-            template = pybundle.extract_central(
-                img2, templateSize).astype('float32')
+            template = pybundle.extract_central(img2, templateSize).astype('float32')
             refIm = pybundle.extract_central(img1, refSize).astype('float32')
 
             if upsample != 1:
@@ -351,8 +369,10 @@ class SuperRes:
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
             shift = [(max_loc[0] - (refSize - templateSize) * upsample)/upsample,
                      (max_loc[1] - (refSize - templateSize) * upsample)/upsample]
-            return shift
-
+            if returnMax:
+                return shift, max_val
+            else:
+                return shift
 
     def sort_sr_stack(stack, stackLength):
         """ Takes a stack of images and extracts an ordered set

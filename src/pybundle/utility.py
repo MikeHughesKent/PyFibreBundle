@@ -15,6 +15,7 @@ https://github.com/mikehugheskent
 import numpy as np
 import math
 import time
+from PIL import Image
 
 import cv2 as cv
 
@@ -87,6 +88,44 @@ def radial_profile(img, centre):
     radialprofile = tbin  / nr
     
     return radialprofile 
-     
-     
  
+
+def get8bit(img):
+    
+    img = img.astype('double')
+    img = img - np.min(img)
+    img = img / np.max(img) * 255
+    img = img.astype('uint8')
+    return img
+
+
+def get16bit(img):
+    
+    img = img.astype('double')
+    img = img - np.min(img)
+    img = img / np.max(img) * 2**16
+    img = img.astype('uint16')
+
+    return img    
+
+
+def save_image8(img, filename):
+    """ Saves image as 8 bit tif without scaling"""
+    im = Image.fromarray(img.astype('uint8'))
+
+
+def save_image16(img, filename):
+    """ Saves image as 16 bit tif without scaling"""
+    im = Image.fromarray(img.astype('uint16'))
+
+     
+def save_image8_scaled(img, filename):
+    """ Saves image as 8 bit tif with scaling to use full dynamic range"""
+    im = Image.fromarray(get8bit(img))
+    im.save(filename)
+    
+    
+def save_image16_scaled(img, filename):
+    """ Saves image as 16 bit tif with scaling to use full dynamic range"""
+    im = Image.fromarray(get16bit(img)[0])
+    im.save(filename) 
