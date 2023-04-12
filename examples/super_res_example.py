@@ -1,43 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Example of using super-resolution package of PyFibreBundle to enhance resolution
-by combining shifted images.
+Example of use super-resolution functionality of PyFibreBundle using PyBundle Class.
 
-         IT IS RECOMMENDED THAT YOU USE THE PYBUNDLE CLASS INSTEAD 
-         - see super_res_example_oop.py
-
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 import os
+import sys
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
-import time
 
 import context    # For paths to library
 
 import pybundle
-from pybundle import SuperRes
+from pybundle import PyBundle
 
 dataFolder = r"..\test\data\super_res\data"
 backFile =  r"..\test\data\super_res\background.tif"
 
-nImages = 4        # We will use just four of the images from the folder 
-coreSize = 3       # Estimate, used by core finding
-gridSize = 800     # Reconstruction grid size
 shift = None       # If shifts are known, can specify them here
-filterSize = None  # Filter applied prior to extracting core values
-
+nImages = None
 
 # Find images in folder
 files = [f.path for f in os.scandir(dataFolder)]
 
 if nImages is None:
     nImages = len(files)
-
 
 # Load images
 img = np.array(Image.open(files[0]))
@@ -50,26 +39,46 @@ for idx, fName in enumerate(files[:nImages]):
 
 calibImg = np.array(Image.open(backFile))
 
- 
+
 """ Single image recon for comparison """
-calibSingle = pybundle.calib_tri_interp(calibImg, coreSize, gridSize, filterSize = filterSize, normalise = calibImg, mask = True, autoMask = True)
-reconSingle = pybundle.recon_tri_interp(imgs[:,:,0], calibSingle)
+
+pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by trianglar linear interpolation
+               gridSize = 800,                # Size of output image
+               coreSize = 3,                  # Providing an estimate of the core spacing in pixels help to identify core locations robustly
+               calibImage = calibImg, 
+               backgroundImage = calibImg,
+               normaliseImage = calibImg,
+               autoContrast = True,
+               filterSize = None)
+
+pyb.calibrate()
+reconSingle = pyb.process(imgs[:,:,0])
 
 plt.figure(dpi = 150)
 plt.imshow(reconSingle, cmap='gray')
 plt.title('Single Image')
- 
 
-""" Super Resolution Recon with Intensity Normalisation"""
-t1 = time.perf_counter()
-calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, filterSize = filterSize, normalise = calibImg, mask = True, autoMask = True)
-print("Calibration time:", round(time.perf_counter() - t1, 3))
 
-t1 = time.perf_counter()
-reconImg = SuperRes.recon_multi_tri_interp(imgs, calib)
-print("Reconstruction time:", round(time.perf_counter() - t1, 3))
+
+
+""" Super Resolution Recon """
+
+pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by trianglar linear interpolation
+               gridSize = 800,                # Size of output image
+               coreSize = 3,                  # Providing an estimate of the core spacing in pixels help to identify core locations robustly
+               calibImage = calibImg, 
+               backgroundImage = calibImg,
+               normaliseImage = calibImg,
+               autoContrast = True,
+               filterSize = None,
+               superRes = True,               # Set to True to do Super Res
+               srCalibImages = imgs)          # These are the shifted images
+
+
+pyb.calibrate_sr()
+reconSR = pyb.process(imgs)
 
 plt.figure(dpi = 150)
-plt.imshow(reconImg, cmap='gray')
+plt.imshow(reconSR, cmap='gray')
 plt.title('SR Image')
 

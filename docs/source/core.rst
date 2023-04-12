@@ -21,43 +21,64 @@ To process an image ``img``, a 2D numpy array, we then use::
 
     procImage = pyb.process(img)
 
-However, this will do nothing to the raw image unless we first set some parameters. First we define what type of core-removal we would like::
+However, this will do nothing to the raw image unless we first set some parameters. Parameters can either be
+set by passing optional arguments when instantiating the PyBundle object, or by calling setter methods. First we define what type of core-removal we would like, for example by passing arguments::
 
+    pyb = PyBundle(coreMethod = pyb.FILTER, filterSize = 2.5)
+     
+or equivalently::   
+
+    pyb = PyBundle()
     pyb.set_core_method(pyb.FILTER)   # Choose to use a Gaussian filter
     pyb.set_filter_size(2.5)          # Gaussian filter sigma is 2.5 pixels
 
 We might also want to crop the image to the bundle. This can be done automically using::
+    
+    pyb = PyBundle(coreMethod = pyb.FILTER, filterSize = 2.5,
+                   autoLoc = True, autoCrop = True)    
+
+Or using the setters::
    
     pyb.set_auto_loc(calibImg)        # Automatically locate bundle in image
     pyb.set_crop(True)                # Output images will be cropped to a square around the bundle
 
 where ``calibImg`` is a well-illuminated image which will allow the bundle to be located. This may be the same image as ``img``.
 
-Alternatively, we can specify the location of the bundle using::
+Alternatively, we can specify the location of the bundle by including ``bundleLoc = loc`` in the instantiation or::
 
     pyb.set_bundle_loc(loc)
     
 where ``loc`` is a tuple of (xCentre, yCentre, radius) for the bundle.   
 
-It is often useful to set all pixels outside the bundle to 0, which will be done if we set::
+It is often useful to set all pixels outside the bundle to 0, which will be done if we pass ``autoMask = calibImg`` or ::
 
     pyb.set_auto_mask(calibImg)        
 
-The output image type can be set using, for example::
+The output image type can be set by passing, for example ``outputType = 'uint8'``, or by calling ::
 
     pyb.set_output_type('uint8')      # Output images will be 8 bit
     
-where any numpy data type can be used. The output will simply be cast to this format without any scaling, unless we set::
+where ``'uint8'``, ``'uint16'`` or ``'float'`` can be used. The output will simply be cast to this format without any scaling, unless we pass ``autoContrast = True`` or set::
 
    pyb.set_auto_contrast(True)     
   
-in which case the image will be first scaled to between 0 and 255 if an 8 bit output type is set, or between 0 and 65535 if a 16 bit output type is set, or between 0 and 1 if a non-integer output type is set.
+in which case the image will be first scaled to between 0 and 255 if an 8 bit output type is set, or between 0 and 65535 if a 16 bit output type is set, or between 0 and 1 if a floating point output type is set.
 
-To use triangular linear interpolation rather than Gaussian filtering, set::
+
+To use triangular linear interpolation rather than Gaussian filtering, pass ``coreMethod = PyBundle.TRILIN`` or set::
 
     pyb.set_core_method(pyb.TRILIN)
     
-This requires a calibration - see the :doc:`Linear Interpolation<linear_interp>`  page for more details.   
+This requires a calibration - see the :doc:`Linear Interpolation<linear_interp>`  page for more details.  
+
+
+
+""""""""
+Examples
+""""""""
+An example of using the PyBundle class for filtering is in 'examples/filtering_example.py'.
+An example of using the PyBundle class for linear interpolation is in 'examples/linear_interp_example.py'.
+
     
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Getting Started Using Lower-Level Functions
@@ -116,11 +137,13 @@ This can then be used to define a custom edge filter using::
 
     filter = pybundle.edge_filter(img,  edgeLocation, edgeSlope)
 
-This defines a Fourier domain filter with a cosine smoothed cut-off at the spatial frequency corresponding to the spatial distance ``edgeLocation``. ``edgeSlope`` defines the smoothness of the cut-off; a value of 0 gives a rectangular function. ``img`` merely needs to be a numpy array the same size as the image(s) to be filtered. ``edgeLocation`` should typically be ``1.6 * coreSpacing``, and edgeSlope is not critical, but a value of ``0.1 * coreSpacing`` generally works well. To apply the filter use::
+This defines a Fourier domain filter with a cosine smoothed cut-off at the spatial frequency corresponding to the spatial distance ``edgeLocation``. ``edgeSlope`` defines the smoothness of the cut-off; a value of 0 gives a rectangular function. ``img`` merely needs to be a numpy array the same size as the image(s) to be filtered. ``edgeLocation`` should typically be ``1.6 * coreSpacing``, and ``edgeSlope`` is not critical, but a value of ``0.1 * coreSpacing`` generally works well. To apply the filter use::
 
     smoothedImg = pybundle.filter_image(img, filter)
+   
+Note that this kind of filtering is currently quite slow.    
     
-To perform linear interpolation using static methods, first perform a calibration using the calibration image ``calibImg``, a 2D numpy array::
+To perform linear interpolation using the low-level functions, first perform a calibration using the calibration image ``calibImg``, a 2D numpy array::
 
     coreSize = 3
     gridSize = 512    
@@ -140,10 +163,3 @@ This returns a 2D numpy array of size ``(gridSize, gridSize)`` containing the im
 
 For all optional parameters refer to the :doc:`function reference<functions>` for ``calib_tri_interp`` and ``recon_tri_interp``.
 
-
-
-^^^^^^^
-Example
-^^^^^^^
-
-An example is provided in "examples\\filtering_example.py"

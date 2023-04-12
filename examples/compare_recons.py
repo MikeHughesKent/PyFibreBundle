@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 Compares removal of core pattern using Gaussian filter, edge filter and
-triangular linear interpolation.
+triangular linear interpolation with various parameters using low level functions.
 
-Mike Hughes
+Images are saved in 'output' folder.
+
+It is recommended for most purposes that the PyBundle class is used instead.
+
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 from matplotlib import pyplot as plt
 import numpy as np
@@ -19,8 +23,8 @@ import pybundle
 
 # We load in two images, an image with uniform illumination for calibation
 # and an image of a USAF resolution target to demonstrate core removal
-img = np.array(Image.open("data/usaf1.tif"))
-calibImg = np.array(Image.open("data/usaf1_background.tif"))
+img = np.array(Image.open("../test/data/usaf1.tif"))
+calibImg = np.array(Image.open("../test/data/usaf1_background.tif"))
 
 outFolder = "output"
 if not os.path.exists(outFolder):
@@ -59,7 +63,7 @@ coreSpacing = pybundle.find_core_spacing(calibImgCrop)
 for gFilterSize in gFilterSizes:
     imgG = pybundle.g_filter(imgCrop, gFilterSize)
     imgSave = Image.fromarray(pybundle.to8bit(imgG))
-    imgSave.save( outFolder + '\g_' + str(gFilterSize) + '.tif' )
+    imgSave.save(outFolder + '\g_' + str(gFilterSize) + '.tif' )
     
 # Test median filter  
 for mFilterSize in mFilterSizes:    

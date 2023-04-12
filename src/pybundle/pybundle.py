@@ -33,7 +33,7 @@ class PyBundle:
     coreMethod = None
     autoContrast = False
     outputType = 'uint16'
-    doAutoMask = True
+    autoMask = True
     calibImage = None
     coreSize = 3
     gridSize  = 512
@@ -52,6 +52,11 @@ class PyBundle:
     srMultiBackgrounds = False
     srMultiNormalisation = False
     srDarkFrame = None
+    srUseLut = False
+    srCalibrationLUT = None
+    srParamValue = None
+    #srParamCalib = None
+    
     
     # Constants for core processing method
     FILTER = 1
@@ -59,9 +64,36 @@ class PyBundle:
     EDGE_FILTER = 3   
     
     
-    def __init__(self):
+    def __init__(self, **kwargs):
         """ Initialise a PyBundle object, for OOP functionality of the pybundle package."""
-        pass
+        self.background = kwargs.get('backgroundImage', self.background)
+        self.normaliseImage = kwargs.get('normaliseImage',self.normaliseImage)
+        self.loc = kwargs.get('loc', self.loc )
+        self.mask = kwargs.get('mask', self.mask)
+        self.crop = kwargs.get('crop', self.crop)
+        self.filterSize = kwargs.get('filterSize', self.filterSize )
+        self.coreMethod = kwargs.get('coreMethod', self.coreMethod)
+        self.autoContrast = kwargs.get('autoContrast', self.autoContrast)
+        self.outputType = kwargs.get('outputType', self.outputType)
+        self.autoMask = kwargs.get('autoMask', self.autoMask)
+        self.calibImage = kwargs.get('calibImage', self.calibImage)
+        self.coreSize = kwargs.get('coreSize', self.coreSize)
+        self.gridSize  = kwargs.get('gridSize', self.gridSize)
+        self.useNumba = kwargs.get('useNumba',self.useNumba )
+        
+        # Super Resolution
+        self.superRes = kwargs.get('superRes' , self.superRes )
+        self.srShifts = kwargs.get('srShifts', self.srShifts)
+        self.srCalibImages = kwargs.get('srCalibImages', self.srCalibImages)
+        self.srBackgrounds = kwargs.get('srBackgrounds', self.srBackgrounds)
+        self.srNormalisationImgs = kwargs.get('srNormalisationImgs', self.srNormalisationImgs)
+        self.srNormToBackgrounds = kwargs.get('srNormToBackgrounds', self.srNormToBackgrounds)
+        self.srNormToImages = kwargs.get('srNormToImages', self.srNormToImages)
+        self.srMultiBackgrounds = kwargs.get('srMultiBackgrounds' , self.srMultiBackgrounds)
+        self.srMultiNormalisation = kwargs.get('srMultiNormalisation' ,self.srMultiNormalisation )
+        self.srDarkFrame = kwargs.get('srDarkFrame', self.srDarkFrame)
+        self.srUseLut = kwargs.get('srUseLut', self.srUseLut)
+        
                
 
     def set_filter_size(self, filterSize):
@@ -112,13 +144,13 @@ class PyBundle:
 
                radius = kwargs.get('radius', self.loc[2])
                self.mask = pybundle.get_mask(img, (self.loc[0], self.loc[1], radius))
-               self.doAutoMask = False
+               self.autoMask = False
             else:
                self.mask = None
-               self.doAutoMask = True   # Flag means we come back once we have an image
+               self.autoMask = True   # Flag means we come back once we have an image
         else:
             self.mask = None
-            self.doAutoMask = True      # Flag means we come back once we have a loc
+            self.autoMask = True      # Flag means we come back once we have a loc
     
         
     def create_and_set_mask(self, img, **kwargs):
@@ -257,6 +289,12 @@ class PyBundle:
         """ Provide a dark frame for super-resolution calibration"""
         self.srDarkFrame = darkFrame
         
+        
+    def set_sr_param_value(self, val):
+        """ Sets the current value of the parameter on which the shifts dependent for SR reconstruction """
+        self.srParamValue = val
+                
+        
     def calibrate(self):
         """ Creates calibration for TRILIN method. A calibration image, coreSize and griSize must have been set prior to calling this."""
         if self.calibImage is not None:
@@ -265,6 +303,7 @@ class PyBundle:
     
     def calibrate_sr(self):
         """ Creates calibration for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
+
         if self.srCalibImages is not None or self.srShifts is not None:
             self.calibrationSR = pybundle.SuperRes.calib_multi_tri_interp(
                 self.calibImage, self.srCalibImages,                                                                           
@@ -292,7 +331,7 @@ class PyBundle:
         
         imgOut = img        
         
-        if self.doAutoMask:
+        if self.autoMask:
             self.set_auto_mask(img)
 
         if method == self.FILTER:
@@ -307,27 +346,44 @@ class PyBundle:
                 imgOut = imgOut - self.background
             if self.edgeFilter is not None and self.loc is not None:
                 imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
-                imgOut = pybundle.filter_image(imgOut, self.edgeFilter)       
+                imgOut = pybundle.filter_image(imgOut, self.edgeFilter)      
                 
+                
+        # Triangular linear interpolation    
         if method == self.TRILIN and not self.superRes:
             if self.calibration is None and self.calibImage is not None:
                 self.calibrate()
             if self.calibration is None: return None
-            if imgOut.ndim != 2: return None
-            
+            if imgOut.ndim != 2: return None            
             imgOut = pybundle.recon_tri_interp(imgOut, self.calibration, numba = self.useNumba)
-           
-        if method == self.TRILIN and self.superRes:
-            if self.calibrationSR is None and ( (self.srCalibImages is not None) or (self.srShifts is not None)):
-                self.calibrate_sr()
- 
-            if self.calibrationSR is None: return None
-            if imgOut.ndim != 3: return None
-            if np.shape(imgOut)[2] != self.calibrationSR.nShifts: return None
             
-            imgOut = pybundle.SuperRes.recon_multi_tri_interp(imgOut, self.calibrationSR, numba = self.useNumba)
+         
+        # Super-resolution triangular linear interpolation    
+        if method == self.TRILIN and self.superRes:
+            
+            # Check that we have a stack of images
+            if imgOut.ndim != 3: return None           
+            
+            # If we have a calibration LUT and have opted to use this and we have a value for the parameter, pull out the
+            # correct calibration and use this for recon
+          
+            if self.srUseLut and self.srCalibrationLUT is not None and self.srParamValue is not None:  
+                calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
+            elif self.calibrationSR is not None:
+                calibSR = self.calibrationSR
+            elif ( (self.srCalibImages is not None) or (self.srShifts is not None)):
+                self.calibrate_sr() 
+                # If we still don't have a calibration we cannot proceed    
+                if self.calibrationSR is None: return None
+                calibSR = self.calibrationSR
+            else:
+                return None
+            
+            # If we don't have the correct number of images in the stack, we cannot proceeed            
+            if np.shape(imgOut)[2] != calibSR.nShifts: return None
+            imgOut = pybundle.SuperRes.recon_multi_tri_interp(imgOut, calibSR, numba = self.useNumba)
        
-        
+         
         if self.autoContrast:
             t1 = time.perf_counter()
             imgOut = imgOut - np.min(imgOut)
@@ -350,8 +406,9 @@ class PyBundle:
         if method == self.TRILIN and not self.superRes and self.calibration.mask is not None:
             imgOut = pybundle.apply_mask(imgOut, self.calibration.mask)
             
-        if method == self.TRILIN and self.superRes and self.calibrationSR.mask is not None:
-            imgOut = pybundle.apply_mask(imgOut, self.calibrationSR.mask)
+        if method == self.TRILIN and self.superRes:
+            if calibSR.mask is not None:
+                imgOut = pybundle.apply_mask(imgOut, calibSR.mask)
             
         if method == self.FILTER and self.crop and self.loc is not None:
             imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
@@ -379,6 +436,9 @@ class PyBundle:
                 if self.calibrationSR is not None:
                     scale = (2 * self.calibrationSR.radius) / self.calibrationSR.gridSize
                     return scale
+                elif self.srCalibrationLUT is not None:
+                    scale = (2 * self.srCalibrationLUT.calibrations[0].radius) / self.srCalibrationLUT.calibrations[0].gridSize
+                    return scale
                 else:
                     return None
         else:    
@@ -388,3 +448,28 @@ class PyBundle:
     def set_super_res(self, sr):
         """ Enables or disables super resoution, sr is boolean"""
         self.superRes = sr
+        
+        
+    def set_sr_use_lut(self, useLUT):
+        """ Enables or disables use of calibration LUT for super resoution, useLUT is boolean"""
+        self.srUseLut = useLUT
+        
+    def calibrate_sr_LUT(self, paramCalib, paramRange, nCalibrations) :   
+        """ Creates calibration LUT for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
+   
+        if self.srCalibImages is not None or self.srShifts is not None:
+            self.srCalibrationLUT = pybundle.calibrationLUT(
+                self.calibImage, self.srCalibImages,                                                                           
+                self.coreSize, self.gridSize, 
+                paramCalib, paramRange, nCalibrations,
+                background = self.background, 
+                normalise = self.normaliseImage,
+                backgroundImgs = self.srBackgrounds,
+                normalisationImgs = self.srNormalisationImgs,
+                normToBackground = self.srNormToBackgrounds,
+                normToImage = self.srNormToImages,
+                shifts = self.srShifts,
+                multiBackgrounds = self.srMultiBackgrounds,
+                multiNormalisation = self.srMultiNormalisation,
+                darkFrame = self.srDarkFrame,
+                filterSize = self.filterSize)

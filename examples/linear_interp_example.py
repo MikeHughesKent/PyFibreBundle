@@ -20,24 +20,19 @@ img = np.array(Image.open("../test/data/usaf1.tif"))
 calibImg = np.array(Image.open("../test/data/usaf1_background.tif"))
 
 # Create an instance of the PyBundle class 
-pyb = PyBundle()
+pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by trianglar linear interpolation
+               coreSize = 3,                  # Providing an estimate of the core spacing in pixels help to identify core locations robustly
+               calibImage = calibImg,
+               normaliseImage = calibImg)
 
-# Set to remove core pattern by trianglar linear interpolation
-pyb.set_core_method(pyb.TRILIN)
-
-# Providing an estimate of the core spacing in pixels help to identify core locations robustly
-pyb.set_core_size(3)
-
-# Provide the calibration and normalisation images
-pyb.set_calib_image(calibImg)
-pyb.set_normalise_image(calibImg)
-
-# We call this now to do the calibration. This is the time consuming step. Otherwise it will be done when we called process.
+# We call this now to do the calibration. This is the time-consuming step. Otherwise it will be done when we called process.
 t1 = time.perf_counter()
 pyb.calibrate()
 print(f"One-time calibration took {round(1000 * (time.perf_counter() - t1), 1) } ms.")
 
 # Do core removal
+imgProc = pyb.process(img)         # Do this once to initialise Numba JIT so later timing is accurate
+
 t1 = time.perf_counter()
 imgProc = pyb.process(img)
 print(f"Reconstruction took {round(1000 * (time.perf_counter() - t1), 1) } ms.")

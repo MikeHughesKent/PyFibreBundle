@@ -148,11 +148,12 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     autoMask = kwargs.get('autoMask', True)
     mask = kwargs.get('mask', True)
     background = kwargs.get('background', None)
-
     if autoMask:
         img = pybundle.auto_mask(img)
     # Find the cores in the calibration image
+    #t1 = time.perf_counter()
     coreX, coreY = pybundle.find_cores(img, coreSize)
+    #print("Find cores time " + str(time.perf_counter() - t1))
 
     coreX = np.round(coreX).astype('uint16')
     coreY = np.round(coreY).astype('uint16')
@@ -167,8 +168,10 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
         radius = max(dist)
         
     # Delaunay triangulation and find barycentric co-ordinates for each pixel
+    t1 = time.perf_counter()   
+    
     calib = pybundle.init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, filterSize= filterSize, background = background, normalise = normalise, mask = mask)
-
+    #print("Init tri interp " + str(time.perf_counter() - t1))
 
     calib.nCores = np.shape(coreX)
     
@@ -204,7 +207,9 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
 
     # Delaunay triangulation over core centre locations
     points = np.vstack((coreX, coreY)).T
+    #t1 = time.perf_counter()
     tri = Delaunay(points)
+    #print("Delauany time ", str(time.perf_counter() - t1))
 
     # Make a vector of all the pixels in the reconstruction grid
     xPoints = np.linspace(centreX - radius, centreX + radius, gridSize)
@@ -214,12 +219,16 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     interpPoints = np.vstack( ( np.reshape(mX, nPixels) , np.reshape(mY,nPixels) )).T
 
     # Find enclosing triangle for each pixel in reconstruction grid
+    #t1 = time.perf_counter()
     mapping = tri.find_simplex(interpPoints, bruteforce=False, tol=None)
+    #print("Find Simplex time ", str(time.perf_counter() - t1))
 
     # Write each pixel position in terms of barycentric co-ordinates w.r.t
     # enclosing triangle.
+    #t1 = time.perf_counter()
     baryCoords = barycentric(nPixels, tri, mapping, interpPoints)
-  
+    #print("Barycentric time ", str(time.perf_counter() - t1))
+
     # Store background values
     if normalise is not None:
         normaliseVals = pybundle.core_values(normalise, coreX, coreY, filterSize).astype('double')
@@ -265,14 +274,16 @@ def barycentric(nPixels, tri, mapping, interpPoints):
                      three triangle vertices surrounding each point
     :param interpPoints : Cartesian grid co-ordinates
     """
-    baryCoords = np.zeros([nPixels, 3])
-    for i in range(nPixels):
-        c = tri.transform[mapping[i]]
-        b = c[:2].dot(np.transpose(interpPoints[i,:] - c[2]))
-        baryCoords[i, 0:2] = b
-        baryCoords[i, 2] = 1 - b.sum(axis=0)  # Third co-ordinate found from
-                                              # making sure sum of all is 1
-                                              # Third co-ordinate found from
+    # Left here as could try numba optimisation in future
+    # baryCoords = np.zeros([nPixels, 3])
+    #  c = np.zeros([3,2,nPixels])
+    # for i in range(nPixels):
+    #     c[:,:,i] = tri.transform[mapping[i]]
+                                                 
+    b0 = (tri.transform[mapping, :2].transpose([1, 0, 2]) *
+          (interpPoints - tri.transform[mapping, 2])).sum(axis=2).T
+    baryCoords = np.c_[b0, 1 - b0.sum(axis=1)]                                              
+                                                  
     return baryCoords
 
 

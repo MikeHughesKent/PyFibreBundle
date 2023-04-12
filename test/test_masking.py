@@ -46,7 +46,6 @@ plt.figure(dpi=300)
 plt.imshow(mask1, cmap='gray')
 plt.title('Mask from get_mask')
 
-
 plt.figure(dpi=300)
 plt.imshow(imgProc1, cmap='gray')
 plt.title('Image auto_mask')

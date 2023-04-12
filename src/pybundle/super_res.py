@@ -80,14 +80,15 @@ class SuperRes:
         multiBackgrounds = kwargs.get('multiBackgrounds', False)
         multiNormalisation = kwargs.get('multiNormalisation', False)
         darkFrame = kwargs.get('darkFrame', None)
-
+        singleCalib = kwargs.get('singleCalib', None)
         
         postFilterSize = kwargs.get('postFilterSize', None)
         imageScaleFactor = kwargs.get('imageScaleFactor', None)
         mask = kwargs.get('mask', True)
-        singleCalib = pybundle.calib_tri_interp(
-            calibImg, coreSize, gridSize, **kwargs)
 
+        if singleCalib is None:
+            singleCalib = pybundle.calib_tri_interp(
+                calibImg, coreSize, gridSize, **kwargs)
         # Default values
         if centreX is None:
             centreX = np.mean(singleCalib.coreX)
@@ -112,10 +113,9 @@ class SuperRes:
 
 
         if normToImage and imgs is not None:
-            print("norm to images")
+            #print("norm to images")
 
             imageScaleFactor = np.array(())
-
             refMean = np.mean(pybundle.core_values(
                 imgs[:, :, 0], singleCalib.coreX, singleCalib.coreY, filterSize) - darkVals)
 
@@ -126,7 +126,7 @@ class SuperRes:
                     imageScaleFactor, refMean / meanVal)
 
         if normToBackground:
-            print("norm to backgrounds")
+            #print("norm to backgrounds")
 
             imageScaleFactor = np.array(())
 
@@ -261,7 +261,7 @@ class SuperRes:
                  
 
             if calib.imageScaleFactor is not None and calib.multiNormalisation is False:
-                print("Basic image scaling")
+                #print("Basic image scaling")
                 cValsThis = cValsThis * calib.imageScaleFactor[i]
                 
                 
@@ -426,4 +426,104 @@ class SuperRes:
              calibOut.backgroundVals = 0
              calibOut.background = None
              
-         return calibOut        
+         return calibOut 
+
+        
+    def calib_param_shift(param, images, calibration):
+        """ For use when the shifts between the images are linearly dependent on some other parameter. 
+        Provide a TRILIN calibration and a 4D stack of images of (x, y, shift, parameter), i.e. an extra 
+        dimensions to provide examples of shifts for differentvalues of the parameter. The values of the parameter
+        corresponding to each set of images is provided in param, i.e. the fourth dimension of images should be
+        the same length as param.
+        Returns a 3D array of calibration factors, giving the gradient and offset of x and y shifts of each image with respect to the parameter.
+        """
+        nSets = np.shape(images)[3]
+        nShifts = np.shape(images)[2]
+        imgRecon = np.zeros((calibration.gridSize, calibration.gridSize, nShifts))
+        shifts = np.zeros((nShifts, 2, nSets))
+        shiftFit = np.zeros((nShifts, 2, 2))    # 2 dimensions (x,y) and 2 params of linear fit
+        assert len(param) == nSets
+        for iSet in range(nSets):
+            for iShift in range(nShifts):
+                imgRecon[:,:, iShift] = pybundle.recon_tri_interp(images[:,:,iShift, iSet], calibration)                
+            shifts[:,:,iSet] = SuperRes.get_shifts(imgRecon)
+        shifts = shifts * calibration.radius * 2 / calibration.gridSize
+
+        for iShift in range(nShifts):
+            shiftFit[iShift, 0, :] = np.polyfit(param, shifts[iShift, 0, :],1)
+            shiftFit[iShift, 1, :] = np.polyfit(param, shifts[iShift, 1, :],1)
+
+        return shiftFit    
+                
+    
+        
+    def get_param_shift(param, calib):
+        """For use when the shifts between the images are linearly dependent on some other parameter. 
+        Assuming a prior calibration using calib_param_shift in 'calib', this function returns the 
+        current value of the parameter to obtain the image shifts.
+        """
+        shifts = param * calib[:,:,0] # + calib[:,:,1]
+        return shifts
+        
+    
+    def param_calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, shiftsSet, **kwargs):
+         """ Performs the calibration step for super-resolution reconstruction multiple times
+         for a set of different shifts. All other parameters are the same as for calib_multi_tri_interp.
+         """
+         calibrationSRs = []
+         singleCalib = pyb.calib_multi_ti_interp(calibImg, coreSize, gridSize, **kwargs)
+         for idx in range(np.shape(shiftsSet)[2]):
+             kwargs.update({'shifts': shiftsSet[:,:,idx]})    # Add this set of shifts a calibrate
+             calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, singleCalib = singleCalib, **kwargs)
+             calibrationSRs.append(calib)
+    
+    
+class calibrationLUT:
+    
+    
+    """ Creates and stores a SR calibration look up table (LUT) containing SR calibrations for different 
+    values of some parameter on which the image shift is linearly dependent. paramRange is a tuple of (min, max) values of the parameters, and nCalibrations
+    calibration will be generated equally spaced within this range. paramCalib is the output from a 
+    calib_param_shift that allows the shifts for a specific.
+    """
+    def __init__(self, calibImg, imgs, coreSize, gridSize, paramCalib, paramRange, nCalibrations, **kwargs):
+        self.paramVals = np.linspace(paramRange[0], paramRange[1], nCalibrations)
+        self.calibrations = []
+        self.nCalibrations = nCalibrations
+        
+        # For speed we do the base (single image) calibration here once and then pass this as an argument to calib_multit_tri_interp, otherwise
+        # this will get done again every time
+        singleCalib = pybundle.calib_tri_interp(calibImg, coreSize, gridSize, **kwargs)
+
+        for idx, paramVal in enumerate(self.paramVals):
+            #print("Calibration " + str(idx))
+            shift = SuperRes.get_param_shift(paramVal, paramCalib)
+            kwargs.update({'shifts': shift})   
+            self.calibrations.append(SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, singleCalib = singleCalib, **kwargs))
+
+           
+ 
+    def calibrationSR(self, paramValue): 
+        """ Returns the calibration from the LUT which is closest to requested value of the parameters. 
+        If paramaeter is outside the range of the paramaters that calibration were performed for, 
+        function returns None.
+        """
+
+        # If outside range, return None
+        if paramValue < self.paramVals[0] or paramValue > self.paramVals[-1]:
+            return None
+
+        # If we only have one calibration, and we are not outside the range, then this is the one we want
+        if self.nCalibrations == 1:  
+            return self.calibrations[0]
+
+       
+        idx = round((paramValue - self.paramVals[0]) / (self.paramVals[-1] - self.paramVals[0]) * (self.nCalibrations - 1))
+        #print("Desired Value: ", paramValue, "Used Value:", self.paramVals[idx])
+        return self.calibrations[idx]
+    
+    
+    def __str__(self):
+        return "Calibration LUT of " + str(self.nCalibrations) + " calibrations for param values of " + str(self.paramVals[0]) + " to " + str(self.paramVals[-1])
+    
+      

@@ -69,8 +69,10 @@ Correcting for Intensity Difference Between Images
 If the shifted images are created simply by moving the bundle or the object, then the above method using only a 
 single background/normalisation image is all that is requried. If the shifted images have different intensities 
 (e.g. they are created from different light sources) then any global intensity differences must be
-corrected to avoid image artefacts. A simple way to correct this is to adjust each shifted image so that the corresponding
-calibration image has the same mean intensity. This happens by default cand can be explicitly turned on or off using::
+corrected to avoid image artefacts. A simple way to correct this is by multiplying each shifts images by an intensity
+correction factor such that all the shifted images in such a way that multipying all the corresponding
+calibration images by the same set of factors would results in them all having the same mean intensity. 
+This happens by default and can be explicitly turned on or off using::
 
     pyb.set_sr_norm_to_images(True)   
     
@@ -81,11 +83,13 @@ or::
 Alternatively, if a set of background images with the same relative mean intensities is available, these can be used
 to determine the required correction by setting::
 
-    pyb.set_sr_norm_to_backgrounds(True)   
     pyb.set_sr_backgrounds(backgroundImgs)
+    pyb.set_sr_norm_to_backgrounds(True)   
+    
+where ``backgroundImgs`` is a 3D numpy array of (height, width, num images) containing the set of background images.
            
 Note that this 'normalisation' is correcting for global differences in the intensity of each of the shfited images and 
-is distinct from the core-by-core normaliation of the TRLIN method which corrects for core-to-core variations.
+is distinct from the core-by-core normaliation of the TRILIN method which corrects for core-to-core variations.
     
 These options must be set prior to calibration.    
     
@@ -100,9 +104,11 @@ If each shifted image requires a different core-by-core background subtraction a
     
     pyb.set_sr_multi_normalisation(True)
     pyb.set_sr_normalisation_images(normalisationImgs)
-    
-In this case, a different TRILIN normalisation/background correction is applied to each shifted image independently. If multi-normalisation is used, this overrides ``set_sr_norm_to_backgrounds`` or ``set_sr_norm_to_images`` since it will inherently ensure that
-each image is corrected to be of the same mean intensity.
+
+In this case, a different TRILIN normalisation/background correction is applied to each shifted image independently. 
+If multi-normalisation is used, this overrides ``set_sr_norm_to_backgrounds`` or ``set_sr_norm_to_images`` since it will inherently ensure that
+each image is corrected to be of the same mean intensity. This may offer an improvement over correcting on the basis of the mean background image intensities (i.e. using ``pyb.set_norm_to_backgrounds``)   
+in cases where the coupling efficiency of individual cores varies across the set of shifted images.     
 
 These options must be set prior to calibration.    
 
@@ -126,9 +132,99 @@ which returns ``reconImg`` a 2D numpy array representing the output image.
 Additional options are described below.
 
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Parameterised Shifts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^  
+
+In some circumstances, the shifts between the images in the stack are fixed in time but are linearly dependent on some other parameter. 
+For example, in fibre bundle inline holographic microscopy, which uses multiple light sources in a transmission geometry, 
+the shifts of the hologram (image) position on the bundle depend on the distance between the object and the 
+bundle. In these cases it can be convenient to determine the dependence of the shifts on this parameter in a calibrations stage, and then to 
+subsequently infer the shifts for all further sets of images based on the current value of the parameter rather than measuring them directl from the images.
+
+Assuming we have acquired several stacks of shifted images for different values of the parameter, 
+we assemble a 4D numpy array of images with dimensions (image height, image width, number of shifts, number of example param values).
+
+We then call::
+    
+    paramCalib = calib_param_shift(param, images, calibration)
+    
+where ``calibration`` is a single image linear interpolation calibration such as returned from ``calib_tri_interp`` or the one stored
+in ``PyBundle.calibration`` after calling ``PyBundle.calibrate``. ``param`` is a 1D numpy array specifying the values of the parameter
+for each stack of shifted images. 
+
+The calibration is used to reconstruct each image in the stack. The x and y-components of the shifts of the nth shifted image 
+from each stack of shifted images (i.e. across all example values of the parameter) are then fitted to the values of the parameter with 
+a 1st order polynomial. The function returns ``paramCalib`` which provides the gradient and offset of the shift for each image 
+in the stack of shifted images.
+
+To calculate the expected shifts for a stack of shifted images for a specific value of the parameter, we then call::
+
+    shifts = get_param_shift(param, paramCalib)
+    
+Where ``param`` is the value of the parameter we wish to know the shifts for, and ``paramCalib`` is the calibration returned by ``calib_param_shift``.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Calibration Look-up-table
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In cases where the shifts between the images change in some linear way with some parameter, as discussed in detail above, it may be desirable
+to reconstruct resolution-enhanced images for multiple values of the parameter. For example, in inline bundle holographic microscopy, the
+shifts depend on the distance to the object which may change in time. A different value for the shifts requires a new SR calibration,
+since the calibration requires knowledge of the shifts. However, this calibration is too slow to be performed in real-time. It is therefore
+advantageous to compute different calibrations for different values of the parameter, store these in a look-up table (LUT), and then at run-time 
+to use the calibration stored for the nearest value of the parameter.
+
+To generate a LUT when using the PyBundle class, call::
+
+    PyBundle.calibrate_sr_LUT(self, paramCalib, paramRange, nCalibrations) 
+    
+Here, ``paramRange`` is a tuple of (min, max) values of the parameter to generate the LUT for, and ``nCalibrations`` is the number of 
+values of the parameter within this range to create calibrations for. 
+Since each calibration takes typically several seconds to perform, large values of ``nCalibrations`` will take a long time to compute.
+    
+Prior to calling ``calibrate_sr_LUT``, a single image calibration must already have been created using ``pyb.calibrate``. 
+We must also provide a parameter calibration ``paramCalib``, which tells us how the image shifts are related to the value of the parameter, 
+either created manually or using the output of ``calib_param_shift``. 
+
+We then tell PyBundle to use the LUT::
+
+    PyBundle.set_use_sr_lut(True)
+    
+We must also tell PyBundle the current value of the parameter::
+
+    PyBundle.set_sr_param(paramValue)
+      
+Now, when we call ``PyBundle.process``, assuming we have enabled super-resolution and provided a set of shifted images, as described above,
+the calibration LUT will be accessed and the calibration previously created for a value of the parameter closest to the current value will be used. 
+This look up is much faster (by several orders of magnitude) then performing a new calibration.
+
+Alternatively, if lower-level control is needed, an instance of the CalibrationLUT can be created directly::
+
+    lut = CalibrationLUT(calibImg, imgs, coreSize, gridSize, paramCalib, paramRange, nCalibrations, [optional arguments])
+    
+Parameters (including optional parameters) are as for ``calib_multi_tri_interp``, with the addition of ``paramCalib``, which is the return 
+from calling  ``calib_param_shift`` and stores the mapping between the parameter and the shifts, ``paramRange`` which is a tuple of (min, max) 
+values of the parameter to generate the LUT for, and ``nCalibrations`` which is the number of values of the parameter within this range to 
+create calibrations for. 
+
+Once the LUT is generated, we can extract the best calibration for the current value of the parameter using::
+  
+    calibrationSR = lut.calibrationSR(paramValue)
+
+SR reconstructions can then be performed using::
+
+    reconImage = recon.multi_tri_interp(imageStack, calibrationSR)
+
+
+
+
 ^^^^^^^^^^^^^^^^^^
 Function Reference
 ^^^^^^^^^^^^^^^^^^
+
+These are the low level functions, for most purposes it is better to use an instance of the ``PyBundle`` class.
 
 .. py:function:: calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, [optional arguments])
 
@@ -163,6 +259,8 @@ Function Reference
 
 * Instance of ``BundleCalibration``
 
+
+
 .. py:function:: recon_multi_tri_interp(imgs, calib, [useNumba])
 
 *Required arguments:*
@@ -177,6 +275,9 @@ Function Reference
 *Returns:*
 
 * Reconstructed image as 2D numpy array.
+
+
+
 
 .. py:function:: sort_sr_stack(stack, stackLength)
 
@@ -210,6 +311,38 @@ Input stack should have frame number in third dimension.
 
 * Re-arranged stack.
 
+
+
+.. py:function:: multi_tri_backgrounds(calibIn, backgrounds) 
+
+Updates a multi_tri calibration with a new set of backgrounds without requiring full recalibration
+
+*Required arguments:*
+
+* ``calibIn`` super-resolution bundle calibration, instance of BundleCalibration
+* ``backgrounds``: stack of background images, 3D numpy array with image number on 3rd axis
+
+*Returns:*
+
+* An instance of BundleCalibration which contatins the updated background values
+
+
+    
+.. py:function:: calib_param_shift(param, images, calibration)
+
+For use when the shifts between the images are linearly dependent on some other parameter. 
+
+* ``param`` a 1D numpy array containing example values of the parameter for calibration
+* ``images`` a set of shifted image stacks, one for each example value of the parameter. Provide the images as a 4D numpy array of (y, x, shift, parameter).
+* ``calibation`` a single image bundle calibration as an instance of BundleCalibration
+
+*Returns:*
+
+* A 3D array of calibration factors, giving the gradient and offset of x and y shifts of each image with respect to the parameter.
+           
+
+
+
 ^^^^^^^^^^^^^^^^^^^^^^
 Implementation Details 
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -226,4 +359,4 @@ The SR calibration is stored in an instane of ``BundleCalibration``. This is an 
 Examples
 ^^^^^^^^
 
-Examples are provided in "examples\super_res_oop_example" for use via PyBundle class, and "examples\\super_res_example.py" for calling lower-level functions directly.
+Examples are provided in "examples\\super_res_example" for use via PyBundle class, and "examples\\super_res_example_low_level.py" for calling lower-level functions directly.

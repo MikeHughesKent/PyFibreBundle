@@ -2,9 +2,7 @@
 """
 Some general tests of simple processing in pybundle
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 from matplotlib import pyplot as plt
 import numpy as np
@@ -37,7 +35,7 @@ imgProc = pybundle.apply_mask(imgProc, mask)
 imgProc = pybundle.crop_rect(imgProc, loc)[0]
 t2 = time.time()
 
-print("Gaussian Filter Processing Time (ms): ", round(1000 * (t2-t1),2))
+print(f"Gaussian Filter Processing Time (ms): { round(1000 * (t2-t1),2)}" )
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Sequential G Filter, mask, crop')
@@ -48,7 +46,7 @@ t1 = time.time()
 imgProc = pybundle.crop_filter_mask(img, loc, mask, filterSize)
 t2 = time.time()
 
-print("Simple Gaussian Processing Time (ms): ", round(1000 * (t2-t1),2))
+print(f"Simple Gaussian Processing Time (ms): { round(1000 * (t2-t1),2)}" )
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Combined G Filter, mask, crop')
@@ -62,7 +60,7 @@ t1 = time.time()
 imgProc = pybundle.filter_image(imgCropped, edgeFilter)
 t2 = time.time()
 
-print("Edge Filter Processing Time (ms): ", round(1000 * (t2-t1),2))
+print(f"Edge Filter Processing Time (ms): {round(1000 * (t2-t1),2)}")
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Edge filter')

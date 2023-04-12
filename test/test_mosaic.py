@@ -71,7 +71,7 @@ def test_mosaic(mosaic, description):
     plt.imshow(mosaicImage, cmap = 'gray') 
     plt.title(description)
  
-    print(description + ": Average time to add a frame to mosaic: " + str(1000 * round( (time.time() - t0)/nFrames,3)) + " ms.")
+    print(f"{description}: Average time to add a frame to mosaic: {str(1000 * round( (time.time() - t0)/nFrames,3))} ms.")
 
 
 # The tests

@@ -12,9 +12,11 @@ PyFibreBundle uses numpy arrays as images throughout, wherever 'image' is specif
 PyBundle class
 ^^^^^^^^^^^^^^
 
-.. py:function:: init()
+For more explanation of how to use the PyBundle class for various functions, see the `PyBundle Class section <pybundle_class.html#default-settings>`_ .
 
-Instantiates an object of the PyBundle class.
+.. py:function:: init([optional parameter-value pairs])
+
+Instantiates an object of the PyBundle class. There are a large number of optional parameters that are listed on the `PyBundle <pybundle_class.html>'_ page.
 
 .. py:function:: process(img)
 
@@ -92,6 +94,10 @@ Stores an image to be used for normalisation if TRILIN method is being used. ``n
 
 Set the data type of input images from 'process'. ``outputType`` should be one of ``'uint8'``, ``'unit16'`` or ``'float'``.
 
+.. py:function:: set_super_res(superRes)
+
+Enables super-resolution if ``superRes`` is ``True``, disables if ``False``.
+
 .. py:function:: set_sr_calib_images(calibImages)
 
 Provides the calibration images, a stack of shifted images used to determine shifts between images for super-resolution. ``calibImages`` is a 2D numpy array (x,y,nImages).
@@ -124,13 +130,25 @@ Provide a set of normalisation images for normalising intensity of each SR shift
 
 Provide known shifts between SR images instad of calculating them from a calibration stack. ``shifts`` is a 2D numpy array of (nImages,2). If set to ``None`` (defualt) then the shifts are calculated from the calibration stack.
 
+.. py:function:: set_sr_dark_frame(darkFrame)
+
+Provide a dark background frame (i.e. with no optical power) which will be subtracted from each shifted super-resolution image.
+
+.. py:function:: set_sr_use_lut(useLUT)
+
+Enables or disables use of calibration LUT (if it has been created) for super resoution, ``useLUT`` is boolean.
+    
+.. py:function:: calibrate_sr_LUT(paramCalib, paramRange, nCalibrations) 
+
+Creates a look up table (LUT) for TRILIN SR method. ``paramCalib`` is a calibration which maps the value of a parameter to the image shifts, as returned by ``calibrate_param_shifts``, ``paramRange`` is a tuple of (min, max) defining the range of values of the parameter to generate calibrations for, and ``nCalibrations`` if the number of calibrations to generate, equally spaced within this range.
+
 .. py:function:: set_use_numba(useNumba)
 
 Determines whether Numba package is used for faster reconstruction for TRILIN method. ``useNumba`` is a booleab. Default is ``true``.
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Functions for Bundle finding, cropping, masking
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Low-Level Functions for Bundle finding, cropping, masking
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. py:function:: crop_rect(img, loc)
 
@@ -167,9 +185,9 @@ Locates, crops and masks an image ``img``. For meaning of ``searchFilterSize`` s
 Estimates the fibre core spacing in image ``img`` by looking for a peak in the power spectrum. Returns core spacing in pixels.
 
 
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Functions for Filtering
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Low Level Functions for Spatial Filtering
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. py:function::  g_filter(img, filterSize)
 

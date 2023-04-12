@@ -2,7 +2,6 @@
 """
 Tests the super-resolution stack sorter helper function.
 
-
 @author: Mike Hughes, Applied Optics Group, University of Kent
 """
 

@@ -82,4 +82,4 @@ def apply_mask_numba(img, mask):
             img[x,y] = img[x,y] * mask[x,y]
            
     return img       
-    
+ 
