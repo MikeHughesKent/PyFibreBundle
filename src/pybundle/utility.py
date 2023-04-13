@@ -129,3 +129,12 @@ def save_image16_scaled(img, filename):
     """ Saves image as 16 bit tif with scaling to use full dynamic range"""
     im = Image.fromarray(get16bit(img)[0])
     im.save(filename) 
+
+
+def average_channels(img):
+    """ Returns an image which is the the average pixel value across all channels of a colour image
+    """     
+    if img.ndim == 3:
+        return np.mean(img, 2)
+    else:
+        return img

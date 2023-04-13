@@ -16,11 +16,12 @@ import numpy as np
 import math
 import time
 
+
 import cv2 as cv
 
 import pybundle
 from pybundle.bundle_calibration import BundleCalibration
-
+from pybundle.utility import average_channels
 
 def normalise_image(img, normImg):
     """Normalise image by dividing by a reference image
@@ -62,12 +63,14 @@ def find_core_spacing(img):
     :return: estimated core spacing in pixels
     """
     
+    imgAv = average_channels(img)
+    
     # Ensure image is square
-    size = np.min(np.shape(img))
-    img = img[:size,:size]
+    size = np.min(np.shape(imgAv))
+    imgAv = imgAv[:size,:size]
     
     # Look at log-scaled 2D FFT
-    fd = np.log(np.abs(np.fft.fftshift(np.fft.fft2(img))))
+    fd = np.log(np.abs(np.fft.fftshift(np.fft.fft2(imgAv))))
    
     # Average radial profile     
     rad = pybundle.radial_profile(fd, (np.shape(fd)[0] / 2, np.shape(fd)[1] / 2))
@@ -134,8 +137,10 @@ def find_bundle(img, **kwargs):
     
     filterSize = kwargs.get('filterSize', 4)
     
+    imgFilt = average_channels(img)
+    
     # Filter to minimise effects of structure in bundle
-    imgFilt = g_filter(img, filterSize)
+    imgFilt = g_filter(imgFilt, filterSize)
     imgFilt = (imgFilt / np.max(imgFilt) * 255).astype('uint8')
     
     # Threshold to binarise and then look for connected regions
@@ -204,8 +209,13 @@ def apply_mask(img, mask):
     :param img: input image as 2D numpy array
     :param mask: mask as 2D numy array with same dimensions as img, with areas to be kept as 1 and areas to be masked as0.
     """
-
-    imgMasked = np.multiply(img, mask)
+    if img.ndim == 3:
+        m = np.expand_dims(mask, 2)
+        #imgMasked = np.multiply(img, np.repeat(mask, np.shape(img)[2], 2))
+    else:
+        m = mask
+    imgMasked = np.multiply(img, m)
+    
     return imgMasked
   
 
