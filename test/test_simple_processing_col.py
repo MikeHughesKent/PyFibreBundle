@@ -52,15 +52,16 @@ plt.title('Combined G Filter, mask, crop')
 
 # Create an edge filter based on estimated core spacing, filter, crop and mask
 imgCropped = pybundle.crop_rect(img, loc)[0]
-edgeFilter = pybundle.edge_filter(np.shape(imgCropped)[0], coreSpacing * 1.8, coreSpacing * 0.1)
+edgeFilter = pybundle.edge_filter(np.shape(imgCropped)[0], coreSpacing * 4, coreSpacing * 0.1)
 
 t1 = time.time()
 imgProc = pybundle.filter_image(imgCropped, edgeFilter)
 t2 = time.time()
 
+
 print(f"Edge Filter Processing Time (ms): {round(1000 * (t2-t1),2)}")
 plt.figure(dpi=300)
-plt.imshow(imgProc, cmap='gray')
+plt.imshow(imgProc/256, cmap='gray')
 plt.title('Edge filter')
 
  

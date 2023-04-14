@@ -121,10 +121,13 @@ def filter_image(img, filt):
     :return: filtered image, 2D numpy array
     """
 
-    fd = np.fft.fftshift(np.fft.fft2(img))
-    fd = fd * filt
-
-    return np.abs(np.fft.ifft2(np.fft.fftshift(fd)))
+    fd = np.fft.fftshift(np.fft.fft2(img, axes = (0,1)),axes = (0,1))
+    if img.ndim == 2:
+        fd = fd * filt
+    elif img.ndim == 3:
+        fd = fd * np.expand_dims(filt, 2)  
+        
+    return np.abs(np.fft.ifft2(np.fft.fftshift(fd, axes = (0,1)), axes = (0,1)))
 
 
 def find_bundle(img, **kwargs):
