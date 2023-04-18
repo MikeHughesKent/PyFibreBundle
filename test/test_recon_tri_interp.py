@@ -23,8 +23,8 @@ import pybundle
 
 # We load in two images, an image with uniform illumination for calibation
 # and an image of a USAF resolution target to demonstrate core removal
-calibImg = np.array(Image.open("data/usaf1_background.tif"))
-img = np.array(Image.open("data/usaf1.tif"))
+calibImg = np.array(Image.open("data\\usaf1_background.tif"))
+img = np.array(Image.open("data\\usaf1.tif"))
 
 # Parameters for reconstruction
 coreSize = 3          # Estimated core size used when searching for cores

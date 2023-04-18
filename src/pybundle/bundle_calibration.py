@@ -31,6 +31,7 @@ class BundleCalibration:
     background = None
     backgroundVals = None
     radius = None
+    col = False
     
     def __init__(self):
         return

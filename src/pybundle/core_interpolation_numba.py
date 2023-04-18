@@ -27,11 +27,17 @@ def core_value_extract_numba(img, coreX, coreY):
     :param numba: optional, if true numba JIT used for faster executio, defaults to False.
     :return: core intensity values as 1D numpy array 
     """
+    if img.ndim == 2:
+        nCores = np.shape(coreX)[0]
+        cInt = np.zeros((nCores),dtype=numba.int64)
+        for i in range(nCores):
+            cInt[i] = (img[coreY[i], coreX[i]])
+    elif img.ndim == 3:
+        nCores = np.shape(coreX)[0]
+        cInt = np.zeros((nCores, img.shape[2]),dtype=numba.int64)
+        for i in range(nCores):
+            cInt[i] = (img[coreY[i], coreX[i]])
     
-    nCores = np.shape(coreX)[0]
-    cInt = np.zeros((nCores),dtype=numba.int64)
-    for i in range(nCores):
-        cInt[i] = (img[coreY[i], coreX[i]])
     return cInt
 
 
@@ -54,19 +60,40 @@ def grid_data_numba(baryCoords, cVal, coreIdx, mapping, mask):
         for each reconstruction grid pixel, as 2D numpy array of size (3, num_pixels)
     :return: value of each pixel in the reconstruction grid, as 1D numpy array
     """
-    pixelVal = np.zeros((np.shape(baryCoords)[0]))
-    if mask is None:
-
-        for i in range(np.shape(baryCoords)[0]):
-            pixelVal[i] = baryCoords[i,0] * cVal[coreIdx[i,0]] + baryCoords[i,1] * cVal[coreIdx[i,1]]+ baryCoords[i,2] * cVal[coreIdx[i,2]]
-    else: 
-        for i in range(np.shape(baryCoords)[0]):
-            pixelVal[i] = int(mask[i]) * ( baryCoords[i,0] * cVal[coreIdx[i,0]] + baryCoords[i,1] * cVal[coreIdx[i,1]]+ baryCoords[i,2] * cVal[coreIdx[i,2]])
     
+    assert (cVal.ndim == 1 or cVal.ndim == 2), "Pixel Values in cVal must be 1D (mono) or 2D (colour)"
+    
+    if cVal.ndim == 2:
+        pixelVal = np.zeros((np.shape(baryCoords)[0], np.shape(cVal)[1]))
+    else:
+        pixelVal = np.zeros((np.shape(baryCoords)[0]))
+
+         
+
+    if cVal.ndim == 2:   # Colour
+        if mask is None:
+            for i in range(np.shape(baryCoords)[0]):
+                for c in range(np.shape(cVal)[1]):
+                    pixelVal[i,c] =  baryCoords[i,0] * cVal[coreIdx[i,0],c] + baryCoords[i,1] * cVal[coreIdx[i,1],c] + baryCoords[i,2] * cVal[coreIdx[i,2],c]
+        else:
+            for i in range(np.shape(baryCoords)[0]):
+                for c in range(np.shape(cVal)[1]):
+                    pixelVal[i,c] =  int(mask[i]) * (baryCoords[i,0] * cVal[coreIdx[i,0],c] + baryCoords[i,1] * cVal[coreIdx[i,1],c] + baryCoords[i,2] * cVal[coreIdx[i,2],c])
+ 
+    elif cVal.ndim == 1:   # Mono
+        if mask is None:
+            for i in range(np.shape(baryCoords)[0]):
+                pixelVal[i] =  (baryCoords[i,1] * cVal[coreIdx[i,0]] + baryCoords[i,1] * cVal[coreIdx[i,1]] + baryCoords[i,2] * cVal[coreIdx[i,2]])
+        else:
+            for i in range(np.shape(baryCoords)[0]):
+                pixelVal[i] =  int(mask[i]) * (baryCoords[i,0] * cVal[coreIdx[i,0]] + baryCoords[i,1] * cVal[coreIdx[i,1]] + baryCoords[i,2] * cVal[coreIdx[i,2]])
+
+                
     pixelVal[mapping < 0] = 0
-   
+        
     return pixelVal   
   
+    
 @jit(nopython=True)
 def apply_mask_numba(img, mask):
     """ Numba optimised version of apply_mask. Applies a mask to an input image. 

@@ -21,7 +21,7 @@ import cv2 as cv
 
 import pybundle
 from pybundle.bundle_calibration import BundleCalibration
-from pybundle.utility import average_channels
+from pybundle.utility import average_channels, max_channels
 
 def normalise_image(img, normImg):
     """Normalise image by dividing by a reference image
@@ -140,7 +140,8 @@ def find_bundle(img, **kwargs):
     
     filterSize = kwargs.get('filterSize', 4)
     
-    imgFilt = average_channels(img)
+    #imgFilt = average_channels(img)
+    imgFilt = max_channels(img)
     
     # Filter to minimise effects of structure in bundle
     imgFilt = g_filter(imgFilt, filterSize)

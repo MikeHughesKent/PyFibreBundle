@@ -138,3 +138,11 @@ def average_channels(img):
         return np.mean(img, 2)
     else:
         return img
+    
+def max_channels(img):
+    """ Returns an image which is the the maximum pixel value across all channels of a colour image
+    """     
+    if img.ndim == 3:
+        return np.max(img, 2)
+    else:
+        return img

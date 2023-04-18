@@ -39,6 +39,7 @@ print(f"Gaussian Filter Processing Time (ms): { round(1000 * (t2-t1),2)}" )
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Sequential G Filter, mask, crop')
+plt.show()
 
 
 # Produce an image using the simple Gaussian filtering, masking and cropping
@@ -50,6 +51,7 @@ print(f"Simple Gaussian Processing Time (ms): { round(1000 * (t2-t1),2)}" )
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Combined G Filter, mask, crop')
+plt.show()
 
 
 # Create an edge filter based on estimated core spacing, filter, crop and mask
@@ -64,7 +66,7 @@ print(f"Edge Filter Processing Time (ms): {round(1000 * (t2-t1),2)}")
 plt.figure(dpi=300)
 plt.imshow(imgProc, cmap='gray')
 plt.title('Edge filter')
-
+plt.show()
  
 
 

@@ -24,6 +24,7 @@ import pybundle
 from pybundle.bundle_calibration import BundleCalibration
 
 
+
 # We try to import numba here and if successful, load the numba-optimised
 # interpolation funactions. If we get an error (i.e. library not available)
 # then we won't call the function that require this.
@@ -42,9 +43,12 @@ def find_cores(img, coreSpacing):
      pixels.
      """
      
-     # Pre-filtering helps to minimse noise and reduce efffect of
+    # Pre-filtering helps to minimse noise and reduce efffect of
      # multimodal patterns
      imgF = pybundle.g_filter(img, coreSpacing/5)
+
+     # If a colour image, convert to greyscale by taking the maximum value across the channels
+     imgF = pybundle.max_channels(imgF)
 
      imgF = (imgF / np.max(imgF) * 255).astype('uint8')
 
@@ -74,9 +78,9 @@ def find_cores(img, coreSpacing):
      cx = centroid[regSizes < coreSpacing**2, 0]  
      cy = centroid[regSizes < coreSpacing**2, 1]
      
-     # # Method can find cores with centres outside of image. This is
-     # # unwanted as tends to lead to indexing errors in other parts of code, so
-     # # remove them here
+     # Method can find cores with centres outside of image. This is
+     # unwanted as tends to lead to indexing errors in other parts of code, so
+     # remove them here
      cx = cx[cx < np.shape(img)[1]]
      cy = cy[cx < np.shape(img)[1]]
 
@@ -124,7 +128,7 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
         
     Thanks to Cheng Yong Xin, Joseph, who collaborated in implementation of this function.
     
-    :param img: calibration image of bundle as 2D numpy array
+    :param img: calibration image of bundle as 2D (mono) or 3D (colour) numpy array
     :param coreSize: estimate of average spacing between cores
     :param gridSize: output size of image, supply a single value, image will be square
     :param centreX: optional, x centre location of bundle, if not specified will be determined automatically
@@ -182,7 +186,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     """ Used by calib_tri_interp to perform Delaunay triangulation of core positions, 
     and find each pixel of reconstruction grid in barycentric co-ordinates w.r.t. 
     enclosing triangle.
-    :param img: calibration image as 2D numpy array
+    :param img: calibration image as 2D (mono) or 3D (colour) numpy array
     :param coreX: x centre of each core as 1D numpy array
     :param coreY: y centre of each core as 1D numpy array
     :param centreX: x centre location of bundle (reconstruction will be centred on this)
@@ -203,6 +207,11 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     background = kwargs.get('background', None)
     mask = kwargs.get('mask', True)
     numba = kwargs.get('numba', True)
+
+    if img.ndim > 2:    # Colour image if we have a third dimension to image
+        col = True
+    else:
+        col = False
 
 
     # Delaunay triangulation over core centre locations
@@ -232,6 +241,9 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     # Store background values
     if normalise is not None:
         normaliseVals = pybundle.core_values(normalise, coreX, coreY, filterSize).astype('double')
+        if col:
+            normaliseVals = np.mean(pybundle.core_values(normalise, coreX, coreY, filterSize).astype('double'),1)
+            normaliseVals = np.expand_dims(normaliseVals,1)
     else:
         normaliseVals = 0
 
@@ -242,6 +254,11 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
 
     # The calibration is stored in in instance of BundleCalibration
     calib = BundleCalibration()
+    calib.col = col
+    if calib.col:
+        calib.nChannels = np.shape(img)[2]
+
+        
     calib.radius = radius
     calib.coreX = coreX
     calib.coreY = coreY
@@ -291,7 +308,7 @@ def tri_interp_normalise(calibIn, normalise):
     """ Updates a calibration with a new normalisation without requiring
     full recalibration
     :param calibIn: input calibration, instance of BundleCalibration
-    :param normalise: normalisation image as 2D numpy array, or None to remove normalisation
+    :param normalise: normalisation image as 2D/3D numpy array, or None to remove normalisation
     :return: updated instance of BundleCalibration
     """
     calibOut = calibIn
@@ -311,7 +328,7 @@ def tri_interp_background(calibIn, background):
      """ Updates a calibration with a new background without requiring
      full recalibration
      :param calibIn: bundle calibration, instance of BundleCalibration
-     :param background: background image as 2D numpy array
+     :param background: background image as 2D/3D numpy array
      """
      calibOut = calibIn
 
@@ -329,10 +346,10 @@ def tri_interp_background(calibIn, background):
 def recon_tri_interp(img, calib, **kwargs):
      """ Removes core pattern using triangular linear interpolation. Requires an initial
      calibration using calib_tri_interp
-     :param img: raw image to be reconstructed as 2D numpy array
+     :param img: raw image to be reconstructed as 2D (mono) or 3D (colour) numpy array
      :param calib: bundle calibration as instance of BundleCalibration
      :param numba: optional, if true use JIT acceleration using Numba, default to False
-     :return: reconstructed image as 2D numpy array
+     :return: reconstructed image as 2D/3D numpy array
      """
     
      numba = kwargs.get('numba', True)
@@ -342,12 +359,10 @@ def recon_tri_interp(img, calib, **kwargs):
          img, calib.coreX, calib.coreY, calib.filterSize, **kwargs).astype('double')
 
      if calib.background is not None:
-         cVals = cVals - calib.backgroundVals
-    
+         cVals = cVals - calib.backgroundVals    
       
      if calib.normalise is not None:
-         cVals = (cVals / calib.normaliseVals * 255) 
-   
+         cVals = (cVals / calib.normaliseVals * 255)    
 
      # Triangular linear interpolation
      if numba and numbaAvailable:
@@ -359,12 +374,16 @@ def recon_tri_interp(img, calib, **kwargs):
      else:
          pixelVal = grid_data(calib.baryCoords, cVals, calib.coreIdx, calib.mapping)
 
-     # Vector of pixels now has to be converted to a 2D image
-     pixelVal = np.reshape(pixelVal, (calib.gridSize, calib.gridSize))
+     # Vector of pixels now has to be converted to a 2D/3D image
+     if calib.col:
+        pixelVal = np.reshape(pixelVal, (calib.gridSize, calib.gridSize, calib.nChannels))
+     else:
+        pixelVal = np.reshape(pixelVal, (calib.gridSize, calib.gridSize))
+
 
      if calib.mask is not None:
          if numba and numbaAvailable:
-             pass   # masking is done in one step earlier on
+             pass   # masking is done in one step by grid_data
          else:    
              pixelVal = pybundle.apply_mask(pixelVal, calib.mask)
 
@@ -387,9 +406,17 @@ def grid_data(baryCoords, cVals, coreIdx, mapping):
         for each reconstruction grid pixel, as 2D numpy array of size (3, num_pixels)
     :return: value of each pixel in the reconstruction grid, as 1D numpy array
     """
-    
-    val = baryCoords * cVals[coreIdx]
-    pixelVal = np.sum(val, 1)
+   
+    if cVals.ndim == 2:
+        pixelVal = np.zeros((np.shape(baryCoords)[0], np.shape(cVals)[1]))
+        for iChannel in range(np.shape(cVals)[1]):
+            val = baryCoords * cVals[:, iChannel][coreIdx]
+            pixelVal[:,iChannel] = np.sum(val, 1)
+    else:   
+        val = baryCoords * cVals[coreIdx]    
+        pixelVal = np.sum(val, 1)
+
+
     pixelVal[mapping < 0] = 0
      
     return pixelVal
