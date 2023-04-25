@@ -81,18 +81,25 @@ class Mosaic:
         self.nImages = 0        
         self.imSize = None  # None tells us to read this from the first image        
         
+        self.col = False   # Assume monochrome
         return
         
        
     def initialise(self, img):
         """ Choose sensible values for non-specified parameters.
-        :param img: input image to used to choose sensible parameters, 2D numpy array
+        :param img: input image to used to choose sensible parameters, 2D/3D numpy array
         :return None:
         """
         
+        if img.ndim == 3:
+            self.col = True
+            self.nChannels = np.shape(img)[2]
+        else:
+            self.col = False
+        
         if self.imSize is None:
             if self.resize is None:
-                self.imSize = min(img.shape)
+                self.imSize = min(img.shape[0:2])
             else:
                 self.imSize = self.resize
 
@@ -111,7 +118,10 @@ class Mosaic:
         if np.size(self.mask) == 0:
             self.mask = pybundle.get_mask(np.zeros([self.imSize,self.imSize]),(self.imSize/2,self.imSize/2,self.cropSize / 2))
        
-        self.mosaic = np.zeros((self.mosaicSize, self.mosaicSize), dtype = self.imageType)
+        if self.col:
+            self.mosaic = np.zeros((self.mosaicSize, self.mosaicSize, self.nChannels), dtype = self.imageType)
+        else:
+            self.mosaic = np.zeros((self.mosaicSize, self.mosaicSize), dtype = self.imageType)
 
         self.currentX = self.initialX
         self.currentY = self.initialY
@@ -159,11 +169,17 @@ class Mosaic:
                 
             if self.resetSharpness is not None:
                 refIm = pybundle.extract_central(imgResized, self.refSize)
-
-                gx, gy = np.gradient(refIm)
+                
+                if refIm.ndim == 3:
+                    gx, gy = np.gradient(refIm, axis = (0,1))
+                    gx = np.mean(gx,2)
+                    gy = np.mean(gy,2)
+                    
+                else:
+                    gx, gy = np.gradient(refIm)
+                   
                 gnorm = np.sqrt(gx**2 + gy**2)
                 gav = np.mean(gnorm)
-                #print(gav)
                 if gav < self.resetSharpness:   
                     self.initialise(img)
                     Mosaic.insert_into_mosaic(self.mosaic, imgResized, self.mask, (self.currentX, self.currentY))
@@ -173,7 +189,6 @@ class Mosaic:
             self.currentY = self.currentY + self.lastShift[0]
             
             distMoved = math.sqrt( (self.currentX - self.lastXAdded)**2 + (self.currentY - self.lastYAdded)**2)
-            #self.minDistForAdd = 0
             
             if distMoved >= self.minDistForAdd:
                 self.lastXAdded = self.currentX
@@ -237,6 +252,8 @@ class Mosaic:
         py = math.floor(position[1] - np.shape(img)[1] / 2)        
         
         oldRegion = mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]]
+
+        
         oldRegion[np.array(mask)] = img[np.array(mask)]
         mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]] = oldRegion
         
@@ -271,6 +288,11 @@ class Mosaic:
         # blend into nothing
         blendingMask = np.where(oldRegion>0,1,0)
 
+        # If we have a colour image then take the max of the blending mask across
+        # the colour channels
+        if blendingMask.ndim > 2:
+            blendingMask = np.max(blendingMask,2)
+
         # If first time, create blend mask giving weights to apply for each pixel
         if blendMask == []:
             maskRad = cropSize / 2
@@ -280,7 +302,11 @@ class Mosaic:
         imgMask = blendImageMask.copy()
         imgMask[blendingMask == 0] = 1   # For pixels where mosaic == 0 use original pixel values from image 
         imgMask = imgMask * mask
-        mosaicMask = 1- imgMask          
+        mosaicMask = 1- imgMask    
+        
+        if img.ndim > 2:
+            mosaicMask = np.expand_dims(mosaicMask, 2)
+            imgMask = np.expand_dims(imgMask, 2)
 
         # Modify region to include blended values from image
         oldRegion = oldRegion * mosaicMask + img * imgMask       
@@ -294,8 +320,8 @@ class Mosaic:
     def find_shift(img1, img2, templateSize, refSize):
         """ Calculates how far img2 has shifted relative to img1 using
         normalised cross correlation
-        :param img1: reference image as 2D numpy array
-        :param img2: template image as 2D numpy array
+        :param img1: reference image as 2D/3D numpy array
+        :param img2: template image as 2D/3D numpy array
         :param templateSize: a square of this size is extracted from img as the template
         :param refSize: a sqaure of this size is extracted from refSize as the template. 
            Must be bigger than templateSize and the maximum shift detectable is 
@@ -304,7 +330,7 @@ class Mosaic:
            max_val is the normalised cross correlation peak value. Returns None if the shift
            cannot be calculated.
         """
-        if refSize < templateSize or min(np.shape(img1)) < refSize or min(np.shape(img2)) < refSize:
+        if refSize < templateSize or min(np.shape(img1)[0:2]) < refSize or min(np.shape(img2)[0:2]) < refSize:
              return None
         else:
              template = pybundle.extract_central(img2, templateSize)  
@@ -415,28 +441,32 @@ class Mosaic:
         """          
         mosaicWidth = np.shape(mosaic)[0]
         mosaicHeight = np.shape(mosaic)[1]
+        if mosaic.ndim > 2:
+            mosaicChannels = np.shape(mosaic)[2]
+        else:
+            mosaicChannels
 
         if direction == Mosaic.LEFT:
             newMosaicWidth = mosaicWidth + distance
-            newMosaic = np.zeros((newMosaicWidth, mosaicHeight), mosaic.dtype)
+            newMosaic = np.squeeze(np.zeros((newMosaicWidth, mosaicHeight, mosaicChannels), mosaic.dtype))
             newMosaic[distance:distance + mosaicWidth,:] = mosaic
             return newMosaic, newMosaicWidth, mosaicHeight, currentX + distance, currentY
              
         if direction == Mosaic.TOP:
             newMosaicHeight = mosaicHeight + distance
-            newMosaic = np.zeros((mosaicWidth, newMosaicHeight), mosaic.dtype)
+            newMosaic = np.squeeze(np.zeros((mosaicWidth, newMosaicHeight, mosaicChannels), mosaic.dtype))
             newMosaic[:,distance:distance + mosaicHeight] = mosaic
             return newMosaic, mosaicWidth, newMosaicHeight, currentX,  currentY + distance 
         
         if direction == Mosaic.RIGHT:
             newMosaicWidth = mosaicWidth + distance
-            newMosaic = np.zeros((newMosaicWidth, mosaicHeight), mosaic.dtype)
+            newMosaic = np.squeeze(np.zeros((newMosaicWidth, mosaicHeight, mosaicChannels), mosaic.dtype))
             newMosaic[0: mosaicWidth,:] = mosaic
             return newMosaic, newMosaicWidth, mosaicHeight, currentX, currentY
         
         if direction == Mosaic.BOTTOM:
             newMosaicHeight = mosaicHeight + distance
-            newMosaic = np.zeros((mosaicWidth, newMosaicHeight), mosaic.dtype)
+            newMosaic = np.squeeze(np.zeros((mosaicWidth, newMosaicHeight, mosaicChannels), mosaic.dtype))
             newMosaic[:, 0:mosaicHeight ] = mosaic
             return newMosaic, mosaicWidth, newMosaicHeight,  currentX , currentY 
         

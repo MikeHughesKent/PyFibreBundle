@@ -5,7 +5,8 @@ multiple images, with the object slightly shifted with respect to the fibre patt
 sub-package of PyFibreBundle provides the ability to combine multiple images and generate an enhanced resolution 
 using triangular linear interpolation. As with single image triangular linear interpolation, calibation takes
 several seconds, but reconstruction is fast. For most applications this functionality is best accessed via the 
-:doc:`PyBundle<pybundle_class>` class as shown below.
+:doc:`PyBundle<pybundle_class>` class as shown below. This functionality is currently only available for 
+monochrome images.
 
 ^^^^^^^^^^^^^^^^
 Getting Started 

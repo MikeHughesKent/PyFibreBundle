@@ -32,7 +32,7 @@ class PyBundle:
     filterSize = None
     coreMethod = None
     autoContrast = False
-    outputType = 'uint16'
+    outputType = 'float'
     autoMask = True
     calibImage = None
     coreSize = 3
@@ -86,7 +86,7 @@ class PyBundle:
         self.srShifts = kwargs.get('srShifts', self.srShifts)
         self.srCalibImages = kwargs.get('srCalibImages', self.srCalibImages)
         self.srBackgrounds = kwargs.get('srBackgrounds', self.srBackgrounds)
-        self.srNormalisationImgs = kwargs.get('srNormalisationImgs', self.srNormalisationImgs)
+        self.srNormalisationImgs = kwargs.get('srNormalisationImages', self.srNormalisationImgs)
         self.srNormToBackgrounds = kwargs.get('srNormToBackgrounds', self.srNormToBackgrounds)
         self.srNormToImages = kwargs.get('srNormToImages', self.srNormToImages)
         self.srMultiBackgrounds = kwargs.get('srMultiBackgrounds' , self.srMultiBackgrounds)
@@ -354,7 +354,7 @@ class PyBundle:
             if self.calibration is None and self.calibImage is not None:
                 self.calibrate()
             if self.calibration is None: return None
-            if imgOut.ndim != 2: return None            
+            if imgOut.ndim != 2 and imgOut.ndim != 3: return None            
             imgOut = pybundle.recon_tri_interp(imgOut, self.calibration, numba = self.useNumba)
             
          
@@ -367,7 +367,7 @@ class PyBundle:
             # If we have a calibration LUT and have opted to use this and we have a value for the parameter, pull out the
             # correct calibration and use this for recon
           
-            if self.srUseLut and self.srCalibrationLUT is not None and self.srParamValue is not None:  
+            if self.srUseLut and self.srCalibrationLUT is not None and self.srParamValue is not None:
                 calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
             elif self.calibrationSR is not None:
                 calibSR = self.calibrationSR
@@ -454,7 +454,7 @@ class PyBundle:
         """ Enables or disables use of calibration LUT for super resoution, useLUT is boolean"""
         self.srUseLut = useLUT
         
-    def calibrate_sr_LUT(self, paramCalib, paramRange, nCalibrations) :   
+    def calibrate_sr_lut(self, paramCalib, paramRange, nCalibrations) :   
         """ Creates calibration LUT for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
    
         if self.srCalibImages is not None or self.srShifts is not None:

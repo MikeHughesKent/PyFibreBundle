@@ -1,6 +1,11 @@
 Linear Interpolation
 ====================================
-Triangular linear interpolation can be used to remove the fibre bundle core pattern. Using a calibration image, usually acquired with no object in view (i.e. a flat field), the location of each core is determined. A Delaunay triangulation is performed over the core locations. A reconstruction grid is then defined, and the enclosing triangle for each pixel is determined. Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. Although calibration can take a few seconds, processing of images can then be at video rate.
+Triangular linear interpolation can be used to remove the fibre bundle core pattern.
+Using a calibration image, usually acquired with no object in view (i.e. a flat field), 
+the location of each core is determined. A Delaunay triangulation is performed over the core locations. 
+A reconstruction grid is then defined, and the enclosing triangle for each pixel is determined. 
+Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. 
+Although calibration can take a few seconds, processing of images can then be at video rate.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -16,7 +21,7 @@ Set the core removal method to triangular linear interpolation::
 
     pyb.set_core_method(pyb.TRILIN)
 
-Set both the calibration and normalisation images to be ``calibImg``, a 2D numpy array::
+Set both the calibration and normalisation images to be ``calibImg``, a 2D/3D numpy array::
 
     pyb.set_calib_image(calibImg)
     pyb.set_normalise_image(calibImg)
@@ -58,7 +63,7 @@ The ``gridSize`` is the number of pixels in each dimensions of the reconstructed
 
 Finally, we have specified to use the ``calibImg`` for normalisation. This means that the intensity extracted from each core during imaging will be normalised with respect to the intensity from the calibration image, removing effects due to non-uniform cores. If this is not done (i.e. normalise is left as the default ``None``) then images may appear grainy.
 
-To reconstruct an image ``img``, a 2D numpy array, we then call::
+To reconstruct an image ``img``, a 2D/3D numpy array, we then call::
 
    imgRecon = pybundle.recon_tri_interp(img, calib)
 

@@ -2,7 +2,8 @@
 PyBundle class
 ----------------------
 The PyBundle class is the recommended way to use most functionality of the package (other than Mosaicing which has its own class.)
-The following gives a basic introduction to core removal using the class, to use the class for linear interpolation between cores, see the `Linear Interpolation Section <linear_interp.html>`_
+The following gives a basic introduction to core removal using the class, to use the class for linear interpolation between cores, 
+see the `Linear Interpolation Section <linear_interp.html>`_
 and to use it for Super Resolution processing see the `Super Resolution Section <super_res.html>`_ 
 
 Import the class using::
@@ -17,7 +18,8 @@ The processing parameters are then set, before calling::
 
     procImage = pyb.process(img)
     
-to process an image ``img``, a 2D numpy array. This function returns a 2D numpy array as the processed image.
+to process an image ``img``, a 2D/3D numpy array. This function returns a 2D/3D numpy array as the processed image. If 3D ararys are
+used then the third axis represents the (typically 3) colour channels.
 
 The processing parameters can be set using optional argument in the PyBundle constructor,
 or using various setter methods. For example, if we want the processing to apply a Gaussian filter with a sigma of 2 pixels, we can use::
@@ -36,7 +38,7 @@ All methods support a background subtraction by specifying a background image, e
 
     pyb.set_background(backgroundImg)
   
-or including ``backgroundImage = backgroundImg`` in the constructor, where ``backgroundImg`` is a 2D numpy array the same size as ``img``.        
+or including ``backgroundImage = backgroundImg`` in the constructor, where ``backgroundImg`` is a 2D/3D numpy array the same size as ``img``.        
     
 Further examples of the settings relevant for filtering are in :doc:`Basic Processing<core>` and for TRILIN in :doc:`Linear Interpolation<linear_interp>`.
 

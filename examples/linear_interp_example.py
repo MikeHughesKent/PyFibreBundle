@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Simple example of how to use PyFibreBundle to remove core pattern.
+Simple example of how to use PyBundle class f PyFibreBundle to remove core pattern.
 
 @author: Mike Hughes
 Applied Optics Group

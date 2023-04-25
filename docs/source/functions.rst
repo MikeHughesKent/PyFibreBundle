@@ -5,7 +5,7 @@ A list of core functions is available below. Methods for the `Mosaic <mosaicing.
 
 The pybundle class implements most of the functionality of the package and is the preferred approach for most applications.
 
-PyFibreBundle uses numpy arrays as images throughout, wherever 'image' is specified this refers to a 2D numpy array.
+PyFibreBundle uses numpy arrays as images throughout, wherever 'image' is specified this refers to a 2D (monochrome) or 3D (colour) numpy array. For colour images, the colour channels are along the third axis. There can be as many colour channels as needed.
 
 
 ^^^^^^^^^^^^^^
@@ -20,7 +20,7 @@ Instantiates an object of the PyBundle class. There are a large number of option
 
 .. py:function:: process(img)
 
-Process a raw image ``Img`` which should be a 2D numpy array. Returns a processed image as a 2D numpy array.
+Process a raw image ``Img`` which should be a 2D/3D numpy array. Returns a processed image as a 2D/3D numpy array.
 
 .. py:function:: calibrate()
 
@@ -48,7 +48,7 @@ Sets to automatically create a mask using the previously determined bundle locat
 
 .. py:function:: set_background(background)
 
-Stores an image to be used for background subtraction. ``background`` should be a 2D numpy array, the same size as the raw images to be processed.
+Stores an image to be used for background subtraction. ``background`` should be a 2D/3D numpy array, the same size as the raw images to be processed.
 
 .. py:function:: set_bundle_loc(loc)
 
@@ -56,7 +56,7 @@ Sets the stored location of the fibre bundle. ``loc`` is a tuple of (centreX, ce
 
 .. py:function:: set_calib_image(calibImg)
 
-Stores the image to be used for calibration for TRILIN method. ``calibImg`` should be a 2D numpy array of the same size as images to be processed, ideally showing the bundle with uniform illumination.
+Stores the image to be used for calibration for TRILIN method. ``calibImg`` should be a 2D/3D numpy array of the same size as images to be processed, ideally showing the bundle with uniform illumination.
 
 .. py:function:: set_core_method(coreMethod)
 
@@ -88,7 +88,7 @@ Sets the mask to applied during processing to set areas outside bundle to 0. ``M
 
 .. py:function:: set_normalise_image(normaliseImage)
 
-Stores an image to be used for normalisation if TRILIN method is being used. ``normaliseImage`` should be a 2D numpy array, the same size as the raw images to be processed.
+Stores an image to be used for normalisation if TRILIN method is being used. ``normaliseImage`` should be a 2D/3D numpy array, the same size as the raw images to be processed.
 
 .. py:function:: set_output_type(outputType)
 
@@ -100,7 +100,7 @@ Enables super-resolution if ``superRes`` is ``True``, disables if ``False``.
 
 .. py:function:: set_sr_calib_images(calibImages)
 
-Provides the calibration images, a stack of shifted images used to determine shifts between images for super-resolution. ``calibImages`` is a 2D numpy array (x,y,nImages).
+Provides the calibration images, a stack of shifted images used to determine shifts between images for super-resolution. ``calibImages`` is a 3D numpy array (x,y,nImages).
  
 .. py:function:: set_sr_norm_to_images(normToImages)
 
@@ -226,7 +226,7 @@ Calibration for triangular linear interpolation between cores. This returns a Bu
 
 Required arguments: 
 
-* ``img`` calibraton image (2D numpy array)
+* ``img`` calibraton image (2D/3D numpy array)
 * ``coreSize`` estimate core spacing to help with core finding.
 * ``gridSize`` size of output image (square)
 

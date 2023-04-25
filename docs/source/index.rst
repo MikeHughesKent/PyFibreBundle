@@ -11,7 +11,7 @@ The package was originally developed for applications in endoscopic microscopy, 
 holographic endomicroscopy, but there are also potential applications in endoscopy. 
 
 The package supports fibre core pattern removal by filtering and triangular linear interpolation, background correction and 
-flat fielding, as well as automatic bundle location, cropping and masking. 
+flat fielding, as well as automatic bundle location, cropping and masking. Both monochrome and colour images can be processed.
 The :doc:`PyBundle<pybundle_class>` class is the preferred way to access this functionality, 
 but the lower level functions can also be used directly for greater customisation. 
 The :doc:`Mosaic<mosaicing>` class provides mosaicing via normalised cross correlation, 

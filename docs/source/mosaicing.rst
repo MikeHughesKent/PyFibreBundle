@@ -1,6 +1,10 @@
 Mosaicing
 ====================================
-The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, and either dead-leaf or alpha-blended insertion of images into a mosaic. The easiest way to use this functionality is to create an instance of ``Mosaic`` class and then use ``Mosaic.add(img)`` to sequentially register and add image ``img`` to the mosaic,	 and ``Mosaic.getMosaic()`` to get the latest mosaic image. Both ``img`` and the ``mosaic`` are 2D numpy arrays.
+The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, 
+and either dead-leaf or alpha-blended insertion of images into a mosaic. 
+The easiest way to use this functionality is to create an instance of ``Mosaic`` class and then use ``Mosaic.add(img)`` to 
+sequentially register and add image ``img`` to the mosaic,	 and ``Mosaic.getMosaic()`` to get the latest mosaic image. 
+Both ``img`` and the ``mosaic`` are 2D (monochrome) or 3D (colour) numpy arrays.
 
 ^^^^^^^^^^^^^^^
 Getting Started
@@ -17,7 +21,8 @@ Add an image ``img`` to the mosaic::
 Request the latest mosaic image::
 
     mosaicImage = mMosaic.getMosaic()
-	
+
+The ``mosaicImage`` will be a 2D numpy array if ``img`` is 2D and a 3D numpy array if ``img`` is 3D, in which case the third channel represents the colour channels.	
 
 
 ^^^^^^^^^^^^^
@@ -57,7 +62,7 @@ Function Reference
 Adds an image ``img`` to the current mosaic.
 
 .. py:function:: get_mosaic() 
-Returns a copy of the current mosaic as a 2D numpy array.
+Returns a copy of the current mosaic as a 2D/3D numpy array.
 
 ^^^^^^^^^^^^^^^^^^^^
 Usage Notes

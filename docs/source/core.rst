@@ -17,12 +17,14 @@ Instantiate a PyBundle object::
 
     pyb = PyBundle()
     
-To process an image ``img``, a 2D numpy array, we then use::
+Let's assume we have an image ``img``, a 2D (monochrome) or 3D (colour) numpy array. If it is a colour images then the colour
+channels are along the third axis. We then use::
 
     procImage = pyb.process(img)
 
-However, this will do nothing to the raw image unless we first set some parameters. Parameters can either be
-set by passing optional arguments when instantiating the PyBundle object, or by calling setter methods. First we define what type of core-removal we would like, for example by passing arguments::
+However, this will do nothing to the raw image unless we first set some processing options. Parameters can either be
+set by passing optional arguments when instantiating the PyBundle object, or by calling setter methods. 
+First we define what type of core-removal we would like, for example by passing arguments::
 
     pyb = PyBundle(coreMethod = pyb.FILTER, filterSize = 2.5)
      
@@ -159,7 +161,7 @@ To reconstruct an image ``img``, a 2D numpy array, we then call::
 
    imgRecon = pybundle.recon_tri_interp(img, calib)
 
-This returns a 2D numpy array of size ``(gridSize, gridSize)`` containing the image with the core pattern removed.
+This returns a 2D/3D numpy array of size ``(gridSize, gridSize, colour channels)`` containing the image with the core pattern removed.
 
 For all optional parameters refer to the :doc:`function reference<functions>` for ``calib_tri_interp`` and ``recon_tri_interp``.
 
