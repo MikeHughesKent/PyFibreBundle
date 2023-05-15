@@ -1,4 +1,6 @@
+![PyFibreBundles](res/pyb_logo.png)
 # PyFibreBundle
+
 PyFibreBundle is a Python package for processing images captured through optical fibre bundles. 
 
 Full documentation is available on [Readthedocs](http://PyFibreBundle.readthedocs.io) and a summary of the current functionality is below.
@@ -15,30 +17,6 @@ at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), Scho
 Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
 for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
 
-## Getting Started
-
-There are three ways to get PyFibreBundle:
-* Download the [latest stable release](https://github.com/MikeHughesKent/PyFibreBundle/releases/latest) from github and unzip. This will give you all the examples,
-tests and test data. 
-* Clone the github repository using git - this will give you the latest updates but more chance of bugs.
-* Install the latest stable release using:
-
-```
-pip install PyFibreBundle 
-```
-
-The third option (using pip install) should find and install all the dependencies. For the other two options
-you will need to either manually check you have the requirements installed, 
-or navigate the the PyFibreBundle folder on your machine and run:
-
-```
-pip install -r requirements.txt
-```
-to install the dependencies. You may wish to create a virtual environment using Conda/venv first to avoid conflicts with your existing python setup.
-
-Note that the pip install doesn't include the examples and tests which still need to be downloaded from Github. 
-
-Once installed, you can try running the [examples](https://github.com/MikeHughesKent/PyFibreBundle/tree/main/examples).
 
 ## Capabilities
 
@@ -63,6 +41,32 @@ Once installed, you can try running the [examples](https://github.com/MikeHughes
 
 Read the [full documentation](http://PyFibreBundle.readthedocs.io) for more details.
 
+## Getting Started
+
+There are three ways to get PyFibreBundle:
+* Download the [latest stable release](https://github.com/MikeHughesKent/PyFibreBundle/releases/latest) from github and unzip. This will give you all the examples,
+tests and test data. 
+* Clone the github repository using git. This will give you the latest updates but more chance of bugs.
+* Install the latest stable release using:
+
+```
+pip install PyFibreBundle 
+```
+
+The third option (using pip install) should find and install all the dependencies. For the other two options
+you will need to either manually check you have the requirements installed, 
+or navigate to the PyFibreBundle folder on your machine and run:
+
+```
+pip install -r requirements.txt
+```
+to install the dependencies. You may wish to create a virtual environment using Conda/venv first to avoid conflicts with your existing python setup.
+
+Note that the pip install doesn't include the examples and tests which still need to be downloaded from Github. 
+
+Once installed, you can try running the [examples](https://github.com/MikeHughesKent/PyFibreBundle/tree/main/examples).
+
+
 ## Requirements
 
 Required Packages:
@@ -77,7 +81,7 @@ Optional Packages:
 * Numba (for faster linear interpolation)
 * Matplotlib (to run examples and tests)
 
-## Acknowlegements
+## Contributions
 Cheng Yong Xin, Joseph, who contributed to triangular linear interpolation; Callum McCall who contributed to the super resolution component, Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. 
 
 Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy) and University of Kent.
