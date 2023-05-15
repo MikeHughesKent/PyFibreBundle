@@ -1,4 +1,7 @@
-![PyFibreBundles](res/pyb_logo.png)
+<h1 align="right">
+<img src="res/pyb_logo.png" width="250">
+</h1>
+
 # PyFibreBundle
 
 PyFibreBundle is a Python package for processing images captured through optical fibre bundles. 
