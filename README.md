@@ -1,33 +1,56 @@
 # PyFibreBundle
-PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. 
-It is developed mainly by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
-at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), School of Physics and Astronomy, University of Kent. 
-Bug reports, contributions and pull requests are welcome.
+PyFibreBundle is a Python package for processing images captured through optical fibre bundles. 
 
-Full documentation is available [here](http://PyFibreBundle.readthedocs.io) and a summary of the current functionality is below.
+Full documentation is available on [Readthedocs](http://PyFibreBundle.readthedocs.io) and a summary of the current functionality is below.
+
+PyFibreBundle is fast enough for live imaging as well as for offline research; frame rates of over 100 fps 
+can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) 
+and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
 
 The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and 
-holographic endomicroscopy, but there are also potential applications in endoscopy. 
-The package is under active development, with stable releases published periodically.
+holographic endomicroscopy, but there are also potential applications in endoscopy, industrial inspection etc.
 
-The latest stable release can also be installed via pip:
+Developed is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
+at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), School of Physics & Astronomy, University of Kent. 
+Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
+for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
+
+## Getting Started
+
+There are three ways to get PyFibreBundle:
+* Download the [latest stable release](https://github.com/MikeHughesKent/PyFibreBundle/releases/latest) from github and unzip. This will give you all the examples,
+tests and test data. 
+* Clone the github repository using git - this will give you the latest updates but more chance of bugs.
+* Install the latest stable release using:
 
 ```
 pip install PyFibreBundle 
 ```
 
-The package is designed to be fast enough for use in imaging GUIs as well as for offline research - frame rates of over 100 fps can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) and OpenCV is used for fast mosaicing. If the Numba package is not installed then PyFibreBundle falls back on Python interpreted code.
+The third option (using pip install) should find and install all the dependencies. For the other two options
+you will need to either manually check you have the requirements installed, 
+or navigate the the PyFibreBundle folder on your machine and run:
+
+```
+pip install -r requirements.txt
+```
+to install the dependencies. You may wish to create a virtual environment using Conda/venv first to avoid conflicts with your existing python setup.
+
+Note that the pip install doesn't include the examples and tests which still need to be downloaded from Github. 
+
+Once installed, you can try running the [examples](https://github.com/MikeHughesKent/PyFibreBundle/tree/main/examples).
 
 ## Capabilities
 
 ### Core Functions  
+* Supports monochrome and multi-channel (e.g. colour) images.
 * Locate bundle in image.
 * Crop image to only show bundle.
 * Mask areas outside of bundle.
-* Gaussian spatial filtering to remove core pattern.
 * Determine core spacing.
-* Define and apply custom edge filter to remove core pattern.
 * Find locations of all cores in bundle.
+* Core removal by Gaussian filtering.
+* Core removal using custom edge filtering.
 * Core removal using triangular linear interpolation following Delaunay triangulation. 
 
 ### Mosaicing

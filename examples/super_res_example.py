@@ -10,14 +10,15 @@ import sys
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 import context    # For paths to library
 
 import pybundle
 from pybundle import PyBundle
 
-dataFolder = r"..\test\data\super_res\data"
-backFile =  r"..\test\data\super_res\background.tif"
+dataFolder = Path('../test/data/super_res/data')
+backFile =  Path('../test/data/super_res/background.tif')
 
 shift = None       # If shifts are known, can specify them here
 nImages = None
@@ -80,5 +81,6 @@ reconSR = pyb.process(imgs)
 
 plt.figure(dpi = 150)
 plt.imshow(reconSR, cmap='gray')
-plt.title('SR Image')
+plt.title('Resolution Enhanced Image')
 
+plt.show()

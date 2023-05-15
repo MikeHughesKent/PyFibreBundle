@@ -52,14 +52,14 @@ t2 = time.perf_counter()
 print('Reconstruction took:', round(t2-t1,4),'s')
 
 # Display reconstructed image
-plt.figure(dpi = 300)
+plt.figure(dpi = 150)
 plt.imshow(img, cmap='gray')
 plt.title('Raw Image')
-plt.show()
 
 # Display reconstructed image
-plt.figure(dpi = 300)
+plt.figure(dpi = 150)
 plt.imshow(imgRecon / 1024, cmap='gray')
 plt.title('Reconstruction by interpolation')
+
 plt.show()
 

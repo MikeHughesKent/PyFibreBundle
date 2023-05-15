@@ -10,16 +10,21 @@ from matplotlib import pyplot as plt
 import numpy as np
 from PIL import Image
 
+from pathlib import Path
+
 import context
 
 from pybundle import PyBundle
 
-img = np.array(Image.open(r"../test/data/usaf1.tif"))
-calibImg = np.array(Image.open(r"../test/data/usaf1_background.tif"))
+# Load images
+img = np.array(Image.open(Path('../test/data/usaf1.tif')))
+calibImg = np.array(Image.open(Path('../test/data/usaf1_background.tif')))
 
 # Create an instance of the PyBundle class, set to remove core pattern by Gaussian filtering and 
 # crop square around bundle
-pyb = PyBundle(coreMethod = PyBundle.FILTER, filterSize = 2.5, crop = True)
+pyb = PyBundle(coreMethod = PyBundle.FILTER, 
+               filterSize = 2.5, 
+               crop = True)
 
 # Automatically create a mask around bundle using the calibration image
 pyb.create_and_set_mask(calibImg)
@@ -28,10 +33,12 @@ pyb.create_and_set_mask(calibImg)
 imgProc = pyb.process(img)
 
 
-plt.figure(dpi=300)
+plt.figure(dpi=150)
 plt.imshow(img, cmap='gray')
 plt.title("Raw image")
 
-plt.figure(dpi=300)
+plt.figure(dpi=150)
 plt.imshow(imgProc, cmap='gray')
 plt.title("Cropped image with filter applied")
+
+plt.show()

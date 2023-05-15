@@ -8,7 +8,9 @@ Example of how to use Mosaicing functionality of PyFibreBundle.
 import numpy as np
 import math
 from matplotlib import pyplot as plt
+from PIL import Image
 import time
+from pathlib import Path
 
 import cv2 as cv
 
@@ -21,14 +23,15 @@ filterSize = 1.5    # Size of Gaussian filter to preprocess bundle images
 
 
 # Load in a fibre bundle endomicroscopy video
-cap = cv.VideoCapture('..\\test\\data\\raw_example.avi')
+cap = cv.VideoCapture(str(Path('../test/data/raw_example.avi')))
 ret, img = cap.read()
 img = img[:,:,0]
 nFrames = int(cap.get(cv.CAP_PROP_FRAME_COUNT))
 
 
 # Load in the calibration image
-calibImg = cv.imread('..\\test\\data\\raw_example_calib.tif')[:,:,0]
+calibImg = np.array(Image.open(Path('../test/data/raw_example_calib.tif')))
+
 loc = pybundle.find_bundle(calibImg)
 mask = pybundle.get_mask(calibImg, loc)
 

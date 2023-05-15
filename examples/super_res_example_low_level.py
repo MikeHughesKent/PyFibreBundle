@@ -14,14 +14,15 @@ from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+from pathlib import Path
 
 import context    # For paths to library
 
 import pybundle
 from pybundle import SuperRes
 
-dataFolder = r"..\test\data\super_res\data"
-backFile =  r"..\test\data\super_res\background.tif"
+dataFolder = Path('../test/data/super_res/data')
+backFile =  Path('../test/data/super_res/background.tif')
 
 nImages = 4        # We will use just four of the images from the folder 
 coreSize = 3       # Estimate, used by core finding
@@ -73,5 +74,6 @@ print(f"Reconstruction time:{round(time.perf_counter() - t1, 3)}")
 
 plt.figure(dpi = 150)
 plt.imshow(reconImg, cmap='gray')
-plt.title('SR Image')
+plt.title('Resolution Enhanced Image')
 
+plt.show()

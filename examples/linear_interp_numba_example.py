@@ -12,12 +12,16 @@ import numpy as np
 from PIL import Image
 import time
 
+from pathlib import Path
+
 import context
 
 from pybundle import PyBundle
 
-img = np.array(Image.open("../test/data/usaf1.tif"))
-calibImg = np.array(Image.open("../test/data/usaf1_background.tif"))
+# Load images
+img = np.array(Image.open(Path('../test/data/usaf1.tif')))
+calibImg = np.array(Image.open(Path('../test/data/usaf1_background.tif')))
+
 
 # Create an instance of the PyBundle class 
 pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by trianglar linear interpolation
@@ -58,3 +62,5 @@ plt.title("No Numba")
 plt.figure(dpi=300)
 plt.imshow(imgProcNumba, cmap='gray')
 plt.title("Numba")
+
+plt.show()
