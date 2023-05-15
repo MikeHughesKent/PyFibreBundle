@@ -66,6 +66,7 @@ class PyBundle:
     
     def __init__(self, **kwargs):
         """ Initialise a PyBundle object, for OOP functionality of the pybundle package."""
+        
         self.background = kwargs.get('backgroundImage', self.background)
         self.normaliseImage = kwargs.get('normaliseImage',self.normaliseImage)
         self.loc = kwargs.get('loc', self.loc )
@@ -80,6 +81,7 @@ class PyBundle:
         self.coreSize = kwargs.get('coreSize', self.coreSize)
         self.gridSize  = kwargs.get('gridSize', self.gridSize)
         self.useNumba = kwargs.get('useNumba',self.useNumba )
+        
         
         # Super Resolution
         self.superRes = kwargs.get('superRes' , self.superRes )
@@ -138,7 +140,11 @@ class PyBundle:
         :param img: example image from which size of mask is determined
         :param radius, optional radius of mask
         """       
-        if img is not None:
+        if img is True:
+            self.mask = None
+            self.autoMask = True      # Flag means we come back once we have a loc
+            
+        elif img is not None and img is not False:
 
             if self.loc is not None:
 
@@ -148,10 +154,10 @@ class PyBundle:
             else:
                self.mask = None
                self.autoMask = True   # Flag means we come back once we have an image
+        
         else:
             self.mask = None
-            self.autoMask = True      # Flag means we come back once we have a loc
-    
+            self.autoMask = False      # Flag means we come back once we have a loc
         
     def create_and_set_mask(self, img, **kwargs):
         """ Determine mask from provided calibration image and set as mask

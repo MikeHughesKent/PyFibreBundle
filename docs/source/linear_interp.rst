@@ -7,6 +7,9 @@ A reconstruction grid is then defined, and the enclosing triangle for each pixel
 Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. 
 Although calibration can take a few seconds, processing of images can then be at video rate.
 
+Also see examples for  `monochrome <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_example.py>`_ and `colour <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_colour_example.py>`_ images on Github.
+
+Full details of all available options are listed on the `PyBundle Class section <pybundle_class.html>`_. 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Object Oriented Approach
@@ -15,7 +18,7 @@ Object Oriented Approach
 Import the ``PyBundle`` class and instantiate an object::
 
     from pybundle import PyBundle
-    pyb = pybundle.PyBundle()
+    pyb = PyBundle()
 	
 Set the core removal method to triangular linear interpolation::
 
@@ -33,18 +36,26 @@ Choose the output images size::
 If we are normalising it is best to get an output image which is auto-contrasted::
 
     pyb.set_auto_contrast(True)
+    
+Alternatively, those options can all be set at instantiation::
 
-Perform the calibration::
+    pyb = PyBundle(coreMethod = PyBundle.TRILIN, 
+                   calibImage = calibImg, 
+                   normaliseImage = calibImg, 
+                   gridSize = 512, 
+                   autoContrast = True)
+    
+We then perform the calibration, which takes around a second::
 
     pyb.calibrate()
 
-Remove the fibre bundle pattern from an image ``img``, a 2D numpy array::
+To remove the fibre bundle pattern from an image ``img``, a 2D/3D numpy array, we call::
 
     imgProc = pyb.process(img)
     
 For real-time processing, a speed-up of approx X4 in reconstruction can be obtained if the Numba package is installed. To disable use of Numba, call::
 
-    pyb.set_use_numba(false)
+    pyb.set_use_numba(False)
     
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

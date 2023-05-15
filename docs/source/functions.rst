@@ -16,87 +16,128 @@ For more explanation of how to use the PyBundle class for various functions, see
 
 .. py:function:: init([optional parameter-value pairs])
 
-Instantiates an object of the PyBundle class. There are a large number of optional parameters that are listed on the `PyBundle <pybundle_class.html>'_ page.
+Instantiates an object of the PyBundle class. There are a large number of optional parameters that are listed on the `PyBundle <pybundle_class.html>`_ page.
+
+""""""""""""
+Main Methods
+""""""""""""
 
 .. py:function:: process(img)
 
-Process a raw image ``Img`` which should be a 2D/3D numpy array. Returns a processed image as a 2D/3D numpy array.
+Process a raw image ``img`` which should be a 2D/3D numpy array using the current options. Returns a processed image as a 2D/3D numpy array.
 
 .. py:function:: calibrate()
 
-Performs the prior calibration necessary for `TRILIN` method.
+Performs the prior calibration necessary for ``TRILIN`` method. All processing options (setters) should be called prior to this, although if ``set_background`` and ``set_normalise_image`` are called after ``calibrate``
+then the calibration will be updated.
+
 
 .. py:function:: get_pixel_scale()
 
-Returns the scaling factor between pixels in the raw images and pixels in the processed images. This is always 1 for `FILTER` and `EDGE_FILTER` methods. For `TRILIN` method this will only return a valid value once ``calibrate()`` has been called, otherwise it will return ``None``.
+Returns the scaling factor between pixels in the raw images and pixels in the processed images. 
+This is always 1 for `FILTER` and `EDGE_FILTER` methods. For `TRILIN` method this will only return a valid 
+value once ``calibrate()`` has been called, otherwise it will return ``None``.
+
+
+.. py:function:: create_and_set_mask(img, [radius = radius])
+
+Determine the location of the bundle in ``img`` and then create a mask. Optionally specify a different ``radius`` in pixels.
+
+
+"""""""""""""""
+Setter Methods
+"""""""""""""""
 
 .. py:function:: set_auto_loc(img)
 
-Determine the location of the bundle automically.
+Determine the location of the bundle automically. Only has an effect on processing for ``FILTER`` or ``EDGE`` method and if ``crop`` is set to ``True``.
 
-.. py:function:: create_and_set_mask(img, [radius])
-
-Determine the location of the bundle in ``img`` and then automically create a mask. Optionally specify a different ``radius`` in pixels.
 
 .. py:function:: set_auto_contrast(ac)
 
-Determines whether the processed image is scaled to use the full dynamic range. ``ac`` is boolean. The actual values depend on the set output type.
+Determines whether the processed image is scaled to use the full dynamic range of the specified ``outputType``. ``ac`` is boolean. 
 
-.. py:function:: set_auto_mask(img, [radius])
 
-Sets to automatically create a mask using the previously determined bundle location. Optionally specify a different ``radius`` in pixels.
+.. py:function:: set_auto_mask(img, [radius = radius])
+
+Call to automatically mask pixels outside of bundle. The bundle location must be known, either by ``set_loc`` or ``set_auto_loc``. ``img`` is a numpy array the same size as the intended image to be processed. This allows
+the mask to be created immediately. If this is not know, use ``True`` and this will be determined when ``process`` is called.  Optionally specify a different ``radius`` in pixels.
+
 
 .. py:function:: set_background(background)
 
-Stores an image to be used for background subtraction. ``background`` should be a 2D/3D numpy array, the same size as the raw images to be processed.
+Stores an image to be used for background subtraction. ``background`` should be a 2D/3D numpy array, the same size as the raw images to be processed. Pass ``None`` to remove the background image.
+
 
 .. py:function:: set_bundle_loc(loc)
 
 Sets the stored location of the fibre bundle. ``loc`` is a tuple of (centreX, centreY, radius).
 
+
 .. py:function:: set_calib_image(calibImg)
 
 Stores the image to be used for calibration for TRILIN method. ``calibImg`` should be a 2D/3D numpy array of the same size as images to be processed, ideally showing the bundle with uniform illumination.
+
 
 .. py:function:: set_core_method(coreMethod)
 
 Sets which method will be used for core pattern removal, ``coreMethod`` can be ``FILTER``, ``TRILIN`` or ``EDGE_FILTER``.
 
+
 .. py:function:: set_core_size(coreSize)
 
 Sets the estimated core spacing in the calibration image which helps with core finding as part of the TRILIN calibration process.
 
+
 .. py:function:: set_crop(crop)
 
-Determines whether images are cropped to size of bundle when using ``FILTER`` or ``EDGE_FILTER`` methods. ``crop`` is boolean.
+Determines whether images are cropped to size of bundle when using ``FILTER`` or ``EDGE_FILTER`` methods. ``crop`` is boolean. Cropping will only occur
+if the bundle location is provides (using ``set_loc``) or PyBundle is told to find the bundle automatically ``set_auto_loc(True)``.
+
 
 .. py:function:: set_edge_filter(edgePos, edgeSlope)
 
 Creates an edge filter for use with EDGE method. ``edgePos`` is the spatial frequency of the edge in pixels of FFT of image, ``edgeSlope`` is the steepness of slope (range from 10% to 90%) in pixels of the FFT of the image.
 
+
 .. py:function:: set_filter_size(filterSize)
 
 Sets the size of the Gaussian filter used by `FILTER` method in pixels.
+
 
 .. py:function:: set_grid_size(gridSize)
 
 Sets the size of the square output image for TRILIN method. ``gridsize`` should be an integer.
 
+
 .. py:function:: set_mask(mask)
 
 Sets the mask to applied during processing to set areas outside bundle to 0. ``Mask`` is a 2D numpy array the same size as the raw images to be processed.
 
+
 .. py:function:: set_normalise_image(normaliseImage)
 
-Stores an image to be used for normalisation if TRILIN method is being used. ``normaliseImage`` should be a 2D/3D numpy array, the same size as the raw images to be processed.
+Stores an image to be used for normalisation if TRILIN method is being used. ``normaliseImage`` should be a 2D/3D numpy array, the same size as the raw images to be processed. Pass ``None`` to remove the normalisation image.
+
 
 .. py:function:: set_output_type(outputType)
 
 Set the data type of input images from 'process'. ``outputType`` should be one of ``'uint8'``, ``'unit16'`` or ``'float'``.
 
+
+.. py:function:: set_use_numba(useNumba)
+
+Determines whether Numba package is used for faster reconstruction for TRILIN method. ``useNumba`` is a booleab. Default is ``true``.
+
+
+"""""""""""""""""""""""""""""""""""""""""""""
+Super-Resolution Setter Methods
+"""""""""""""""""""""""""""""""""""""""""""""
+
 .. py:function:: set_super_res(superRes)
 
 Enables super-resolution if ``superRes`` is ``True``, disables if ``False``.
+
 
 .. py:function:: set_sr_calib_images(calibImages)
 
@@ -142,9 +183,6 @@ Enables or disables use of calibration LUT (if it has been created) for super re
 
 Creates a look up table (LUT) for TRILIN SR method. ``paramCalib`` is a calibration which maps the value of a parameter to the image shifts, as returned by ``calibrate_param_shifts``, ``paramRange`` is a tuple of (min, max) defining the range of values of the parameter to generate calibrations for, and ``nCalibrations`` if the number of calibrations to generate, equally spaced within this range.
 
-.. py:function:: set_use_numba(useNumba)
-
-Determines whether Numba package is used for faster reconstruction for TRILIN method. ``useNumba`` is a booleab. Default is ``true``.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Low-Level Functions for Bundle finding, cropping, masking

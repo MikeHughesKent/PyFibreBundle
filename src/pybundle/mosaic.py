@@ -444,7 +444,7 @@ class Mosaic:
         if mosaic.ndim > 2:
             mosaicChannels = np.shape(mosaic)[2]
         else:
-            mosaicChannels
+            mosaicChannels = 1
 
         if direction == Mosaic.LEFT:
             newMosaicWidth = mosaicWidth + distance

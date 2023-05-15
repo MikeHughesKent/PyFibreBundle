@@ -5,9 +5,11 @@ PyFibreBundle includes several functions for basic processing of bundle images, 
 removing the core pattern using spatial filtering. The easiest way to use this functionality is via the :doc:`PyBundle<pybundle_class>` class, 
 but it is also possible to use the lower-level functions directly.
 
-^^^^^^^^^^^^^^^^^^^^^^^^^
-Getting Started using OOP
-^^^^^^^^^^^^^^^^^^^^^^^^^
+Also see the examples  on Github for [filtering](https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/filtering_example.py) and [linear interpolation](https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_example.py).
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Getting Started using the PyBundle Class
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Begin by importing the libary::
 
@@ -17,7 +19,7 @@ Instantiate a PyBundle object::
 
     pyb = PyBundle()
     
-Let's assume we have an image ``img``, a 2D (monochrome) or 3D (colour) numpy array. If it is a colour images then the colour
+Let's assume we have an image ``img``, a 2D (monochrome) or 3D (colour) numpy array. If it is a colour image then the colour
 channels are along the third axis. We then use::
 
     procImage = pyb.process(img)
@@ -26,7 +28,7 @@ However, this will do nothing to the raw image unless we first set some processi
 set by passing optional arguments when instantiating the PyBundle object, or by calling setter methods. 
 First we define what type of core-removal we would like, for example by passing arguments::
 
-    pyb = PyBundle(coreMethod = pyb.FILTER, filterSize = 2.5)
+    pyb = PyBundle(coreMethod = PyBundle.FILTER, filterSize = 2.5)
      
 or equivalently::   
 
@@ -35,26 +37,27 @@ or equivalently::
     pyb.set_filter_size(2.5)          # Gaussian filter sigma is 2.5 pixels
 
 We might also want to crop the image to the bundle. This can be done automically using::
-    
-    pyb = PyBundle(coreMethod = pyb.FILTER, filterSize = 2.5,
-                   autoLoc = True, autoCrop = True)    
 
-Or using the setters::
-   
+    pyb = PyBundle(coreMethod = PyBundle.FILTER, filterSize = 2.5, crop = True)
+
+However, PyBundle doesn't initially know how to crop the image. We can ask it to find the
+bundle using a uniform calibration image by setting::
+
     pyb.set_auto_loc(calibImg)        # Automatically locate bundle in image
-    pyb.set_crop(True)                # Output images will be cropped to a square around the bundle
 
 where ``calibImg`` is a well-illuminated image which will allow the bundle to be located. This may be the same image as ``img``.
 
-Alternatively, we can specify the location of the bundle by including ``bundleLoc = loc`` in the instantiation or::
+Alternatively, we can specify the location of the bundle by including ``loc = (x_centre, y_centre, radius)`` in the instantiation or::
 
-    pyb.set_bundle_loc(loc)
+    pyb.set_bundle_loc((x_centre, y_centre, radius))
     
-where ``loc`` is a tuple of (xCentre, yCentre, radius) for the bundle.   
+where ``x_centre``, ``y_centre``, and ``radius`` are the known co-ordinates of the bundle.   
 
-It is often useful to set all pixels outside the bundle to 0, which will be done if we pass ``autoMask = calibImg`` or ::
+It is often useful to set all pixels outside the bundle to 0, which is done by default providing we have called ``set_auto_loc`` or manually provided the bundle location. To disable this we can pass ``autoMask = False`` or call ``set_auto_mask(False)``. We can also pass a calibration image::
 
-    pyb.set_auto_mask(calibImg)        
+    pyb.set_auto_mask(calibImg)
+    
+in which case the mask for setting the pixels outside the bundle will be created immediately rather than when we first process an image.            
 
 The output image type can be set by passing, for example ``outputType = 'uint8'``, or by calling ::
 

@@ -12,6 +12,7 @@ Getting Started
 
 Instantiate an object of the ``Mosaic`` class using default options and with a mosaic image size of 1000x1000::
 
+    from pybundle import Mosaic
     mMosaic = Mosaic(1000)
 
 Add an image ``img`` to the mosaic::
@@ -22,7 +23,7 @@ Request the latest mosaic image::
 
     mosaicImage = mMosaic.getMosaic()
 
-The ``mosaicImage`` will be a 2D numpy array if ``img`` is 2D and a 3D numpy array if ``img`` is 3D, in which case the third channel represents the colour channels.	
+The ``mosaicImage`` will be a 2D numpy array if ``img`` is 2D and a 3D numpy array if ``img`` is 3D, in which case the third axis represents the colour channels.	
 
 
 ^^^^^^^^^^^^^
@@ -62,6 +63,7 @@ Function Reference
 Adds an image ``img`` to the current mosaic.
 
 .. py:function:: get_mosaic() 
+
 Returns a copy of the current mosaic as a 2D/3D numpy array.
 
 ^^^^^^^^^^^^^^^^^^^^

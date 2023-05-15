@@ -55,12 +55,13 @@ The meaning of each setting is explained in the :doc:`Function Reference<functio
 
 GENERAL Settings:
 
+* autoLoc = False (``set_auto_loc``)
 * autoContrast = False (``set_auto_contrast``)
 * background = None  (``set_background``)
 * coreMethod = None (``set_core_method``)
 * loc = None (``set_bundle_loc``)
 * mask = None (``set_mask``)
-* outputType = 'uint16' (``set_output_type``)
+* outputType = Float (``set_output_type``)
 
 BACKGROUND Settings:
 
