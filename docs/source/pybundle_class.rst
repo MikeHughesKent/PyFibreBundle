@@ -4,8 +4,8 @@ PyBundle class
 The PyBundle class is the recommended way to use most functionality of the 
 package (other than Mosaicing which has its own class. All method are listed
 below, introductory guides on using the class are available for for 
-`Basic Processing <core.rst>'_, `Linear Interpolation <linear_interp.html>`_
-aand `Super Resolution <super_res.html>`_ .
+`Basic Processing <core.rst>`_, `Linear Interpolation <linear_interp.html>`_
+and `Super Resolution <super_res.html>`_ .
 
 ^^^^^^^^^^^^^^^
 Instantiatation
