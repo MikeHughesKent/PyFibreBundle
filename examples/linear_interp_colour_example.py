@@ -42,14 +42,14 @@ pyb = pybundle.PyBundle(coreMethod = PyBundle.TRILIN,
 t1 = time.perf_counter()
 pyb.calibrate()
 t2 = time.perf_counter()
-print('Calibration took:', round(t2-t1,3),'s')
+print(f"Calibration took: {round((t2-t1) * 1000)} ms")
 
 # Image reconstruction without Numba
 imgRecon = pyb.process(img)
 t1 = time.perf_counter()
 imgRecon = pyb.process(img)
 t2 = time.perf_counter()
-print('Reconstruction took:', round(t2-t1,4),'s')
+print(f"Colour linear interpolation took: {round((t2-t1) * 1000)} ms")
 
 # Display reconstructed image
 plt.figure(dpi = 150)

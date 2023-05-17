@@ -9,9 +9,17 @@ print("\ntest_simple_processing")
 print("-------------------------")
 import test_simple_processing
 
-print("\ntest_masking")
+print("\ntest_masking (low-level)")
 print("-------------------------")
 import test_masking
+
+print("\ntest_masking (class)")
+print("-------------------------")
+import test_mask
+
+print("\ntest_loc")
+print("-------------------------")
+import test_loc
 
 print(" \ntest_find_cores")
 print("-------------------------")

@@ -7,7 +7,7 @@ A reconstruction grid is then defined, and the enclosing triangle for each pixel
 Images can then be processed by interpolating the value of each pixel from the brightness of the three surrounding cores. 
 Although calibration can take a few seconds, processing of images can then be at video rate.
 
-Also see examples for  `monochrome <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_example.py>`_ and `colour <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_colour_example.py>`_ images on Github.
+There are examples for  `monochrome <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_example.py>`_ and `colour <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_colour_example.py>`_ images on Github.
 
 Full details of all available options are listed on the `PyBundle Class section <pybundle_class.html>`_. 
 

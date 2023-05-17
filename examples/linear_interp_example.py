@@ -2,9 +2,7 @@
 """
 Simple example of how to use PyBundle class f PyFibreBundle to remove core pattern.
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 from matplotlib import pyplot as plt
 import numpy as np

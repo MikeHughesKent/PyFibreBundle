@@ -24,16 +24,28 @@ from pybundle.bundle_calibration import BundleCalibration
 
 class PyBundle:
        
+    coreMethod = None
+
     background = None
     normaliseImage = None
+    
+    autoLoc = True
     loc = None
-    mask = None
+
+    autoMask = True
+    mask = None    
+    applyMask = False
+    
     crop = False
+    
     filterSize = None
-    coreMethod = None
+    
     autoContrast = False
     outputType = 'float'
-    autoMask = True
+    
+    edgeFilter = None
+    edgeFilterShape = None
+    
     calibImage = None
     coreSize = 3
     gridSize  = 512
@@ -69,14 +81,26 @@ class PyBundle:
         
         self.background = kwargs.get('backgroundImage', self.background)
         self.normaliseImage = kwargs.get('normaliseImage',self.normaliseImage)
+        
         self.loc = kwargs.get('loc', self.loc )
+        if self.loc is not None:
+            self.autoLoc = False
+        self.autoLoc = kwargs.get('autoLoc', self.autoLoc )
+        
+        self.applyMask = kwargs.get('applyMask', self.applyMask)
+
         self.mask = kwargs.get('mask', self.mask)
+        if self.mask is not None:
+            self.autoMask = False
+        self.autoMask = kwargs.get('autoMask', self.autoMask)
+
         self.crop = kwargs.get('crop', self.crop)
+        
+        self.edgeFilterShape = kwargs.get('edgeFilterShape', self.edgeFilterShape )
         self.filterSize = kwargs.get('filterSize', self.filterSize )
         self.coreMethod = kwargs.get('coreMethod', self.coreMethod)
         self.autoContrast = kwargs.get('autoContrast', self.autoContrast)
         self.outputType = kwargs.get('outputType', self.outputType)
-        self.autoMask = kwargs.get('autoMask', self.autoMask)
         self.calibImage = kwargs.get('calibImage', self.calibImage)
         self.coreSize = kwargs.get('coreSize', self.coreSize)
         self.gridSize  = kwargs.get('gridSize', self.gridSize)
@@ -103,9 +127,10 @@ class PyBundle:
         self.filterSize = filterSize
         
     
-    def set_bundle_loc(self, loc):
+    def set_loc(self, loc):
         """ Store the location of the bundle, requires tuple of (centreX, centreY, radius)."""
         self.loc = loc
+        self.autoLoc = False   # We don't want to automatically find it if we have been given it
         
     
     def set_core_method(self, coreMethod):
@@ -121,6 +146,7 @@ class PyBundle:
     def set_mask(self, mask):
         """ Provide a mask to be used. Mask must be a 2D numpy array of same size as images to be processed"""
         self.mask = mask
+        self.autoMask = False  # We don't want to automatically find it if we have been given it
         
     
     def set_auto_contrast(self, ac):
@@ -129,35 +155,45 @@ class PyBundle:
         
         
     def set_crop(self, crop):
-        """ Determines whether images are cropped to size of bundle (FILTER, EDGE_FILTER methods) Boolean."""
+        """ Determines whether images are cropped to size of bundle 
+        for FILTER, EDGE_FILTER methods. crop is Boolean.
+        """
         self.crop = crop    
     
     
+    def set_apply_mask(self, applyMask):
+        """ Determines whether areas outside the bundle are set to zero 
+        for FILTER and EDGE_FILTER method. applyMask is Boolean.
+        """
+        self.apply_mask = applyMask
+        
+    
     def set_auto_mask(self, img, **kwargs):
-        """ Automically create mask using pre-determined bundle location.
-        Optionally provide a radius rather than using radius of determined
-        bundle location.
-        :param img: example image from which size of mask is determined
-        :param radius, optional radius of mask
+        """ Set whether to automically create mask using pre-determined bundle 
+        location.
+        
+        It is also possible to provide an image as a 2D numpy array, in which
+        case the mask will be generated of the correct size for this image, but
+        this is deprecates, use calibrate() instead. Optionally provide a 
+        radius rather than using radius of determined bundle location.
+       
         """       
-        if img is True:
-            self.mask = None
-            self.autoMask = True      # Flag means we come back once we have a loc
+        if type(img) is bool:
+            if img is True:
+                self.mask = None
+                self.autoMask = True     
             
+        # Deprecate possibility to provide an image here, avoid using for new
+        # applications, use calibrate() instead.
         elif img is not None and img is not False:
 
             if self.loc is not None:
-
                radius = kwargs.get('radius', self.loc[2])
                self.mask = pybundle.get_mask(img, (self.loc[0], self.loc[1], radius))
                self.autoMask = False
-            else:
-               self.mask = None
-               self.autoMask = True   # Flag means we come back once we have an image
+          
+    
         
-        else:
-            self.mask = None
-            self.autoMask = False      # Flag means we come back once we have a loc
         
     def create_and_set_mask(self, img, **kwargs):
         """ Determine mask from provided calibration image and set as mask
@@ -174,10 +210,21 @@ class PyBundle:
         
         
     def set_auto_loc(self, img):
-        """ Calculate the location of the bundle and stores this.
-        :param img: image showing bundle as 2D numpy array
-        """        
-        self.loc = pybundle.find_bundle(img)
+        """ Sets whether the bundle is automatically located for cropping and masking,
+        if these are turned on.
+        
+        It is also possible to pass an image as a 2D numpy array instead of a Boolean,
+        in which case the bundle location will be determined from this image. However,
+        this is not deprecated in favour of setting calibImg and then calling calibrate.
+        """      
+        
+        if type(img) is bool:
+            if img is True:
+                self.loc = None
+                self.autoLoc = True
+        elif type(img) is np.ndarray:        
+            self.loc = pybundle.find_bundle(img)
+            self.autoLoc  = False
                     
         
     def set_background(self, background):
@@ -236,12 +283,12 @@ class PyBundle:
         self.gridSize = gridSize
         
         
-    def set_edge_filter(self, edgePos, edgeSlope):  
+    def set_edge_filter_shape(self, edgePos, edgeSlope):  
         """ Create filter if EDGE_FILTER method is to be used.
         :param edgePos: spatial frequency of edge in pixels of FFT of image
         :param edgeSlope: steepness of slope (range from 10% to 90%) in pixels of FFT of image
         """
-        self.edgeFilter = pybundle.edge_filter(self.loc[2] *2 , edgePos, edgeSlope)
+        self.edgeFilterShape  = (edgePos, edgeSlope)
         
         
     def set_use_numba(self, useNumba):
@@ -302,14 +349,47 @@ class PyBundle:
                 
         
     def calibrate(self):
-        """ Creates calibration for TRILIN method. A calibration image, coreSize and griSize must have been set prior to calling this."""
-        if self.calibImage is not None:
-            self.calibration = pybundle.calib_tri_interp(self.calibImage, self.coreSize, self.gridSize, background = self.background, normalise = self.normaliseImage)
-    
+        """ Peforms calibraion steps appropriate to chosen method. A calibration 
+        image must have been set prior to calling this.
+        
+        For TRILIN, creates inerpolation calibration.
+        
+        FOR FILTER, EDGE_FILTER the bundle will be located if autoLoc has been set.
+        
+        FOR FILTER, EDGE_FILTER the mask will be located if autoMask has been set.
+
+        
+        """
+       
+        assert self.calibImage is not None, "Calibration requires calibration image, use set_calib_image()."
+        
+        if self.coreMethod == self.TRILIN:
+            if self.calibImage is not None:
+
+                self.calibration = pybundle.calib_tri_interp(self.calibImage, self.coreSize, self.gridSize, 
+                                                         background = self.background, 
+                                                         normalise = self.normaliseImage,
+                                                         filterSize = self.filterSize)
+        
+        else:
+            
+            if self.autoLoc and self.calibImage is not None:
+                self.loc = pybundle.find_bundle(self.calibImage)
+                self.autoLoc = False    
+            
+            if self.autoMask and self.calibImage is not None and self.loc is not None:
+                self.mask = pybundle.get_mask(self.calibImage, self.loc)
+                self.autoMask = False
+         
+        if self.coreMethod == self.EDGE_FILTER:
+             assert self.loc is not None, "Calibration for edge filter requires the bundle location."
+             assert type(self.edgeFilterShape) is tuple, "Edge filter shape not defined."
+             self.edgeFilter = pybundle.edge_filter(self.loc[2] *2 , self.edgeFilterShape[0], self.edgeFilterShape[1])
+            
     
     def calibrate_sr(self):
         """ Creates calibration for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
-
+        
         if self.srCalibImages is not None or self.srShifts is not None:
             self.calibrationSR = pybundle.SuperRes.calib_multi_tri_interp(
                 self.calibImage, self.srCalibImages,                                                                           
@@ -337,25 +417,75 @@ class PyBundle:
         
         imgOut = img        
         
-        if self.autoMask:
-            self.set_auto_mask(img)
+        
+        
+        # If autoLoc is True (or if we are doing EDGE_FILTER), we find the location for the crop now, otherwise
+        # we use the stored location (if this is None then there will be no crop)
+        # We avoid doing this if we are not cropping or masking to save time
+        if self.autoLoc and ((self.crop or self.coreMethod == self.EDGE_FILTER) or self.applyMask):
+            if self.calibImage is not None:
 
-        if method == self.FILTER:
+                self.loc = pybundle.find_bundle(self.calibImage) 
+                cropLoc = self.loc
+                self.autoLoc = False   # We have done this, don't do it again
+            else:
+                cropLoc = pybundle.find_bundle(img) 
+        else:
+            cropLoc = self.loc
+         
+         
+        # If autoMask is True, we find the location for mask crop now, otherwise
+        # we use the stored mask (if this is None then there will be no mask)
+        # We avoid doing this if we are not masking to save time         
+        if self.autoMask and cropLoc is not None and self.applyMask is not None:
+            if self.calibImage is not None:
+                self.mask = pybundle.get_mask(self.calibImage, cropLoc)
+                mask = self.mask
+                self.autoMask = False  # We have done this, don't do it again
+            else:
+                mask = pybundle.get_mask(img, cropLoc)
+
+        else:
+            mask = self.mask
+            
+            
+        # Background subtraction (This is handled separately for TRILIN)     
+        if method == self.FILTER or method == self.EDGE_FILTER:
             if self.background is not None:
                 imgOut = imgOut - self.background
-            if self.filterSize is not None:
-                imgOut = pybundle.g_filter(imgOut, self.filterSize)
+        
+        
+        # Gaussian Filter
+        if method == self.FILTER and self.filterSize is not None:
+            imgOut = pybundle.g_filter(imgOut, self.filterSize)
+            
                 
+       
+            
+                
+        # Masking
+        if (method == self.FILTER or method == self.EDGE_FILTER) and mask is not None:
+            imgOut = pybundle.apply_mask(imgOut, mask)
+       
+        
+        # Cropping
+        if method == self.EDGE_FILTER or (method == self.FILTER and self.crop):
+            if cropLoc is not None:
+                imgOut = pybundle.crop_rect(imgOut, cropLoc)[0]
 
+       
+        # Edge Filter
         if method == self.EDGE_FILTER:
-            if self.background is not None:
-                imgOut = imgOut - self.background
-            if self.edgeFilter is not None and self.loc is not None:
-                imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
-                imgOut = pybundle.filter_image(imgOut, self.edgeFilter)      
+
+           if self.edgeFilter is None:
+               assert cropLoc is not None, "Edge filter requires the bundle location."
+               assert self.edgeFilterShape is not None, "Edge filter requires the edge filter shape to be set using set_edge_filter_shape()."
+               self.edgeFilter = pybundle.edge_filter(cropLoc[2] *2 , self.edgeFilterShape[0], self.edgeFilterShape[1])
                 
-                
-        # Triangular linear interpolation    
+           if self.edgeFilter is not None and cropLoc is not None:
+               imgOut = pybundle.filter_image(imgOut, self.edgeFilter) 
+        
+        # Normal Triangular linear interpolation    
         if method == self.TRILIN and not self.superRes:
             if self.calibration is None and self.calibImage is not None:
                 self.calibrate()
@@ -389,7 +519,9 @@ class PyBundle:
             if np.shape(imgOut)[2] != calibSR.nShifts: return None
             imgOut = pybundle.SuperRes.recon_multi_tri_interp(imgOut, calibSR, numba = self.useNumba)
        
-         
+           
+        
+        # Autocontrast
         if self.autoContrast:
             t1 = time.perf_counter()
             imgOut = imgOut - np.min(imgOut)
@@ -401,24 +533,7 @@ class PyBundle:
             elif self.outputType == 'float':
                 imgOut = imgOut
         
-        if method == self.FILTER and self.mask is not None:
-            imgOut = pybundle.apply_mask(imgOut, self.mask)
-            
-        # Temporarily disabled because after applying the edge filter the image is
-        # not the same size as the mask.a
-        #if self.coreMethod == self.EDGE_FILTER and self.mask is not None:
-        #    imgOut = pybundle.apply_mask(imgOut, self.mask)
-            
-        if method == self.TRILIN and not self.superRes and self.calibration.mask is not None:
-            imgOut = pybundle.apply_mask(imgOut, self.calibration.mask)
-            
-        if method == self.TRILIN and self.superRes:
-            if calibSR.mask is not None:
-                imgOut = pybundle.apply_mask(imgOut, calibSR.mask)
-            
-        if method == self.FILTER and self.crop and self.loc is not None:
-            imgOut = pybundle.crop_rect(imgOut, self.loc)[0]
-        
+        # Type casting
         imgOut = imgOut.astype(self.outputType)        
         
         return imgOut

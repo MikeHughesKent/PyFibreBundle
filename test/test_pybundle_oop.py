@@ -2,9 +2,7 @@
 """
 Some general tests of PyBundle using object-oriented programming
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 from matplotlib import pyplot as plt
 import numpy as np
@@ -62,7 +60,7 @@ pyb.set_core_method(pyb.EDGE_FILTER)
 pyb.set_auto_loc(calibImg)
 pyb.set_crop(True)
 coreSpacing = pybundle.find_core_spacing(calibImg)
-pyb.set_edge_filter(coreSpacing * 1.8, coreSpacing * 0.2)
+pyb.set_edge_filter_shape(coreSpacing * 1.8, coreSpacing * 0.2)
 t1 = time.perf_counter()
 imgProc = pyb.process(img)
 print(f"Time for edge filter processing: {round(time.perf_counter() - t1,4)} s")

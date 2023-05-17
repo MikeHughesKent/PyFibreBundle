@@ -6,6 +6,8 @@ The easiest way to use this functionality is to create an instance of ``Mosaic``
 sequentially register and add image ``img`` to the mosaic,	 and ``Mosaic.getMosaic()`` to get the latest mosaic image. 
 Both ``img`` and the ``mosaic`` are 2D (monochrome) or 3D (colour) numpy arrays.
 
+An example is provided on `Github <examples\\mosaicing_example.py>`_.
+
 ^^^^^^^^^^^^^^^
 Getting Started
 ^^^^^^^^^^^^^^^

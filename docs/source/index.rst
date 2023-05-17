@@ -29,9 +29,11 @@ Contents
 .. toctree::
    :maxdepth: 2
    
+   install
    core
    linear_interp
    pybundle_class
+   low_level
    mosaicing
    super_res
    functions

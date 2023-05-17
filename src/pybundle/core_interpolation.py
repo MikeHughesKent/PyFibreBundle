@@ -42,8 +42,7 @@ def find_cores(img, coreSpacing):
      accurate. CoreSpacing is an estimate of the separation between cores in
      pixels.
      """
-     
-    # Pre-filtering helps to minimse noise and reduce efffect of
+     # Pre-filtering helps to minimse noise and reduce efffect of
      # multimodal patterns
      imgF = pybundle.g_filter(img, coreSpacing/5)
 
@@ -144,6 +143,7 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
                  bundle, defaults to True
     :return: instance of BundleCalibration
     """
+
     centreX = kwargs.get('centreX', -1)
     centreY = kwargs.get('centreY', -1)
     radius = kwargs.get('radius', -1)
@@ -154,11 +154,9 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     background = kwargs.get('background', None)
     if autoMask:
         img = pybundle.auto_mask(img)
-    # Find the cores in the calibration image
-    #t1 = time.perf_counter()
-    coreX, coreY = pybundle.find_cores(img, coreSize)
-    #print("Find cores time " + str(time.perf_counter() - t1))
 
+    # Find the cores in the calibration image
+    coreX, coreY = pybundle.find_cores(img, coreSize)
     coreX = np.round(coreX).astype('uint16')
     coreY = np.round(coreY).astype('uint16')
 
@@ -379,7 +377,6 @@ def recon_tri_interp(img, calib, **kwargs):
         pixelVal = np.reshape(pixelVal, (calib.gridSize, calib.gridSize, calib.nChannels))
      else:
         pixelVal = np.reshape(pixelVal, (calib.gridSize, calib.gridSize))
-
 
      if calib.mask is not None:
          if numba and numbaAvailable:
