@@ -20,6 +20,8 @@ at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), Scho
 Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
 for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
 
+[Join the mailing list](https://groups.google.com/g/pyfibrebundle) to hear about releases, updates and bug fixes.
+
 
 ## Capabilities
 
