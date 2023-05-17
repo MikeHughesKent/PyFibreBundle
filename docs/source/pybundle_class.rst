@@ -29,6 +29,7 @@ GENERAL Settings:
 * outputType = Float (``set_output_type``)
 
 CROP/MASK Settings (for FILTER/EDGE_FILTER only):
+
 * applyMask = False (``set_apply_mask``)
 * autoMask = True (``set_auto_mask``)
 * autoLoc = False (``set_auto_loc``)
