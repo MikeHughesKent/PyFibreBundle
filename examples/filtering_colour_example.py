@@ -22,14 +22,15 @@ calibImg = np.array(Image.open(r"..\test\data\bundle_colour_1_background.tif"))
 
 
 
-
 # Create an instance of the PyBundle class, set to remove core pattern by Gaussian filtering, crop and mask
-# based on a calib image
+# based on a calib image. We will also normalise and autocontrast.
 pyb = PyBundle(coreMethod = PyBundle.FILTER, 
                filterSize = 1.6,
                crop = True,
                applyMask = True,
-               calibImage = calibImg)
+               calibImage = calibImg,
+               normaliseImage = calibImg[:,:,0],    
+               autoContrast = True)
 pyb.calibrate()
 
 t1 = timer()
@@ -37,9 +38,9 @@ imgProc = pyb.process(img)
 print(f"Colour Gaussian filter took {round((timer() - t1) * 1000)} ms ")
 
 plt.figure(dpi=300)
-plt.imshow(imgProc / 1024, cmap='gray')
+plt.imshow(imgProc, cmap='gray')
 plt.title("Gaussian filter")
-
+plt.show()
 
 
 
@@ -49,7 +50,9 @@ pyb = PyBundle(coreMethod = PyBundle.EDGE_FILTER,
                edgeFilterShape = (5.6,1), 
                crop = True,
                applyMask = True,
-               calibImage = calibImg) 
+               calibImage = calibImg,
+               normaliseImage = calibImg[:,:,0],
+               autoContrast = True) 
                
 pyb.calibrate()
 t1 = timer()
@@ -57,7 +60,8 @@ imgProc2 = pyb.process(img)
 print(f"Colour edge filter took {round((timer() - t1) * 1000)} ms ")
 
 plt.figure(dpi=300)
-plt.imshow(imgProc2 / 1024, cmap='gray')
+plt.imshow(imgProc2, cmap='gray')
 plt.title("Colour Edge filter")
 
+plt.show()
 

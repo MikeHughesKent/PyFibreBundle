@@ -20,6 +20,7 @@ import cv2 as cv
 
 from pybundle.core_interpolation import *    
 from pybundle.bundle_calibration import BundleCalibration
+from pybundle.core import normalise_image
 
 
 class PyBundle:
@@ -41,7 +42,7 @@ class PyBundle:
     filterSize = None
     
     autoContrast = False
-    outputType = 'float'
+    outputType = 'float64'
     
     edgeFilter = None
     edgeFilterShape = None
@@ -174,7 +175,7 @@ class PyBundle:
         
         It is also possible to provide an image as a 2D numpy array, in which
         case the mask will be generated of the correct size for this image, but
-        this is deprecates, use calibrate() instead. Optionally provide a 
+        this is deprecated, use calibrate() instead. Optionally provide a 
         radius rather than using radius of determined bundle location.
        
         """       
@@ -211,11 +212,11 @@ class PyBundle:
         
     def set_auto_loc(self, img):
         """ Sets whether the bundle is automatically located for cropping and masking,
-        if these are turned on.
+        if these are turned on, depending on boolean value passed.
         
         It is also possible to pass an image as a 2D numpy array instead of a Boolean,
         in which case the bundle location will be determined from this image. However,
-        this is not deprecated in favour of setting calibImg and then calling calibrate.
+        this is noq deprecated in favour of setting calibImg and then calling calibrate.
         """      
         
         if type(img) is bool:
@@ -231,8 +232,13 @@ class PyBundle:
         """ Store an image to be used as background. If TRILIN is being used and a 
         calibration has already been performed, the background will be added to the
         calibration.
-        :param background: background image as 2D numpy array. Set as None to removed background.
+
+        Arguments:
+
+            backgroundImage - background image as 2D/3D numpy array. Set as 
+                             None to remove background.        
         """
+        
         if background is not None:
             self.background = background.astype('float')
         else:
@@ -245,7 +251,11 @@ class PyBundle:
         """ Store an image to be used for normalisation. If TRILIN is being used and a 
         calibration has already been performed, the normalisation will be added to the
         calibration.
-        :param normaliseImage: normalisation image as 2D numpy array. Set as None to removed normalisation.
+        
+        Arguments:
+
+            normaliseImage - normalisation image as 2D/3D numpy array. Set as 
+                             None to remove normalisation.
         """
         if normaliseImage is not None:
             self.normaliseImage = normaliseImage.astype('float')
@@ -256,12 +266,14 @@ class PyBundle:
             
         
     def set_output_type(self, outputType):
-        """ Specify the data type of input images from 'process'. If not called, 
-        default of 'uint8' will be used.
-        :param outputType: one of 'uint8', 'unit16' or 'float'
-        :return: True if type was valid, otherwise False
+        """ Specify the data type of input images returned from 'process'. 
+        Returns False if type not valid.
+        
+        Arguments:
+
+            outputType: str, one of 'uint8', 'unit16' or 'float'
         """
-        if outputType == 'uint8' or outputType == 'uint16' or outputType == 'float':
+        if outputType == 'uint8' or outputType == 'uint16' or outputType == 'float' or outputType == 'float32' or outputType == 'float64':
             self.outputType = outputType
             return True
         else:
@@ -269,25 +281,33 @@ class PyBundle:
         
             
     def set_calib_image(self, calibImg):
-        """ Set image to be used for calibration if TRLIN method used.
-        :param calibImg: calibration image as 2D numpy array
+        """ Set image to be used for calibration.
+        
+        Arguments:
+            calibImg - calibration image as 2D/3D numpy array
         """
         self.calibImage = calibImg.astype('float')
         
         
         
     def set_grid_size(self, gridSize):
-        """ Set output image size if TRLIN method used. If not called prior to calling 'calibrate', the default value of 512 will be used.
-        :param gridSize: size of square image output size
+        """ Sets output image size if TRLIN method used. If not called prior 
+        to calling 'calibrate', the default value of 512 will be used.
+        
+        Arguments:
+            gridSize - int, size of square image output 
         """
         self.gridSize = gridSize
         
         
     def set_edge_filter_shape(self, edgePos, edgeSlope):  
-        """ Create filter if EDGE_FILTER method is to be used.
-        :param edgePos: spatial frequency of edge in pixels of FFT of image
-        :param edgeSlope: steepness of slope (range from 10% to 90%) in pixels of FFT of image
+        """ Creates and stores filter for EDGE_FILTER method.
+        
+        Arguments:
+            edgePos   - float, spatial frequency of edge in pixels of FFT of image
+            edgeSlope - float, steepness of slope (range from 10% to 90%) in pixels of FFT of image
         """
+        
         self.edgeFilterShape  = (edgePos, edgeSlope)
         
         
@@ -357,10 +377,8 @@ class PyBundle:
         FOR FILTER, EDGE_FILTER the bundle will be located if autoLoc has been set.
         
         FOR FILTER, EDGE_FILTER the mask will be located if autoMask has been set.
-
         
         """
-       
         assert self.calibImage is not None, "Calibration requires calibration image, use set_calib_image()."
         
         if self.coreMethod == self.TRILIN:
@@ -369,8 +387,9 @@ class PyBundle:
                 self.calibration = pybundle.calib_tri_interp(self.calibImage, self.coreSize, self.gridSize, 
                                                          background = self.background, 
                                                          normalise = self.normaliseImage,
-                                                         filterSize = self.filterSize)
-        
+                                                         filterSize = self.filterSize,
+                                                         mask = True,
+                                                         autoMask = True)
         else:
             
             if self.autoLoc and self.calibImage is not None:
@@ -388,7 +407,10 @@ class PyBundle:
             
     
     def calibrate_sr(self):
-        """ Creates calibration for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
+        """ Creates calibration for TRILIN SR method. A calibration image, 
+        set of super-res shift images, coreSize and griSize must have been 
+        set prior to calling this.
+        """
         
         if self.srCalibImages is not None or self.srShifts is not None:
             self.calibrationSR = pybundle.SuperRes.calib_multi_tri_interp(
@@ -408,9 +430,13 @@ class PyBundle:
 
     
     def process(self, img):
-        """ Process fibre bundle image using current settings .
-        :param img: input image as 2D numpy array
-        :return: processing image as 2D numpy array
+        """ Process fibre bundle image using current settings.
+        
+        Returns processed image as 2D/3D numpy array.
+        
+        Arguments:
+            img: input image as 2D/3D numpy array
+            
         """
         
         method = self.coreMethod  # to insulate against a change during processing
@@ -453,15 +479,18 @@ class PyBundle:
         if method == self.FILTER or method == self.EDGE_FILTER:
             if self.background is not None:
                 imgOut = imgOut - self.background
+                
         
+        # Normalisation (This is handled separately for TRILIN)     
+        if method == self.FILTER or method == self.EDGE_FILTER:
+            if self.normaliseImage is not None:
+                imgOut = normalise_image(imgOut, self.normaliseImage)              
+
         
         # Gaussian Filter
         if method == self.FILTER and self.filterSize is not None:
-            imgOut = pybundle.g_filter(imgOut, self.filterSize)
-            
-                
-       
-            
+            imgOut = pybundle.g_filter(imgOut, self.filterSize)            
+                  
                 
         # Masking
         if (method == self.FILTER or method == self.EDGE_FILTER) and mask is not None:
@@ -567,7 +596,7 @@ class PyBundle:
         
         
     def set_super_res(self, sr):
-        """ Enables or disables super resoution, sr is boolean"""
+        """ Enables or disables super resolution, sr is boolean"""
         self.superRes = sr
         
         
@@ -576,7 +605,16 @@ class PyBundle:
         self.srUseLut = useLUT
         
     def calibrate_sr_lut(self, paramCalib, paramRange, nCalibrations) :   
-        """ Creates calibration LUT for TRILIN SR method. A calibration image, set of super-res shift images, coreSize and griSize must have been set prior to calling this."""
+        """ Creates calibration LUT for TRILIN SR method. A calibration image, 
+        set of super-res shift images, coreSize and griSize must have been 
+        set prior to calling this.
+        
+        Arguments:
+            paramCalib  -  parameter shift calibration, as generated by calib_param_shift
+            paramRange  -  tuple of (min, max) defining range of parameter values to generate for
+            nCalibration - int, number of parameter values to generate for
+            
+        """
    
         if self.srCalibImages is not None or self.srShifts is not None:
             self.srCalibrationLUT = pybundle.calibrationLUT(

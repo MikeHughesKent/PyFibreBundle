@@ -14,6 +14,7 @@ from time import perf_counter as timer
 from pathlib import Path
 
 import context
+import pybundle
 
 from pybundle import PyBundle
 
@@ -31,7 +32,7 @@ print(f"Gaussian filter took {round((timer() - t1) * 1000)} ms ")
 
 # Create an instance of the PyBundle class, set to remove core pattern by Gaussian filtering, crop and mask
 pyb = PyBundle(coreMethod = PyBundle.FILTER, 
-               filterSize = 2.5,
+               filterSize = 2,
                applyMask = True)
 
 t1 = timer()
@@ -43,7 +44,7 @@ print(f"Gaussian filter and crop/mask from image took {round((timer() - t1) * 10
 # Create an instance of the PyBundle class, set to remove core pattern by Gaussian filtering, crop and mask
 # based on a calib image
 pyb = PyBundle(coreMethod = PyBundle.FILTER, 
-               filterSize = 2.5,
+               filterSize = 2,
                crop = True,
                applyMask = True,
                calibImage = calibImg)
@@ -52,6 +53,22 @@ pyb.calibrate()
 t1 = timer()
 imgProc3 = pyb.process(img)
 print(f"Gaussian filter and crop/mask from pre-calib took {round((timer() - t1) * 1000)} ms ")
+
+
+
+# Create an instance of the PyBundle class, set to remove core pattern by Gaussian filtering, crop and mask
+# based on a calib image, and then normalisation
+pyb = PyBundle(coreMethod = PyBundle.FILTER, 
+               filterSize = 2,
+               crop = True,
+               applyMask = True,
+               calibImage = calibImg,
+               normaliseImage = calibImg)
+pyb.calibrate()
+
+t1 = timer()
+imgProc4 = pyb.process(img)
+print(f"Gaussian filter and crop/mask from pre-calib plus normalisation took {round((timer() - t1) * 1000)} ms ")
 
 
 
@@ -70,5 +87,9 @@ plt.title("Gaussian filter, mask and crop from image")
 plt.figure(dpi=150)
 plt.imshow(imgProc3, cmap='gray')
 plt.title("Gaussian filter, mask and crop from calib image")
+
+plt.figure(dpi=150)
+plt.imshow(imgProc4, cmap='gray')
+plt.title("Gaussian filter, mask and crop from calib image, normalise")
 
 plt.show()

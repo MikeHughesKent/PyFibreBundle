@@ -62,7 +62,7 @@ interpolation, and PyBundle.EDGE_FILTER to use a custom edge filter.
 See the :doc:`Linear Interpolation<linear_interp>`  page for details on 
 how to perform linear interpolation.
 
-The edge filter is a sptail frequency domain filter that seeks to cut off
+The edge filter is a spatial frequency domain filter that seeks to cut off
 higher spatial frequencies that correspond to the cores. It is used 
 similarly to the Gaussian filter, except that the
 filter size is defined by passing ``edgeFilterSize = (pos, slope)`` or
@@ -77,6 +77,28 @@ cores spacing and slope around 10% of this.
 As for the Gaussian filter, the best speed is achieved by setting a calibration
 image and then calling ``calibrate()``; the edge filter will be generated at 
 this point.
+
+
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Background and Normalisation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We can provide images which will be used for background subtraction and
+normalisation (flat-fielding). Essentially, an image provided as background 
+will be subtracted from the raw image to be processed, and the raw image
+will be divided by the normalisation image (the exact implementation depends
+on the core processing method).
+
+To set a background image, pass ``background = backImg`` or call::
+
+    pyb.set_background(backimg)
+
+To set a normalisation image, pass ``normaliseImage = normImg`` or call::
+
+    pyb.set_normalise_image(normImg)
+    
+Existing backgrounds/normalisations can be cleared by passing ``None`` to these
+functions.        
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Cropping 
@@ -150,14 +172,14 @@ be created the first time we call pyb.process().
 Image Type and Autocontrast
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   
-The default image output type is ``'float'``, this can be changed by passing, for 
+The default image output type is ``'float64'``, this can be changed by passing, for 
 example ``outputType = 'uint8'`` when creating the ``PyBundle`` object, or by 
 calling ::
 
     pyb.set_output_type('uint8')      # Output images will be 8 bit
     
-where ``'uint8'``, ``'uint16'`` or ``'float'`` can be used. The output will 
-simply be cast to this format without any scaling, unless we pass 
+where ``'uint8'``, ``'uint16'``, ``'float32'`` or ``'float64'`` can be used. 
+The output will simply be cast to this format without any scaling, unless we pass 
 ``autoContrast = True`` or set::
 
    pyb.set_auto_contrast(True)     

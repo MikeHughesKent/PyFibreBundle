@@ -7,9 +7,7 @@ This file contains core functions for locating the fibre bundle, masking
 and cropping the bundle, and simple methods for removing the core structure
 by spatial filtering.
 
-@author: Mike Hughes
-Applied Optics Group, University of Kent
-https://github.com/mikehugheskent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 import numpy as np
@@ -17,23 +15,54 @@ import scipy.fft
 import math
 import time
 
-
 import cv2 as cv
 
 import pybundle
 from pybundle.bundle_calibration import BundleCalibration
 from pybundle.utility import average_channels, max_channels
 
-def normalise_image(img, normImg):
-    """Normalise image by dividing by a reference image
-    :param img: input image as 2D numpy array
-    :param normImg: reference image as 2D numpy array
+
+def normalise_image(img, normImg, outputType = None):
+    """Normalise image by dividing by a reference image. 
+    
+    Returns the normalised image as a 2D/3D numpy array. 
+    
+    If the image is 3D (colour) then the reference image can either by 2D 
+    (in which case it will be applied to each colour plane) or 3D.
+
+    
+    Arguments:
+        img     : 2D/3D numpy array, input image
+        normImg : 2D/3D numpy array, reference image as 2D numpy array
     :return: normalised image as 2D numpy array
     """
-    img = img.astype('float64')
-    normImg = normImg.astype('float64')
-    normImg = np.divide(img, normImg, out=np.zeros_like(img).astype('float64'), where=normImg!=0)
-    return normImg
+  
+        
+    normImg = normImg.astype('float32')
+  
+    if img.ndim == 3 and normImg.ndim == 2:
+        normImg = np.expand_dims(normImg, 2)
+    
+    img = img.astype('float32')
+    
+    out = np.divide(img, normImg, where=normImg!=0)
+  
+    
+    if outputType == 'uint8':
+        normImg = normImg / np.max(normImg) * 256
+    
+    if outputType == 'uint16':
+        normImg = normImg / np.max(normImg) * 65536
+        
+    if outputType is not None:
+        if normImg.dtype != outputType:
+            normImg = normImg.astype(outputType)    ###
+    
+
+   
+        
+    
+    return out
 
     
 
@@ -43,7 +72,7 @@ def g_filter(img, filter_size):
     :param filter_size: sigma of Gaussian filter
     :return: filtered image as 2D numpy array
     """
-    kernel_size = round(filter_size * 8)              # Kernal size needs to be larger than sigma
+    kernel_size = round(filter_size * 4)              # Kernal size needs to be larger than sigma
     kernel_size = kernel_size + 1 - kernel_size % 2   # Kernel size must be odd
     img_filt = cv.GaussianBlur(img,(kernel_size,kernel_size), filter_size)
     return img_filt
@@ -216,7 +245,6 @@ def apply_mask(img, mask):
     """
     if img.ndim == 3:
         m = np.expand_dims(mask, 2)
-        #imgMasked = np.multiply(img, np.repeat(mask, np.shape(img)[2], 2))
     else:
         m = mask
     imgMasked = np.multiply(img, m)

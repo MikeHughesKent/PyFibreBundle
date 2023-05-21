@@ -33,6 +33,10 @@ print("\ntest_pybundle_oop")
 print("-------------------------")
 import test_pybundle_oop
 
+print("\ntest_image_types_oop")
+print("-------------------------")
+import test_processing_im_type
+
 print("\ntest_recon_tri_interp")
 print("-------------------------")
 import test_recon_tri_interp

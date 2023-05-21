@@ -31,9 +31,12 @@ print(f"Calibration and Edge filter took {round((timer() - t1) * 1000)} ms ")
 
 
 # Create an instance of the PyBundle class, set to remove core pattern by Edge filtering using
-# calibration image to pre-determine the size of bundle and pre-calculating the filter
+# calibration image to pre-determine the size of bundle and pre-calculating the filter and 
+# also normalising
 pyb = PyBundle(coreMethod = PyBundle.EDGE_FILTER, 
-               edgeFilterShape = (10,2), calibImage = calibImg) 
+               edgeFilterShape = (10,2), 
+               calibImage = calibImg, 
+               normaliseImage = calibImg) 
                
 pyb.calibrate()
 t1 = timer()
@@ -41,6 +44,6 @@ imgProc = pyb.process(img)
 print(f"Edge filter took {round((timer() - t1) * 1000)} ms ")
 
 
-plt.figure(dpi=300)
+plt.figure(dpi=150)
 plt.imshow(imgProc, cmap='gray')
 plt.title("Edge filter")

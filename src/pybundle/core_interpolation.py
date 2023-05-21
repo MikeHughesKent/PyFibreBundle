@@ -39,8 +39,14 @@ except:
 
 def find_cores(img, coreSpacing):
      """ Find cores in bundle image using regional maxima. Generally fast and
-     accurate. CoreSpacing is an estimate of the separation between cores in
-     pixels.
+     accurate. 
+     
+     Returns tuple of (x_pos, y_pos) where x_pos and y_pos are 1D numpy arrays.
+     
+     Arguments:
+         img         : 2D/3D numpy array
+         coreSpacing : float, estimate of the separation between cores in
+                       pixels.
      """
      # Pre-filtering helps to minimse noise and reduce efffect of
      # multimodal patterns
@@ -99,16 +105,21 @@ def core_values(img, coreX, coreY, filterSize, **kwargs):
     """ Extract intensity of each core in fibre bundle image. First applies a
     Gaussian filter unless filterSize is None. Supports JIT acceleration
     if numba is installed.
-    :param coreX: 1D numpy array giving x co-ordinates of core centres
-    :param coreY: 1D numpy array giving y co-ordinates of core centres
-    :param filterSize: sigma of Gaussian filter
-    :param numba: optional, if true numba JIT used for faster execution, defaults to False.
+    
+    Arguments:
+        coreX      : 1D numpy array giving x co-ordinates of core centres
+        coreY      : 1D numpy array giving y co-ordinates of core centres
+        filterSize : float, sigma of Gaussian filter
+    
+    Optional Keyword Arguments:    
+
+        numba  : optional, if true numba JIT used for faster execution, defaults to False.
     """
     numba = kwargs.get('numba', False)
     
     if filterSize is not None:
         img = pybundle.g_filter(img, filterSize)
-
+        
     if numba and numbaAvailable:
         cInt = core_value_extract_numba(img, coreX, coreY)
     else:
@@ -124,24 +135,29 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     returns the entire calibration as an instance of BundleCalibration which can subsequently by used 
     by recon_tri_interp. If background and/or normalisation images are specified, subsequent 
     reconstructions will have background subtraction and/or normalisation respectively.
+    
+    Returns an instance of BundleCalibration
+
         
     Thanks to Cheng Yong Xin, Joseph, who collaborated in implementation of this function.
     
-    :param img: calibration image of bundle as 2D (mono) or 3D (colour) numpy array
-    :param coreSize: estimate of average spacing between cores
-    :param gridSize: output size of image, supply a single value, image will be square
-    :param centreX: optional, x centre location of bundle, if not specified will be determined automatically
-    :param centreY: optional, y centre location of bundle, if not specified will be determined automatically
-    :param radius: optional, radius of bundle, if not specified will be determined automatically
-    :param filterSize: optional, sigma of Gaussian filter applied, defaults to  0 (no filter)
-    :param background: optional, image used for background subtractionn as 2D numpy array
-    :param normalise: optional, image used for normalisation, as 2D numpy array. Can be same as 
-                      calibration image, defaults to no normalisation
-    :param autoMask: optional, boolean, if true the calibration image will be masked to prevent 
+    Arguments:
+        img        : calibration image of bundle as 2D (mono) or 3D (colour) numpy array
+        coreSize   : float, estimate of average spacing between cores
+        gridSize   : int, output size of image, supply a single value, image will be square
+        
+    Optional Keyword Arguments:    
+        centreX    : int, optional, x centre location of bundle, if not specified will be determined automatically
+        centreY    : int, optional, y centre location of bundle, if not specified will be determined automatically
+        radius     : int, optional, radius of bundle, if not specified will be determined automatically
+        filterSize : float, optional, sigma of Gaussian filter applied, defaults to  0 (no filter)
+        background : optional, image used for background subtraction as 2D numpy array
+        normalise  : optional, image used for normalisation, as 2D numpy array. Can be same as 
+                     calibration image, defaults to no normalisation
+        autoMask   : optional, boolean, if true the calibration image will be masked to prevent 
                      spurious core detections outside of bundle, defualts to True
-    :param mask: optional, boolean, when reconstructing output image will be masked outside of 
-                 bundle, defaults to True
-    :return: instance of BundleCalibration
+        mask       : optional, boolean, when reconstructing output image will be masked outside of 
+                     bundle, defaults to True
     """
 
     centreX = kwargs.get('centreX', -1)
@@ -154,7 +170,6 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     background = kwargs.get('background', None)
     if autoMask:
         img = pybundle.auto_mask(img)
-
     # Find the cores in the calibration image
     coreX, coreY = pybundle.find_cores(img, coreSize)
     coreX = np.round(coreX).astype('uint16')
@@ -354,7 +369,7 @@ def recon_tri_interp(img, calib, **kwargs):
 
      # Extract intensity from each core
      cVals = pybundle.core_values(
-         img, calib.coreX, calib.coreY, calib.filterSize, **kwargs).astype('double')
+         img, calib.coreX, calib.coreY, calib.filterSize, **kwargs).astype('float64')
 
      if calib.background is not None:
          cVals = cVals - calib.backgroundVals    

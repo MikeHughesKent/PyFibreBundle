@@ -8,9 +8,7 @@ BundleCalibration class stores the results of calibration for triangualar
 linear interpretation.
 
 
-@author: Mike Hughes
-Applied Optics Group, University of Kent
-https://github.com/mikehugheskent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 class BundleCalibration:

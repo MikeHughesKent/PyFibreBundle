@@ -25,8 +25,7 @@ GENERAL Settings:
 * autoContrast = False (``set_auto_contrast``)
 * background = None  (``set_background``)
 * coreMethod = None (``set_core_method``)
-
-* outputType = Float (``set_output_type``)
+* outputType = 'float64' (``set_output_type``)
 
 CROP/MASK Settings (for FILTER/EDGE_FILTER only):
 
@@ -38,11 +37,13 @@ CROP/MASK Settings (for FILTER/EDGE_FILTER only):
 * mask = None (``set_mask``)
 
 
-BACKGROUND Settings:
+CALIB/BACKGROUND/NORMALISATION Settings:
 
+* calibImage = None (``set_calib_image``)
 * backgroundImage = None (``set_background``)
+* normaliseImage = none (``set_normalise_image``)
 
-FILTER Settings:
+GAUSSIAN FILTER Settings:
 
 * filterSize = None (``set_filter_size``)
 
@@ -50,12 +51,9 @@ EDGE_FILTER Settings:
 
 * edgeFilterShape = None (``set_edge_filter_shape``)
 
-TRILIN Settings:
+LINEAR INTERPOLATION Settings:
 
-* calibImage = None (``set_calib_image``)
-* normaliseImage = none (``set_normalise_image``)
 * coreSize = 3 (``set_core_size``)
-* autoMask = True (``set_auto_mask``)
 * gridSize  = 512 (``set_grid_size``)
 * useNumba = True (``set_use_numba``)
     
@@ -86,7 +84,7 @@ current options. Returns a processed image as a 2D/3D numpy array.
 
 Performs the prior calibration necessary for ``TRILIN`` method and optional
 for ``FILTER`` and ``EDGE_FILTER``. Most processing options (setters) should be 
-called prior to this, although if ``set_background`` and ``set_normalise_image`` 
+called prior to this, although ``set_background`` and ``set_normalise_image`` 
 can be called later.
 
 
@@ -106,7 +104,7 @@ Setter Methods
 
 If ``bool`` is ``True`` then the location of the bundle will be determined
 automically for cropping and masking for ``FILTER`` or ``EDGE`` methods. This
-has no effect on `TRILIN``. Default is ``True``.
+has no effect on ``TRILIN``. Default is ``True``.
 
 
 .. py:function:: set_auto_contrast(bool)
@@ -172,9 +170,9 @@ finding as part of the TRILIN calibration process.
 
 If ``bool`` is ``True``, images will be cropped to size of bundle when using 
 ``FILTER`` or ``EDGE_FILTER`` methods. The bundle location can be set using
- ``set_loc``, otherwise is will be found automatically from the calibration 
- image (if set) or the image to be processed. If ``set_auto_loc`` is set
- ``False`` and a bundle location is not provided, no cropping will occur.
+``set_loc``, otherwise is will be found automatically from the calibration 
+image (if set) or the image to be processed. If ``set_auto_loc`` is set
+``False`` and a bundle location is not provided, no cropping will occur.
  
 
 .. py:function:: set_edge_filter_shape(edgePos, edgeSlope)
