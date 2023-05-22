@@ -10,9 +10,7 @@ object shifted with respect to the bundle core pattern.
 The preferred way to use the functionality is via the PyBundle class rather 
 than calling these functions directly.
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 import pybundle
@@ -41,33 +39,40 @@ class SuperRes:
         """ Calibration step for super-resolution reconstruction. Either specify the
         known shifts between images, or provide an example set of images
         which the shifts will be calculated from. 
+        
+        Returns instance of BundleCalibration.
+        
+        Arguments:
 
-        :param calibImg: calibration image of fibre bundle, 2D numpy array
-        :param imgs: example set of images with the same set of mutual shifts as the images to
-            later be used to recover an enhanced resolution image from. 3D numpy array.
-            Can be None if 'shifts' is specified instead.
-        :param coreSize: estimate of average spacing between cores
-        :param gridSize: output size of image, supply a single value, image will be square
-        :param normalise: optional, image used for normalisation, as 2D numpy array. Can be same as calibration image, defaults to no normalisation
-        :param background: image used for calibration and , optionally, for background subtraction, as 2D numpy array, defaults to no background
-        :param shifts: optional, known x and y shifts between images as 2D numpy array of size (numImages,2). 
-                       Will override 'imgs' if specified as anything other than None.
-        :param centreX: optional, x centre location of bundle, if not specified will be determined automatically
-        :param centreY: optional, y centre location of bundle, if not specified will be determined automatically
-        :param radius: optional, radius of bundle, if not specified will be determined automatically
-        :param filterSize: optional, sigma of Gaussian filter applied when finding cores, defaults to no filter
-        :param normToImage: optional, if True each image will be normalised to have the same mean intensity. Defaults to False.
-        :param normToBackground: optional, if true, each image will be normalised with respect to the corresponding 
-                       background image from a stack of background images (one for each shift position) provided in backgroundImgs. 
-                       Defaults to False.
-        :param backgroundImgs: optional, stack of images, same size as imgs which are used to normalise or for image by image background subtraction. Defaults to None.
-        :param multiBackgrounds: boolean, if True and backgroundImgs is defined, each image will have its own background image subtracted rather than using backgroundImg
-        :param imageScaleFactor: If normToBackground and normToImage are False (default), use this to specify the normalisation factors for each image. Provide a 1D array the same size as the number of shifted images. Each image will be multiplied by the corresponding factor prior to reconstruction. Default is None (i.e. no scaling).
-        :param autoMask: optional, mask pixels outside bundle when searching for cores. Defualts to True.
-        :param mask: optional, boolean, when reconstructing output image will be masked outside of bundle. Defaults to True
-        :return: instance of BundleCalibration
+               calibImg   : calibration image of fibre bundle, 2D numpy array
+               imgs       : example set of images with the same set of mutual shifts as the images to
+                            later be used to recover an enhanced resolution image from. 3D numpy array.
+                            Can be None if 'shifts' is specified instead.
+               coreSize   : float, estimate of average spacing between cores
+               gridSize   : int, output size of image, supply a single value, image will be square
+               
+        Optional Keyword Arguments:       
+              
+               normalise  : image used for normalisation, as 2D numpy array. Can be same as calibration image, defaults to no normalisation
+               background : image used for background subtraction, as 2D numpy array, defaults to no background
+               shifts     : known x and y shifts between images as 2D numpy array of size (numImages,2). 
+                            Will override doing registration of 'imgs' if specified as anything other than None.
+               centreX    : int, x centre location of bundle, if not specified will be determined automatically
+               centreY    : int, y centre location of bundle, if not specified will be determined automatically
+               radius     : int, radius of bundle, if not specified will be determined automatically
+               filterSize : float, sigma of Gaussian filter applied when finding cores, defaults to no filter
+               normToImage: boolean, if True each image will be normalised to have the same mean intensity. Defaults to False.
+               normToBackground : optional, if true, each image will be normalised with respect to the corresponding 
+                                  background image from a stack of background images (one for each shift position) provided in backgroundImgs. 
+                                  Defaults to False.
+               backgroundImgs   : stack of images, same size as imgs which are used to normalise or for image by image background subtraction. Defaults to None.
+               multiBackgrounds : boolean, if True and backgroundImgs is defined, each image will have its own background image subtracted rather than using backgroundImg
+               imageScaleFactor : If normToBackground and normToImage are False (default), use this to specify the normalisation factors for each image. Provide a 1D array the same size as the number of shifted images. Each image will be multiplied by the corresponding factor prior to reconstruction. Default is None (i.e. no scaling).
+               autoMask         : boolean, mask pixels outside bundle when searching for cores. Defualts to True.
+               mask:            : boolean, when reconstructing output image will be masked outside of bundle. Defaults to True
 
         """
+        
         shifts = kwargs.get('shifts', None)
         centreX = kwargs.get('centreX', None)
         centreY = kwargs.get('centreY', None)
@@ -191,9 +196,7 @@ class SuperRes:
         
             calib.multiNormalisationVals = multiNormalisationVals
 
-       
-            
-            
+          
         # Have to set 'background' and 'normalise' to None in previous line as the cores are the shifted
         # positions in the full set from all the images and not the actual core position in each images.
         # We later copy across the background/normalise values from the single image calibration.
@@ -231,15 +234,18 @@ class SuperRes:
         return calib
     
 
-    def recon_multi_tri_interp(imgs, calib, **kwargs):
-        """ Reconstruct image with super-resolution from set of shifted image. Requires calibration
-        to have been performed and stored in 'calib' as instance of BundleCalibration.
-        :param imgs: set of shifted images
-        :param calib: calibration, instance of BundleCalibration (must be
-            created by calib_multi_tri_interp and not calib_tri_interp).
-        :return: reconstructed image as 2D numpy array
+    def recon_multi_tri_interp(imgs, calib, numba = True):
+        """ Reconstruct image with super-resolution from set of shifted image. 
+        Requires calibration to have been performed and stored in 'calib' as 
+        instance of BundleCalibration.
+        
+        Returns reconstructed image as 2D numpy array
+        
+        Arguments:
+            imgs     : set of shifted images
+            calib    : calibration, instance of BundleCalibration (must be
+                    created by calib_multi_tri_interp and not calib_tri_interp).
         """
-        numba = kwargs.get('numba', True)
 
         nImages = np.shape(imgs)[2]
 
@@ -300,19 +306,27 @@ class SuperRes:
         return imgOut
 
 
-    def get_shifts(imgs, **kwargs):
+    def get_shifts(imgs, templateSize = None, refSize = None, upsample = 2, **kwargs):
         """ Determines the shift of each image in a stack w.r.t. first image
-        :param imgs: stack of images as 3D numpy array
-        :param templateSize: a square of this size is extracted from imgs as the template
-        :param refSize: a sqaure of this size is extracted from first image as the reference image. 
-           Must be bigger than templateSize and the maximum shift detectable is 
-           (refSize - templateSize)/2        
-        :param upSample: upsampleing factor for images before shift detection for sub-pixel accuracy
-        :return: shifts as 2D numpy array
+        
+        Return shifts as 2D numpy array.
+        
+        Arguments:
+            
+            imgs         : stack of images as 3D numpy array
+            
+        Optional Keyword Arguments:
+            
+            templateSize : int, a square of this size is extracted from imgs 
+                           as the template, default is 1/4 image size
+            refSize      : int, a square of this size is extracted from first 
+                           image as the reference image, default is 1/2 image
+                           size. Must be bigger than  
+                           templateSize and the maximum shift detectable is 
+                           (refSize - templateSize)/2   
+            upSample     : upsampling factor for images before shift detection  
+                           for sub-pixel accuracy, default is 2.
         """
-        templateSize = kwargs.get('templateSize', None)
-        refSize = kwargs.get('refSize', None)
-        upsample = kwargs.get('upSample', 2)
 
         imgSize = np.min(np.shape(imgs[:, :, 0]))
 
@@ -336,20 +350,31 @@ class SuperRes:
         return shifts
     
 
-    def find_shift(img1, img2, templateSize, refSize, upsample, **kwargs):
-        """ Determines shift between two images by Normalised Cross Correlation (NCC). A sqaure template extracted
-        from the centre of img2 is compared with a sqaure region extracted from the reference image img1. The size 
-        of the template (templateSize) must be less than the size of the reference (refSize). The maximum
-        detectable shift is the (refSize - templateSize) / 2.
-        : param img1 : image as 2D numpy array
-        : param img2 : image as 2D numpy array
-        : param templateSize : size of square region of img2 to use as template. 
-        : param refSize : size of square region of img1 to template match with
-        : upsample : factor to scale images by prior to template matching to
-                     allow for sub-pixel registration.        
+    def find_shift(img1, img2, templateSize, refSize, upsample, returnMax = False):
+        """ Determines shift between two images by Normalised Cross 
+        Correlation (NCC). A square template extracted from the centre of img2 
+        is compared with a square region extracted from the reference image 
+        img1. The size of the template (templateSize) must be less than the 
+        size of the reference (refSize). The maximum detectable shift is 
+        (refSize - templateSize) / 2.
+        
+        If returnMax is False, returns shift as a tuple of (x_shift, y_shift).
+        If returnMax is True, returns tuple of (shift, cc. peak value).
+        
+        Arguments:
+            img1         : image as 2D numpy array
+            img2         : image as 2D numpy array
+            templateSize : int, size of square region of img2 to use as template. 
+            refSize      : int, size of square region of img1 to template match with
+            upsample     : int, factor to scale images by prior to template matching to
+                           allow for sub-pixel registration.  
+                           
+        Optional Keyword Arguments:
+            returnMax    : boolean, if true returns cc.peak value as well
+                           as shift, default is False. 
+                   
         """
         
-        returnMax = kwargs.get('returnMax', False)
 
         if refSize < templateSize or min(np.shape(img1)) < refSize or min(np.shape(img2)) < refSize:
             return -1
@@ -373,6 +398,7 @@ class SuperRes:
                 return shift, max_val
             else:
                 return shift
+            
 
     def sort_sr_stack(stack, stackLength):
         """ Takes a stack of images and extracts an ordered set
@@ -391,6 +417,12 @@ class SuperRes:
         The blank reference image is not returned, i.e the returned stack has stackLength frames.
         
         Input stack should have frame number in third dimension.
+        
+        Arguments:
+            
+             stack       : 3D numpy array (y,x, image_number)
+             stackLength : number of image after blank frame
+             
         """
         
         meanVal = np.mean(np.mean(stack,1),0)        
@@ -410,11 +442,15 @@ class SuperRes:
         return outStack
     
         
-    def multi_tri_backgrounds(calibIn, backgrounds) :
+    def multi_tri_backgrounds(calibIn, backgrounds):
          """ Updates a multi_tri calibration with a new set of backgrounds without requiring
-         full recalibration
-         :param calibIn: bundle calibration, instance of BundleCalibration
-         :param background: background image as 2D numpy array
+         full recalibration.
+         
+         Returns instance of BundleCalibration.
+         
+         Arguments:
+             calibIn    : bundle calibration, instance of BundleCalibration
+             background : background image as 2D numpy array
          """
          calibOut = calibIn
     
@@ -432,10 +468,13 @@ class SuperRes:
     def calib_param_shift(param, images, calibration):
         """ For use when the shifts between the images are linearly dependent on some other parameter. 
         Provide a TRILIN calibration and a 4D stack of images of (x, y, shift, parameter), i.e. an extra 
-        dimensions to provide examples of shifts for differentvalues of the parameter. The values of the parameter
+        dimension to provide examples of shifts for different values of the parameter. The values of the parameter
         corresponding to each set of images is provided in param, i.e. the fourth dimension of images should be
         the same length as param.
+        
         Returns a 3D array of calibration factors, giving the gradient and offset of x and y shifts of each image with respect to the parameter.
+        
+        
         """
         nSets = np.shape(images)[3]
         nShifts = np.shape(images)[2]
@@ -478,8 +517,7 @@ class SuperRes:
              calibrationSRs.append(calib)
     
     
-class calibrationLUT:
-    
+class calibrationLUT:   
     
     """ Creates and stores a SR calibration look up table (LUT) containing SR calibrations for different 
     values of some parameter on which the image shift is linearly dependent. paramRange is a tuple of (min, max) values of the parameters, and nCalibrations

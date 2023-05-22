@@ -36,7 +36,6 @@ pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by tr
                coreSize = 3,                  # Providing an estimate of the core spacing in pixels help to identify core locations robustly
                calibImage = calibImg,
                normaliseImage = calibImg,
-               outputType = 'uint16',
                autoContrast = False)
 pyb.calibrate()
 
@@ -48,7 +47,7 @@ mosaic = Mosaic(1000, resize = 250)
 ret, img = cap.read()
 img = img[:,:,::-1]
 imgProc = pyb.process(img)
-imgStack = np.zeros([nFrames, 512, 512, 3 ], dtype='uint8' ) 
+imgStack = np.zeros([nFrames, 512, 512, 3 ], dtype='uint16' ) 
 imgStack[0,:,:,:] = imgProc
 
 
@@ -70,12 +69,12 @@ def test_mosaic(mosaic, description):
     t0 = time.time()
     for i in range(nFrames):   
         img = imgStack[i,:,:,:]
+       
         mosaic.add(img)   
         mosaicImage = mosaic.get_mosaic()
-        #cv.imshow('ImageWindow',cv.resize(mosaicImage,(400,400)).astype('uint8'))
-        #cv.waitKey(1)
+
     plt.figure()
-    plt.imshow(mosaicImage, cmap = 'gray') 
+    plt.imshow(mosaicImage / np.max(mosaicImage), cmap = 'gray') 
     plt.title(description)
  
     print(f"{description}: Average time to add a frame to mosaic: {str(1000 * round( (time.time() - t0)/nFrames,3))} ms.")
@@ -91,9 +90,6 @@ test_mosaic(mosaic, "Default, no blend")
 
 mosaic = Mosaic(1000, resize = 250)
 test_mosaic(mosaic, "Default with resize to 250")
-
-mosaic = Mosaic(10000, resize = 250)
-test_mosaic(mosaic, "Default with 10k x 10k image, resize to 250")
 
 mosaic = Mosaic(1000, resize = 250, blend = False)
 test_mosaic(mosaic, "No Blend")

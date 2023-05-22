@@ -34,6 +34,7 @@ for idx, imType in enumerate(imTypes):
     imgProc = pyb.process(imgT)
     print(f"Gaussian filter, {imType}: {round((timer() - t1) *1000)} ms.")
     plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)
+plt.tight_layout()
     
 
 imTypes = ['uint8', 'uint16', 'float32', 'float64']
@@ -47,6 +48,7 @@ for idx, imType in enumerate(imTypes):
     imgProc = pyb.process(imgT)
     print(f"Gaussian filter + Norm, {imType}: {round((timer() - t1) *1000)} ms.")
     plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)
+plt.tight_layout()
     
 
 
@@ -61,6 +63,7 @@ for idx, imType in enumerate(imTypes):
     imgProc = pyb.process(imgT)
     print(f"Edge filter, {imType}: {round((timer() - t1) *1000)} ms.")
     plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)
+plt.tight_layout()
 
 
 imTypes = ['uint8', 'uint16', 'float32', 'float64']
@@ -73,6 +76,7 @@ for idx, imType in enumerate(imTypes):
     imgProc = pyb.process(imgT)
     print(f"Edge filter + Norm, {imType}: {round((timer() - t1) *1000)} ms.")
     plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)
+plt.tight_layout()
 
 
 
@@ -87,7 +91,8 @@ for idx, imType in enumerate(imTypes):
     imgProc = pyb.process(imgT)
     print(f"Linear interp, {imType}: {round((timer() - t1) *1000)} ms.")
     plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)   
-    
+plt.tight_layout()
+   
     
 
 imTypes = ['uint8', 'uint16', 'float32', 'float64']
@@ -100,4 +105,6 @@ for idx, imType in enumerate(imTypes):
     t1 = timer()
     imgProc = pyb.process(imgT)
     print(f"Linear interp + Norm, {imType}: {round((timer() - t1) *1000)} ms.")
-    plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)        
+    plt.subplot(2, 2, idx + 1); plt.imshow(imgProc, cmap='gray');plt.title(imType)        #
+plt.tight_layout()
+    

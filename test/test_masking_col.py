@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Tests the cropping and mask functionality of pybundle
+Tests the cropping and mask functionality of pybundle with colour images
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 from matplotlib import pyplot as plt

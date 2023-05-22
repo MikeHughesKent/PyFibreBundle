@@ -35,8 +35,41 @@ class Mosaic:
     lastImageAdded = None
           
     def __init__(self, mosaicSize, **kwargs):
-        """ Initisialise Mosaic object, used for high speed mosaicing
+        """Mosaic object, used for high speed mosaicing
         of fibre bundle images.
+        
+        Arguments:
+            mosaicSize    : int, square size of mosaic image
+            
+        Optional Keyword Arguments:
+            resize         : int, images will be resized to a sqaure this size,
+                             default is None meaning no resize.
+            templateSize   : int, size of square to extract to use as template
+                             for shift detection. Default is 1/4 image size.
+            refSize        : int, size of square to extract to use as image
+                             to compare template to for shift detection. 
+                             Default is 1/2 image size.
+            cropSize       : int, input images are cropped to a circle of this 
+                             diameter before insertion. (default is 
+                             0.9 x size of first image added)
+            imageType      : str, data type for mosaic
+            blend          : boolean, if true, images will be added blended
+            blendDist      : int, distance in pixels from edge of inserted 
+                             image to blend with mosaic, default is 40
+            minDistforAdd  : int, minimum distance moved before an image
+                             will be added to the mosaic, default is 25
+            initialX       : int, starting positon of mosaic, default is centre
+            initialY       : int, starting positon of mosaic, default is centre  
+            boundaryMethod : method to deal with reaching edge, CROP, SCROLL or
+                             EXPAND, default is CROP
+            expandStep     : int, amount to expand by if EXPAND boundaryMethod
+                             is used
+            resetThreh     : float, mosaic will reset if correlation peak is
+                             below this
+            resetIntensity : float, mosaic will reset if 
+            resetSharpness : float, mosaic will reset if image sharpness drops
+                             below this value.                
+            
         """
         
         self.mosaicSize = mosaicSize
@@ -82,13 +115,16 @@ class Mosaic:
         self.imSize = None  # None tells us to read this from the first image        
         
         self.col = False   # Assume monochrome
+        
         return
         
        
     def initialise(self, img):
         """ Choose sensible values for non-specified parameters.
-        :param img: input image to used to choose sensible parameters, 2D/3D numpy array
-        :return None:
+        
+        Arguments:
+            img  : input image to used to choose sensible parameters for 
+                    mosaicing, 2D/3D numpy array
         """
         
         if img.ndim == 3:
@@ -134,15 +170,16 @@ class Mosaic:
     # Add image to current mosaic
     def add(self, img):
         """ Add image to current mosaic.
-        :param img: image as 2D numpy array
-        :return: None
+        
+        Arguments:
+            img    : image as 2D/3D numpy array
         """
 
         # Before we have first image we can't choose sensible default values, so
         # initialisation is called here if we are on the first image
         if self.nImages == 0:
             self.initialise(img) 
-
+          
                   
         if self.resize is not None: 
             imgResized = cv.resize(img, (self.resize, self.resize))
@@ -155,6 +192,7 @@ class Mosaic:
            
             if self.resetThresh is not None:
                 if self.shiftConf < self.resetThresh:
+                   
                     self.initialise(img)
                     Mosaic.insert_into_mosaic(self.mosaic, imgResized, self.mask, (self.currentX, self.currentY))
 
@@ -223,8 +261,7 @@ class Mosaic:
 
 
     def get_mosaic(self):
-        """ Obtain current mosaic image.
-        :return: mosaic image as 2D numpy array
+        """ Returns current mosaic image as 2D/3D numpy array
         """
         return self.mosaic
         
@@ -232,7 +269,6 @@ class Mosaic:
 
     def reset(self):
         """ Called when mosaic is restarted.
-        :return: None
         """
         self.nImages = 0
             
@@ -240,19 +276,20 @@ class Mosaic:
     def insert_into_mosaic(mosaic, img, mask, position):
         """ Dead leaf insertion of image into a mosaic at specified position. 
         Only pixels for which mask == 1 are copied.
-        :param mosaic: current mosaic image, 2D numpy array
-        :param img: img to insert, 2D numpy array
-        :param mask: 2D numpy array with values of 1 for pixels to be copied
-            and 0 for pixels not to be copied. Must be same size as img.
-        :param position: position of insertion as tuple of (x,y). This is the
-            pixel the centre of the image will be at.
+        
+        Arguments:
+            mosaic   : current mosaic image, 2D/3D numpy array
+            img      : img to insert, 2D/3D numpy array
+            mask     : 2D numpy array with values of 1 for pixels to be copied
+                       and 0 for pixels not to be copied. Must be same size as img.
+            position : position of insertion as tuple of (x,y). This is the
+                       pixel the centre of the image will be at.
         
         """
         px = math.floor(position[0] - np.shape(img)[0] / 2)
         py = math.floor(position[1] - np.shape(img)[1] / 2)        
         
         oldRegion = mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]]
-
         
         oldRegion[np.array(mask)] = img[np.array(mask)]
         mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]] = oldRegion
@@ -263,23 +300,23 @@ class Mosaic:
     def insert_into_mosaic_blended(mosaic, img, mask, blendMask, cropSize, blendDist, position):
         """ Insertion of image into a mosaic with cosine window blending. Only pixels from
         image for which mask == 1 are copied. Pixels within blendDist of edge of mosaic
-        (i.e. radius of cropSize/2) are blended with existing mosaic pixel values    
-        :param mosaic: current mosaic image, 2D numpy array
-        param img: img to insert, 2D numpy array
-        :param mask: 2D numpy array with values of 1 for pixels to be copied
-            and 0 for pixels not to be copied. Must be same size as img.
-        :param blendMask: the cosine window blending mask with weighted pixel values. If passed empty []
-            this will be created
-        :param cropSize: size of input image.
-        :param blendDist: number which control the sptial extent of the blending
-        :param position: position of insertion as tuple of (x,y). This is the
-            pixel the centre of the image will be at.
-        :return: None
+        (i.e. radius of cropSize/2) are blended with existing mosaic pixel values  
+        
+        Arguments:
+           mosaic    : current mosaic image, 2D/3D numpy array
+           img       : img to insert, 2D/3D numpy array
+           mask      : 2D numpy array with values of 1 for pixels to be copied
+                       and 0 for pixels not to be copied. Must be same size as img.           
+           blendMask : the cosine window blending mask with weighted pixel values. If passed empty []
+                       this will be created
+           cropSize  : size of input image.
+           blendDist : number which controls the sptial extent of the blending
+           position  : position of insertion as tuple of (x,y). This is the
+                       pixel the centre of the image will be at.
         
         """
         px = math.floor(position[0] - np.shape(img)[0] / 2)
-        py = math.floor(position[1] - np.shape(img)[1] / 2)
-        
+        py = math.floor(position[1] - np.shape(img)[1] / 2)        
                
         # Region of mosaic we are going to work on
         oldRegion = mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]]
@@ -319,17 +356,22 @@ class Mosaic:
     
     def find_shift(img1, img2, templateSize, refSize):
         """ Calculates how far img2 has shifted relative to img1 using
-        normalised cross correlation
-        :param img1: reference image as 2D/3D numpy array
-        :param img2: template image as 2D/3D numpy array
-        :param templateSize: a square of this size is extracted from img as the template
-        :param refSize: a sqaure of this size is extracted from refSize as the template. 
-           Must be bigger than templateSize and the maximum shift detectable is 
-           (refSize - templateSize)/2
-        :return: tuples of (shift, max_val) where shift is a tuple of (x_shift, y_shift) and 
+        normalised cross correlation.
+        
+        Returns tuple of (shift, max_val) where shift is a tuple of (x_shift, y_shift) and 
            max_val is the normalised cross correlation peak value. Returns None if the shift
            cannot be calculated.
+           
+        Arguments:  
+            img1         : reference image as 2D/3D numpy array
+            img2         : template image as 2D/3D numpy array
+            templateSize : a square of this size is extracted from img as the template
+            refSize      : a sqaure of this size is extracted from refSize as the template. 
+                           Must be bigger than templateSize and the maximum shift detectable is 
+                           (refSize - templateSize)/2
+        
         """
+        
         if refSize < templateSize or min(np.shape(img1)[0:2]) < refSize or min(np.shape(img2)[0:2]) < refSize:
              return None
         else:
@@ -339,15 +381,17 @@ class Mosaic:
              res = cv.matchTemplate(pybundle.to8bit(template), pybundle.to8bit(refIm), cv.TM_CCORR_NORMED)
              min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
              shift = [max_loc[0] - (refSize - templateSize), max_loc[1] - (refSize - templateSize)]
-             #shift = 0
              return shift, max_val
             
     
     def extract_central(img, boxSize):
         """ Extracts square of size boxSize from centre of img.
-        :param img: input image as 2D numpy array
-        :param boxSize: size of sqaure
-        :return: cropped image as 2D numpy array
+        
+        Returns cropped image as 2D numpy array
+        
+        Arguments: 
+            img       : input image as 2D numpy array
+            boxSize   : size of sqaure
         """
 
         w = np.shape(img)[0]
@@ -365,11 +409,15 @@ class Mosaic:
         """ Produce a circular cosine window mask on grid of imgSize * imgSize. Mask
         is 0 for radius > circleSize and 1 for radius < (circleSize - cicleSmooth)
         The intermediate region is a smooth cosine function.
-        :param imgSize: size of square mask to generate
-        :param circleSize: radius of mask (mask pixels outside here are 0)
-        :param circleSmooth: size of smoothing region at the inside edge of the circle. 
-            (mask pixels with a radius less than this are 1)
-        :return: mask as 2D numpy array.           
+        
+        Returns mask as 2D numpy array.           
+
+        
+        Arguments: 
+            imgSize      : int, size of square mask to generate
+            circleSize   : int, radius of mask (mask pixels outside here are 0)
+            circleSmooth : int, size of smoothing region at the inside edge of the circle. 
+                                (mask pixels with a radius less than this are 1)
         """
         
         innerRad = circleSize - circleSmooth
@@ -378,24 +426,30 @@ class Mosaic:
         mask =  np.cos(math.pi / (2 * circleSmooth) * (imgRad - innerRad))**2
         mask[imgRad < innerRad ] = 1
         mask[imgRad > innerRad + circleSmooth] = 0
+        
         return mask    
     
     
     def is_outside_mosaic(mosaic, img, position):
         """ Checks if position of image to insert into mosaic will result in 
-        # part of inserted image being outside of mosaic. Returns tuple of 
-        # boolean (true if outside), side it leaves (using consts defined above)
-        # and distance is has strayed over the edge. e.g. (True, Mosaic.Top, 20).
-        :param mosaic: mosaic image (strictly can be any numpy array the same size as the mosaic)
-        :param img: image to be inserted as 2D numpy array
-        :param position: position of insertion as tuple of (x,y). This is the
-            pixel the centre of the image will be at.        
-        :return: tuple of (ouside, side, distance)
-            where: - outside is True if part of image is outside mosaic
+        part of inserted image being outside of mosaic. Returns tuple of 
+        boolean (true if outside), side it leaves (using consts defined above)
+        and distance is has strayed over the edge. e.g. (True, Mosaic.Top, 20).
+        
+        Returns tuple of (ouside, side, distance), where: 
+                   - outside is True if part of image is outside mosaic
                    - side is (one of the) side(s) it has strayed out of, one of Mosaic.Top, 
                    Mosaic.Bottom, Mosaic.Left or Mosaic.Right or -1 if outside == False
                    - distance is distance it has strayed outside mosaic in the direction specified
                    in size. (0 if outside == False)
+        
+        Arguments:
+            
+            mosaic   : mosaic image (strictly can be any numpy array the same size as the mosaic)
+            img      : image to be inserted as 2D numpy array
+            position : position of insertion as tuple of (x,y). This is the
+                       pixel the centre of the image will be at.        
+        
             """
         
         imgW = np.shape(img)[0] 
@@ -426,18 +480,22 @@ class Mosaic:
         """ Increase size of mosaic image by 'distance' in direction 'direction'. Supply
         currentX and currentY position so that these can be modified to be correct
         for new mosaic size. 
-        :param mosaic: input mosaic image as 2D numpy array
-        :param distance: pixels to expand by
-        :param direction: side to expand, one of Mosaic.Top, Mosaic.Bottom, 
-            Mosaic.Left or Mosaic.Right
-        :param currentX: x position of last image insertion into mosaic
-        :param currentY: y position of last image insertion into mosaic
-        :return: tuple of (newMosaic, width, height, newX, newY)
+        
+        Returns tuple of (newMosaic, width, height, newX, newY)
             where -newMosaic is the larger mosaic image as 2D numpy array
                   -width is the x-size of the new mosaic
                   -height is the y-size of the new mosaic
                   -newX is the x position of the last image insertion in the new mosaic
                   -newT is the y position of the last image insertion in the new mosaic
+        
+        Arguments:            
+            mosaic    : input mosaic image as 2D numpy array
+            distance  : pixels to expand by
+            direction : side to expand, one of Mosaic.Top, Mosaic.Bottom, 
+                         Mosaic.Left or Mosaic.Right
+            currentX  : x position of last image insertion into mosaic
+            currentY  : y position of last image insertion into mosaic
+        
         """          
         mosaicWidth = np.shape(mosaic)[0]
         mosaicHeight = np.shape(mosaic)[1]
@@ -474,19 +532,24 @@ class Mosaic:
     def scroll_mosaic(mosaic, distance, direction, currentX, currentY):
         """ Scroll mosaic to allow mosaicing to continue past edge of mosaic. Pixel 
         values will be lost. Supply currentX and currentY position so that these
-        can be modified to be correct for new mosaic size
-        :param mosaic: input mosaic image as 2D numpy array
-        :param distance: pixels to expand by
-        :param direction: side to expand, one of Mosaic.Top, Mosaic.Bottom, 
-            Mosaic.Left or Mosaic.Right
-        :param currentX: x position of last image insertion into mosaic
-        :param currentY: y position of last image insertion into mosaic
-        :return: tuple of (newMosaic, width, height, newX, newY)
+        can be modified to be correct for new mosaic size.
+        
+        Return: tuple of (newMosaic, width, height, newX, newY)
             where -newMosaic is the larger mosaic image as 2D numpy array
                   -width is the x-size of the new mosaic
                   -height is the y-size of the new mosaic
                   -newX is the x position of the last image insertion in the new mosaic
                   -newT is the y position of the last image insertion in the new mosaic
+        
+        Arguments:
+            mosaic    : input mosaic image as 2D numpy array
+            distance  : pixels to expand by
+            direction : side to expand, one of Mosaic.Top, Mosaic.Bottom, 
+                        Mosaic.Left or Mosaic.Right
+            currentX  : x position of last image insertion into mosaic
+            currentY  : y position of last image insertion into mosaic
+        
+        
         """
         mosaicWidth = np.shape(mosaic)[0]
         mosaicHeight = np.shape(mosaic)[1]

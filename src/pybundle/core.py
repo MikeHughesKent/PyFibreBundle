@@ -19,35 +19,48 @@ import cv2 as cv
 
 import pybundle
 from pybundle.bundle_calibration import BundleCalibration
-from pybundle.utility import average_channels, max_channels
+from pybundle.utility import average_channels, max_channels, extract_central
 
 
 def normalise_image(img, normImg, outputType = None):
-    """Normalise image by dividing by a reference image. 
+    """Normalise image by dividing pixelwise by a reference image. 
     
     Returns the normalised image as a 2D/3D numpy array. 
     
     If the image is 3D (colour) then the reference image can either by 2D 
     (in which case it will be applied to each colour plane) or 3D.
-
+    
+    Optionally specify an output type to cast to. If no output type is 
+    specified, the output image will be float32. If uint8 or uint16 is 
+    specified, the image will be scaled to use the full range of that data
+    type.
     
     Arguments:
         img     : 2D/3D numpy array, input image
-        normImg : 2D/3D numpy array, reference image as 2D numpy array
-    :return: normalised image as 2D numpy array
+        normImg : 2D/3D numpy array, reference image to divide by
+        
+    Optional Keyword Arguments:
+        outputType : str, if specified, output image will be cast to this type
+                     Default is None, in which case it will be returned as
+                     a float32.
     """
   
         
+    # Slight speed advantage over float64
     normImg = normImg.astype('float32')
-  
+    img = img.astype('float32')
+
+    # If the normalisation image is 2D but image is 3D, we apply normalisation
+    # image to each plane
     if img.ndim == 3 and normImg.ndim == 2:
         normImg = np.expand_dims(normImg, 2)
     
-    img = img.astype('float32')
-    
+    # Divide, avoiding division by zero  
     out = np.divide(img, normImg, where=normImg!=0)
   
-    
+    # Below we adjust the output type if request using the optional
+    # keyword. If it is an integer type we normalise to use the full
+    # range
     if outputType == 'uint8':
         normImg = normImg / np.max(normImg) * 256
     
@@ -56,48 +69,74 @@ def normalise_image(img, normImg, outputType = None):
         
     if outputType is not None:
         if normImg.dtype != outputType:
-            normImg = normImg.astype(outputType)    ###
-    
-
-   
-        
+            normImg = normImg.astype(outputType)   
     
     return out
 
     
 
-def g_filter(img, filter_size):
-    """ Applies 2D Gaussian filter to image. The kernel size is 8 times sigma.
-    :param img: input image as 2D numpy array
-    :param filter_size: sigma of Gaussian filter
-    :return: filtered image as 2D numpy array
+def g_filter(img, filterSize, kernelSize = None):
+    """ Applies 2D Gaussian filter to image. By default
+    the kernel size is 4 times the filter_size (sigma).
+    
+    Returns filtered image as numpy array.
+    
+    Arguments:        
+        img          : input image as 2D/3D numpy array
+        filterSize   : float, sigma of Gaussian filter
+   
+    Optional Keyword Arguments:   
+        kernelSize   : int, size of convolution kernal
+
     """
-    kernel_size = round(filter_size * 4)              # Kernal size needs to be larger than sigma
-    kernel_size = kernel_size + 1 - kernel_size % 2   # Kernel size must be odd
-    img_filt = cv.GaussianBlur(img,(kernel_size,kernel_size), filter_size)
+    
+    # Kernal size needs to be larger than sigma
+    if kernelSize is None:
+        kernelSize = round(filterSize * 4)             
+    
+    # Force kernel size to be odd
+    kernelSize = kernelSize + 1 - kernelSize % 2       
+    
+    img_filt = cv.GaussianBlur(img,(kernelSize, kernelSize), filterSize)
+    
     return img_filt
 
 
-def median_filter(img, filter_size):
-    """Apply median filter to an image
-    :param img: input image as 2D numpy array
-    :param filter_size: filter size in pixels (filter is square)
+def median_filter(img, filterSize):
+    """ Applies 2D median filter to an image.
+    
+    Returns the filtered image as a 2D numpy array.
+    
+    Arguments:        
+        img          : input image as 2D/3D numpy array
+        filterSize   : float, sigma of Gaussian filter
+   
     """
-    imgFilt = cv.medianBlur(img, filter_size)
+    
+    imgFilt = cv.medianBlur(img, filterSize)
+   
     return imgFilt
 
 
 def find_core_spacing(img):
-    """ Estimate fibre bundle core spacing using peak in 2D Fourier transform. 
-    :param img: input image showing bundle as 2D numpy array
-    :return: estimated core spacing in pixels
+    """ Estimates fibre bundle core spacing using peak in 2D Fourier transform. 
+    
+    If the image is not square, a square will be cropped from the centre. 
+    It is therefore usually best to crop the image to the bundle 
+    before passing it to this function.
+    
+    Returns core spacing as float.
+    
+    Arguments: 
+        img  : input image showing bundle as 2D/3D numpy array
+        
     """
     
+    # If colour image, we take the mean across the channels
     imgAv = average_channels(img)
     
     # Ensure image is square
-    size = np.min(np.shape(imgAv))
-    imgAv = imgAv[:size,:size]
+    imgAv = extract_central(imgAv)
     
     # Look at log-scaled 2D FFT
     fd = np.log(np.abs(np.fft.fftshift(np.fft.fft2(imgAv))))
@@ -118,18 +157,23 @@ def find_core_spacing(img):
     # Find point after fastest drop where gradient is positive    
     startReg = int((np.argwhere(radDiff[firstMin:] >0)[0] + firstMin))
     peakPos = np.argmax(radDiff[startReg:]) + startReg
-    coreSpacing = size / peakPos 
-
+    coreSpacing = np.shape(imgAv)[0] / peakPos 
+    
     return coreSpacing
 
 
 
 def edge_filter(imgSize, edgePos, skinThickness):
-    """ Create a 2D edge filter with cosine smoothing
-    :param imgSize: size of (sqaure) images which will be processed 
-    :param edgePos: spatial frequency of cut-off
-    :param skinThickness: slope of edge
-    :return mask: spatial frequency domain filter as a 2D numpy array
+    """ Creates a 2D edge filter with cosine smoothing.
+    
+    Returns the filter in spatial frequency domain filter as a 2D numpy array.
+   
+    Arguments: 
+        imgSize       : size of (square) images which will be processed, and
+                        size of filter output
+        edgePos       : spatial frequency of cut-off
+        skinThickness : slope of edge, the distance, in spatial frequency, over 
+                        which it goes from 90% to 10%                        
     """
 
     circleRadius = imgSize / edgePos
@@ -141,14 +185,20 @@ def edge_filter(imgSize, edgePos, skinThickness):
     mask =  np.cos(math.pi / (2 * thickness) * (imgRad - innerRad))**2
     mask[imgRad < innerRad ] = 1
     mask[imgRad > innerRad + thickness] = 0
+    
     return mask        
 
 
 def filter_image(img, filt):
-    """ Apply a Fourier domain filter to an image. Filter must be same size as image.
-    :param img: input image (spatial domain), 2D numpy array
-    :param filt: spatial frequency domain representation of filter, 2D numpy array
-    :return: filtered image, 2D numpy array
+    """ Applies a Fourier domain filter to an image, such as created by
+    edge_filter(). Filter must be same size as image (x and y) but not
+    multi-channel (i.e. a 2D array).
+    
+    Returns filtered image as 2D/3D numpy array.
+    
+    Arguments: 
+        img    : input image (spatial domain), 2D/3D numpy array
+        filt   : spatial frequency domain representation of filter, 2D numpy array        
     """
 
     fd = scipy.fft.fftshift(scipy.fft.fft2(img, axes = (0,1)),axes = (0,1))
@@ -162,15 +212,23 @@ def filter_image(img, filt):
 
 def find_bundle(img, **kwargs):
     """ Locate fibre bundle by thresholding and searching for largest
-    connected region. Returns tuple of (centreX, centreY, radius)
-    :param img: input image of fibre bundle, 2D numpy array
-    :param filterSize: sigma of Gaussian filter applied to remove core pattern, default to 4
-    :return: tuple of (centreX, centreY, radius)
+    connected region. 
+    
+    Returns tuple of (centreX, centreY, radius).
+    
+    Arguments: 
+
+        img        : input image of fibre bundle, 2D numpy array
+        
+    Optional Keyword Arguments:   
+   
+        filterSize : sigma of Gaussian filter applied to remove core pattern, 
+                     defaults to 4
     """
     
     filterSize = kwargs.get('filterSize', 4)
     
-    #imgFilt = average_channels(img)
+    # If we have a colour image, take max value across channels
     imgFilt = max_channels(img)
     
     # Filter to minimise effects of structure in bundle
@@ -179,8 +237,6 @@ def find_bundle(img, **kwargs):
     
     # Threshold to binarise and then look for connected regions
     thres, imgBinary = cv.threshold(imgFilt,0,1,cv.THRESH_BINARY+cv.THRESH_OTSU)
-    #plt.imshow(imgBinary)
-
     num_labels, labels, stats, centroid  = cv.connectedComponentsWithStats(imgBinary, 8, cv.CV_32S)
     
     # Region 0 is background, so find largest of other regions
@@ -203,12 +259,17 @@ def find_bundle(img, **kwargs):
 ################ MASKING AND CROPPING ###################################
     
 
-def crop_rect(img,loc):
+def crop_rect(img, loc):
     """Extracts a square around the bundle using specified co-ordinates.
-    :param img: input image as 2D numpy array
-    :param loc: location to crop, specified as bundle location tuple of (centreX, centreY, radius)
-    :return: tuple of (cropped image as 2D numpy array, new location tuple)
+    
+    Return tuple of (cropped image as 2D numpy array, new location tuple)
+
+    Arguments:  
+        img  : input image as 2D numpy array
+        loc  : location to crop, specified as bundle location tuple of 
+               (centreX, centreY, radius)
     """
+    
     cx,cy, rad = loc
     imgCrop = img[cy-rad:cy+ rad, cx-rad:cx+rad]
     
@@ -222,15 +283,20 @@ def crop_rect(img,loc):
 
 
 def get_mask(img, loc):
-    """ Returns a circular mask, 1 inside bundle, 0 outside bundle using specified
-    bundle co-ordinates. Mask image has same dimensions as input image.
-    :param img: img used to determine size of mask, 2D numpy array
-    :param loc: location of bundle used to determine location of mask, tuple of (centreX, centreY, radius)
-    :return: mask as 2D numpy array
+    """ Returns a circular mask, 1 inside bundle, 0 outside bundle, using specified
+    bundle co-ordinates. Mask image has same dimensions as first two
+    dimensions of input image (i.e. does not return a mask for each colour plane).
+    
+    Returns mask as 2D numpy array.
+    
+    Arguments:  
+         img  : img used to determine size of mask, 2D numpy array
+         loc  : location of bundle used to determine location of mask, 
+                tuple of (centreX, centreY, radius)
     """
     cx, cy, rad = loc
  
-    mY,mX = np.meshgrid(range(img.shape[0]),range(img.shape[1]))
+    mY,mX = np.meshgrid(range(img.shape[0]), range(img.shape[1]))
    
     m = np.square(mX - cx) +  np.square(mY - cy)   
     imgMask = np.transpose(m < rad**2)
@@ -239,10 +305,15 @@ def get_mask(img, loc):
 
     
 def apply_mask(img, mask):
-    """Sets all pixels outside bundle to 0 using a pre-defined mask. 
-    :param img: input image as 2D numpy array
-    :param mask: mask as 2D numy array with same dimensions as img, with areas to be kept as 1 and areas to be masked as0.
+    """Sets all pixels outside bundle to 0 using a pre-defined mask. If the
+    image is 3D, the mask will be applied to each colour plane.
+    
+    Arguments:  
+         img   : input image as 2D numpy array
+         mask  : mask as 2D numy array with same dimensions as img, 
+                 with areas to be kept as 1 and areas to be masked as 0.
     """
+    
     if img.ndim == 3:
         m = np.expand_dims(mask, 2)
     else:
@@ -252,52 +323,87 @@ def apply_mask(img, mask):
     return imgMasked
   
 
-def auto_mask(img, **kwargs):
-    """ Locates bundle and sets pixels outside to 0   
-    :param img: input image as 2D numpy array
-    :param loc: optional location of bundle as tuple of (centreX, centreY, radius), defaults to determining this using find_bundle
-    :return: masked image as 2D numpy array
+def auto_mask(img, loc = None, **kwargs):
+    """ Locates bundle and sets pixels outside to 0 .
+    
+    Arguments:  
+        img  : input image as 2D numpy array
+    
+    Optional Keyword Arguments:
+        loc    : optional location of bundle as tuple of (centreX, centreY, radius), 
+                 defaults to determining this using find_bundle
+        Others : if loc is not specified, other optional keyword arguments will
+                 be passed to find_bundle.
+
+
     """
-    loc = pybundle.find_bundle(img, **kwargs)
+    if loc is None:
+        loc = pybundle.find_bundle(img, **kwargs)
     mask = pybundle.get_mask(img, loc)
     imgMasked = pybundle.apply_mask(img, mask)
+    
     return imgMasked
 
     
-def auto_mask_crop(img, **kwargs):
-    """ Locates bundle, sets pixels outside to 0 and returns cropped image
-    around bundle
-    :param img: input image as 2D numpy array
-    :param loc: optional location of bundle as tuple of (centreX, centreY, radius), defaults to determining this using find_bundle
-    :return: masked and cropped image as 2D numpy array
+def auto_mask_crop(img, loc = None, **kwargs):
+    """ Locates bundle, sets pixels outside to 0, and returns cropped image
+    around bundle.
+    
+    Arguments:  
+
+        img:  input image as 2D numpy array
+        
+    Optional Keyword Arguments:
+    
+        loc:     optional location of bundle as tuple of (centreX, centreY, radius), 
+                 defaults to determining this using find_bundle
+        Others : if loc is not specified, other optional keyword arguments will
+                 be passed to find_bundle.
     """
-    loc = pybundle.find_bundle(img, **kwargs)
+    
+    if loc is None:
+        loc = pybundle.find_bundle(img, **kwargs)
     imgMasked = pybundle.auto_mask(img)
     imgCropped = pybundle.crop_rect(imgMasked, loc)
+    
     return imgCropped            
 
 
 
-def crop_filter_mask(img, loc, mask, filterSize, **kwargs):
+def crop_filter_mask(img, loc, mask, filterSize, resize = False, **kwargs):
     """ For convenient quick processing of images. Sequentially crops image to 
     bundle, applies Gaussian filter and then sets pixels outside bundle to 0.
-    Set loc to None to automatically locate bundle. Optional parameter resize
-    allows the output images to be rescaled. If using autolocate, can
-    optionally specify find_bundle options as additional arguments.    
-    :param img: input image, 2D numpy array
-    :param loc: location of bundle as tuple of (centreX, centreY, radius), set to None to determining this using find_bundle
-    :param mask: 2D numpy array with value of 1 inside bundle and 0 outside bundle
-    :param filterSize: sigma of Gaussian filter
-    :param resize: optional size to rescale output image to, if not specified there will be no resize
-    :return: output image as 2D numpy array
+    Set loc to None to automatically locate bundle. Optional parameter 'resize'
+    allows the output images to be rescaled. If using auto-locate, can
+    optionally specify find_bundle() options as additional keyword arguments. 
+    
+    Returns output image as 2D/3D numpy array
+    
+    Arguments:  
+
+        img        : input image, 2D/3D numpy array
+        loc        : location of bundle as tuple of (centreX, centreY, radius), 
+                      set to None to determining this using find_bundle
+        mask       : 2D numpy array with value of 1 inside bundle and 0 outside bundle
+        filterSize : sigma of Gaussian filter
+        
+    Optional Keyword Arguments:
+    
+        resize     : size to rescale output image to, default is no resize
+        Others     : if loc is not specified, other optional keyword arguments will
+                    be passed to find_bundle.
+        
     """
     
-    resize = kwargs.get('resize', False)
     if loc is None:
         loc = pybundle.find_bundle(img, **kwargs)
+    
     img = pybundle.g_filter(img, filterSize)
+    
     img = pybundle.apply_mask(img, mask)
+    
     img, newLoc = pybundle.crop_rect(img, loc)
+    
     if resize is not False:
         img = cv.resize(img, (resize,resize))        
     

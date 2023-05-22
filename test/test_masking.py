@@ -2,9 +2,7 @@
 """
 Tests the cropping and mask functionality of pybundle
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 from matplotlib import pyplot as plt

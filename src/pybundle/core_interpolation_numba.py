@@ -7,9 +7,7 @@ This file contains functions related to triangular linear interpolation
 between cores which are accelerated using the JIT functionality of the numba
 package.
 
-@author: Mike Hughes
-Applied Optics Group, University of Kent
-https://github.com/mikehugheskent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 
@@ -19,13 +17,15 @@ import numpy as np
 
 @jit(nopython = True)   
 def core_value_extract_numba(img, coreX, coreY):
-    """ Extract intensity of each core in fibre bundle image using JIT compiler
+    """ Extract intensity of each core in fibre bundle image using JIT compiler.
     
-    :param coreX: 1D numpy array giving x co-ordinates of core centres
-    :param coreY: 1D numpy array giving y co-ordinates of core centres
-    :param filterSize: sigma of Gaussian filter
-    :param numba: optional, if true numba JIT used for faster executio, defaults to False.
-    :return: core intensity values as 1D numpy array 
+    Returns core intensity values as 1D numpy array 
+    
+    Arguments:
+           coreX      : 1D numpy array giving x co-ordinates of core centres
+           coreY      : 1D numpy array giving y co-ordinates of core centres
+           filterSize : float, sigma of Gaussian filter
+     
     """
     if img.ndim == 2:
         nCores = np.shape(coreX)[0]
@@ -53,12 +53,18 @@ def grid_data_numba(baryCoords, cVal, coreIdx, mapping, mask):
     the tringle index for each reconstruction grid pixel, is used here purely
     for intentying pixels which lie outside the complex hull of the bundle, so
     that these can be set to 0.  
-    :param baryCoords: barycentric co-ordinates of each pixel in reconstruction grid
-        as 2D numpy array of size (3, num_pixels)
-    :param cVals: intensity values from each core as 1D numpy array
-    :param coreIdx: the indices of the three cores making up the enclosing triangle
-        for each reconstruction grid pixel, as 2D numpy array of size (3, num_pixels)
-    :return: value of each pixel in the reconstruction grid, as 1D numpy array
+    
+    Returns value of each pixel in the reconstruction grid, as 1D numpy array
+
+           baryCoords : barycentric co-ordinates of each pixel in reconstruction grid
+                        as 2D numpy array of size (3, num_pixels)
+           cVals      : intensity values from each core as 1D numpy array
+           coreIdx    : the indices of the three cores making up the enclosing triangle
+                        for each reconstruction grid pixel, as 2D numpy array 
+                        of size (3, num_pixels)
+           mapping    : as output in BundleCalibration from calib_tri_interp()
+           mask       : mask to apply 2D numpy array of 1s and 0.
+                        
     """
     
     assert (cVal.ndim == 1 or cVal.ndim == 2), "Pixel Values in cVal must be 1D (mono) or 2D (colour)"
@@ -66,9 +72,7 @@ def grid_data_numba(baryCoords, cVal, coreIdx, mapping, mask):
     if cVal.ndim == 2:
         pixelVal = np.zeros((np.shape(baryCoords)[0], np.shape(cVal)[1]))
     else:
-        pixelVal = np.zeros((np.shape(baryCoords)[0]))
-
-         
+        pixelVal = np.zeros((np.shape(baryCoords)[0]))         
 
     if cVal.ndim == 2:   # Colour
         if mask is None:
@@ -96,11 +100,15 @@ def grid_data_numba(baryCoords, cVal, coreIdx, mapping, mask):
     
 @jit(nopython=True)
 def apply_mask_numba(img, mask):
-    """ Numba optimised version of apply_mask. Applies a mask to an input image. 
-    :param img: input image as 2D numpy array
-    :param mask: mask image, 2D numpy array with 1 for pixels to keep and 0 for
-      pixels to set to 0. Must be same size as img
-    :return: masked image as 2D numpy array
+    """ Numba optimised version of apply_mask. Applies a mask to an input image.
+    
+    Returns the masked image as a 2D numpy array.
+
+    
+    Arguments:
+           img  : input image as 2D numpy array
+           mask : mask image, 2D numpy array with 1 for pixels to keep and 0 for
+                  pixels to set to 0. Must be same size as img
     """
     w,h = np.shape(img)
    

@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 """
-Test removal of fibre bundle core pattern by 
+Test removal of fibre bundle core pattern for colour images by 
 Delaunay triangulation and triangular linear interpolation.
 
 This also tests the faster numba-based option. 
 
-@author: Mike Hughes
-Applied Optics Group
-University of Kent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 from matplotlib import pyplot as plt
@@ -19,6 +17,7 @@ from PIL import Image
 import context    # Add relative path to get PyBundle
 import os
 import cv2 as cv
+
 import pybundle
 
 # We load in two images, an image with uniform illumination for calibation

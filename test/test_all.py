@@ -9,6 +9,10 @@ print("\ntest_simple_processing")
 print("-------------------------")
 import test_simple_processing
 
+print("\ntest_simple_processing_col")
+print("-------------------------")
+import test_simple_processing_col
+
 print("\ntest_masking (low-level)")
 print("-------------------------")
 import test_masking
