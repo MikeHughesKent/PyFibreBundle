@@ -47,10 +47,7 @@ pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by tr
                gridSize = 800,                # Size of output image
                coreSize = 3,                  # Providing an estimate of the core spacing in pixels help to identify core locations robustly
                calibImage = calibImg, 
-               backgroundImage = calibImg,
-               normaliseImage = calibImg,
-               autoContrast = True,
-               filterSize = None)
+               normaliseImage = calibImg)
 
 pyb.calibrate()
 reconSingle = pyb.process(imgs[:,:,0])
@@ -68,10 +65,7 @@ pyb = PyBundle(coreMethod = PyBundle.TRILIN,  # Set to remove core pattern by tr
                gridSize = 800,                # Size of output image
                coreSize = 3,                  # Providing an estimate of the core spacing in pixels help to identify core locations robustly
                calibImage = calibImg, 
-               backgroundImage = calibImg,
                normaliseImage = calibImg,
-               autoContrast = True,
-               filterSize = None,
                superRes = True,               # Set to True to do Super Res
                srCalibImages = imgs)          # These are the shifted images
 

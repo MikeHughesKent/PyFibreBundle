@@ -28,46 +28,15 @@ Request the latest mosaic image::
 The ``mosaicImage`` will be a 2D numpy array if ``img`` is 2D and a 3D numpy array if ``img`` is 3D, in which case the third axis represents the colour channels.	
 
 
-^^^^^^^^^^^^^
-Instantiation
-^^^^^^^^^^^^^
-
-.. py:function:: Mosaic(mosaicSize [, resize=None, imageType=None, templateSize=None, refSize = None, cropSize = None, blend = True, minDistForAdd = 5, currentX = None, currentY = None, boundaryMethod = CROP, expandStep = 50, resetThresh = None, resetIntensity = None, resetSharpness = None])
-
-
-*Required arguments:*
-
-* ``mosaicSize`` Size of mosaic image in pixels. This may later change depending on which ``boundaryMethod`` is set.
-
-*Optional arguments:*
-
-* ``resize`` Images are resized to a square of this side-length before insertion (default is same as size of first image added to mosaic, i.e. no resizing).
-* ``imageType`` Image type for mosaic image (default is same as first image added to mosaic).
-* ``templateSize`` Size of ROI taken from second image when calculating shift between two images. (default is 1/4 of size of first image added).
-* ``refSize`` Size of ROI taken from first image when calculating shift between two images. (default is 1/2 of size of first image added).
-* ``cropSize`` Input images are cropped to a circle of this diameter before insertion. (default is 0.9 x size of first image added).
-* ``blend`` If ``True``, uses distance-weighted alpha blending (default), if ``False`` uses dead-leaf.
-* ``blendDist`` If using alpha blending, determines how strong the distance weighting is (default = 40 pixels).
-* ``minDistForAdd`` Only add an image to the mosaic if it has moved this far in pixels since last image was added (default = 5 pixels).
-* ``currentX`` Initial x position of first image in mosaic (default is centre of image).
-* ``currentY`` Initial y position of first image in mosaic (default is centre of image).
-* ``boundaryMethod`` Determines what happens when edge of mosaic image is reached. ``Mosaic.CROP`` [Default]: new images go out of mosaic image, ``Mosaic.EXPAND``: mosaic image is made larger, ``Mosaic.SCROLL``: mosaic image is scrolled, with loss of data on the opposite edge.
-* ``expandStep`` If boundaryMethod is ``Mosaic.EXPAND``, mosaic will be expanded by this amount when the edge is reached (default is 50).
-* ``resetThresh`` If set to value other than None (default), mosaic will reset when correlation between two frames is below this value.
-* ``resetIntensity`` If set to value other than None (default), mosaic will reset when mean intensity of a supplied frame is less than this value.
-* ``resetSharpness`` If set to value other than None (default), mosaic will reset when sharpness (image gradient) of a supplied frame is less than this value.
-
 ^^^^^^^^^^^^^^^^^^^^
-Function Reference
+Methods
 ^^^^^^^^^^^^^^^^^^^^
 
-.. py:function:: add(img) 
-Adds an image ``img`` to the current mosaic.
-
-.. py:function:: get_mosaic() 
-
-Returns a copy of the current mosaic as a 2D/3D numpy array.
-
+.. autoclass:: pybundle.Mosaic
+   :members:
+   
+   
+   
 ^^^^^^^^^^^^^^^^^^^^
 Usage Notes
 ^^^^^^^^^^^^^^^^^^^^
@@ -86,16 +55,12 @@ For slow moving probes, ``minDistForAdd`` may need to be adjusted particularly w
 ^^^^^^^^^^^^^^^^^^^
 Low Level Functions
 ^^^^^^^^^^^^^^^^^^^
-These functions are used internally and would normally not need to be called directly. Check the source for arguments.
+The private member functions of the Mosaic class are listed below for custom use:
 
-* ``initialise`` This is called the first time an image is added using ``add``. It cannot be called beforehand since some details of the images, such as the size, are required.
-* ``find_shift`` Computes shift between two images using normalised cross correlation.
-* ``insert_into_mosaic`` Adds an image to the mosaic dead leaf.
-* ``insert_into_mosaic_blended`` Adds an image to the mosaic with distance-weighted alpha-blending.
-* ``cosine_window`` Generates circular cosine window, used in blending.
-* ``is_outside_mosaic`` Returns true if intended image insert will go outside of mosaic image.
-* ``expand_mosaic`` Expands mosaic image.
-* ``scroll_mosaic`` Scrolls the mosaic image.
+.. autoclass:: pybundle.Mosaic
+   :noindex:
+   :private-members: __initialise_mosaic, __insert_into_mosaic, __insert_into_mosaic_blended, __find_shift, __cosine_window, __is_outside_mosaic, __expand_mosaic, __scroll_mosaic
+   
 
 ^^^^^^^
 Example

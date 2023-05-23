@@ -17,6 +17,7 @@ import math
 import time
 
 import cv2 as cv
+import pybundle
 
 from pybundle.core_interpolation import *    
 from pybundle.bundle_calibration import BundleCalibration
@@ -124,47 +125,83 @@ class PyBundle:
                
 
     def set_filter_size(self, filterSize):
-        """ Set the size of Gaussian filter used if filtering method employed"""
+        """ Set the size of Gaussian filter used if filtering method employed.
+        
+        Arguments:
+            filterSize : float, sigma of Gaussian filter
+        """
         self.filterSize = filterSize
         
     
     def set_loc(self, loc):
-        """ Store the location of the bundle, requires tuple of (centreX, centreY, radius)."""
+        """ Store the location of the bundle. This will also set autoLoc = False.
+        
+        Arguments:
+            loc : bundle location, tuple of (centreX, centreY, radius)
+        """
+        
         self.loc = loc
         self.autoLoc = False   # We don't want to automatically find it if we have been given it
         
     
     def set_core_method(self, coreMethod):
-        """ Set the method to use to remove cores, FILTER, TRILIN or EDGE_FILTER"""
+        """ Set the method to use to remove cores, FILTER, TRILIN or EDGE_FILTER
+        
+        Arguments:
+            coreMethod: PyBundle.FILTER, PyBundle.TRILIN or PyBundle.EDGE_FILTER
+        """
         self.coreMethod = coreMethod
         
         
     def set_core_size(self, coreSize):
-        """ Set the estimated centre-centre core spacing used to help find cores as part of TRILIN method"""
+        """ Set the estimated centre-centre core spacing used to help find 
+        cores as part of TRILIN method.
+        
+        Arguments:
+            coreSize : float, estimate core spacing
+        """
         self.coreSize = coreSize
         
     
     def set_mask(self, mask):
-        """ Provide a mask to be used. Mask must be a 2D numpy array of same size as images to be processed"""
+        """ Provide a mask to be used. Mask must be a 2D numpy array of same 
+        size as images to be processed
+        
+        Arguments:
+            mask : 2D numpy array, 1 inside bundle, 0 inside bundle. Must be
+                   same size as image to be processed.
+        """
         self.mask = mask
         self.autoMask = False  # We don't want to automatically find it if we have been given it
         
     
     def set_auto_contrast(self, ac):
-        """ Determines whether images are scaled to be between 0-255. Boolean"""
+        """ Determines whether images are scaled to be between 0-255. 
+        
+        Arguments:
+            ac : boolean, True to autocontrast 
+        """
+
         self.autoContrast = ac
         
         
     def set_crop(self, crop):
         """ Determines whether images are cropped to size of bundle 
         for FILTER, EDGE_FILTER methods. crop is Boolean.
+        
+        Arguments:
+            crop : boolean, True to crop
         """
+        
         self.crop = crop    
     
     
     def set_apply_mask(self, applyMask):
         """ Determines whether areas outside the bundle are set to zero 
-        for FILTER and EDGE_FILTER method. applyMask is Boolean.
+        for FILTER and EDGE_FILTER method. 
+        
+        Arguments:
+            applyMask: boolean, True to apply mask, False to not apply mask
         """
         self.apply_mask = applyMask
         
@@ -177,6 +214,9 @@ class PyBundle:
         case the mask will be generated of the correct size for this image, but
         this is deprecated, use calibrate() instead. Optionally provide a 
         radius rather than using radius of determined bundle location.
+        
+        Arguments:
+            img: boolean, True to automically create mask
        
         """       
         if type(img) is bool:
@@ -200,8 +240,12 @@ class PyBundle:
         """ Determine mask from provided calibration image and set as mask
         Optionally provide a radius rather than using radius of determined
         bundle location.
-        :param img: calibration image from which size of mask is determined
-        :param radius, optional radius of mask
+        
+        Arguments:
+            img: calibration image from which size of mask is determined
+            
+        Keyword Arguments:            
+            radius : radius of mask, default is to determine this automtically
         """    
         if img is not None:
             self.set_auto_loc(img)
@@ -217,6 +261,9 @@ class PyBundle:
         It is also possible to pass an image as a 2D numpy array instead of a Boolean,
         in which case the bundle location will be determined from this image. However,
         this is noq deprecated in favour of setting calibImg and then calling calibrate.
+        
+        Arguments:
+            img : boolean, True to auto-locate bundle, False to not.
         """      
         
         if type(img) is bool:
@@ -235,8 +282,8 @@ class PyBundle:
 
         Arguments:
 
-            backgroundImage - background image as 2D/3D numpy array. Set as 
-                             None to remove background.        
+            backgroundImage : background image as 2D/3D numpy array. Set as 
+                              None to remove background.        
         """
         
         if background is not None:
@@ -254,7 +301,7 @@ class PyBundle:
         
         Arguments:
 
-            normaliseImage - normalisation image as 2D/3D numpy array. Set as 
+            normaliseImage : normalisation image as 2D/3D numpy array. Set as 
                              None to remove normalisation.
         """
         if normaliseImage is not None:
@@ -271,7 +318,7 @@ class PyBundle:
         
         Arguments:
 
-            outputType: str, one of 'uint8', 'unit16' or 'float'
+            outputType : str, one of 'uint8', 'unit16' or 'float'
         """
         if outputType == 'uint8' or outputType == 'uint16' or outputType == 'float' or outputType == 'float32' or outputType == 'float64':
             self.outputType = outputType
@@ -284,7 +331,7 @@ class PyBundle:
         """ Set image to be used for calibration.
         
         Arguments:
-            calibImg - calibration image as 2D/3D numpy array
+            calibImg : calibration image as 2D/3D numpy array
         """
         self.calibImage = calibImg.astype('float')
         
@@ -295,7 +342,7 @@ class PyBundle:
         to calling 'calibrate', the default value of 512 will be used.
         
         Arguments:
-            gridSize - int, size of square image output 
+            gridSize : int, size of square image output 
         """
         self.gridSize = gridSize
         
@@ -304,67 +351,130 @@ class PyBundle:
         """ Creates and stores filter for EDGE_FILTER method.
         
         Arguments:
-            edgePos   - float, spatial frequency of edge in pixels of FFT of image
-            edgeSlope - float, steepness of slope (range from 10% to 90%) in pixels of FFT of image
+            edgePos   : float, spatial frequency of edge in pixels of FFT of image
+            edgeSlope : float, steepness of slope (range from 10% to 90%) in pixels of FFT of image
         """
         
         self.edgeFilterShape  = (edgePos, edgeSlope)
         
         
     def set_use_numba(self, useNumba):
-        """ Sets whether Numba should be used for JIT compiler acceleration for functionality which support this. Boolean"""
+        """ Sets whether Numba should be used for JIT compiler acceleration for 
+        functionality which supports this.
+
+        Arguments:
+            useNumba : boolean, True to use Numba, False to not.
+        """
+        
         self.useNumba = useNumba  
 
     def set_sr_calib_images(self, calibImages):
-        """ Provides the calibration images, a stack of shifted images used to determine shifts between images for super-resolution
+        """ Provides the calibration images, a stack of shifted images used to 
+        determine shifts between images for super-resolution
+        
+        Arguments:
+            calibImages : 3D numpy array, stack of shifted images.
+            
         """
         self.srCalibImages = calibImages
         
         
     def set_sr_norm_to_images(self, normToImages):
-        """ Sets whether super-resolution recon should normalise each input image to have the same mean intensity. Boolean"""
+        """ Sets whether super-resolution recon should normalise each input 
+        image to have the same mean intensity. 
+        
+        Arguments:
+            normToImages : boolean, True to normalise, False to not
+        
+        """
 
         self.srNormToImages = normToImages         
         
         
     def set_sr_norm_to_backgrounds(self, normToBackgrounds):
-        """ Sets whether super-resolution recon should normalise each input image w.r.t. a stack of backgrounds in srBackgrounds to have the same mean intensity. Boolean"""
+        """ Sets whether super-resolution recon should normalise each input 
+        image w.r.t. a stack of backgrounds in srBackgrounds to have the same 
+        mean intensity. 
+        
+        Arguments:
+            normToBackgrounds : boolean, True to normalise, False to not
+        
+        """
         self.srNormToBackgrounds = normToBackgrounds  
         
     
     def set_sr_multi_backgrounds(self, mb):
-        """ Sets whether super-resolution should normalise each core in each image"""
+        """ Sets whether super-resolution should use individual backgrounds for each
+        each shifted image.
+        
+        Arguments:
+            mb : boolean, True to use multiple backgrounds, False to not
+            
+        """
         self.srMultiBackgrounds = mb
         
         
     def set_sr_multi_normalisation(self, mn):
+        """ Sets whether super-resolution should normalise to each core in each image
+        
+        Arguments:
+            mn : boolean, True to normalise each core in each image, False to not
+            
+        """
         self.srMultiNormalisation = mn
 
         
     def set_sr_backgrounds(self, backgrounds):
-        """ Provide a set of background images for background correction of each SR shifted image.
+        """ Provide a set of background images for background correction of 
+        each SR shifted image.
+        
+        Arguments:
+            backgrounds : 3D numpy array, stack of background images
+            
         """
         self.srBackgrounds = backgrounds  
        
         
     def set_sr_normalisation_images(self, normalisationImages):
-        """ Provide a set of normalisation images for normalising intensity of each SR shifted image.
+        """ Provide a set of normalisation images for normalising intensity of 
+        each SR shifted image.
+        
+        Arguments:
+            normalisationImages : 3D numpy array, stack of images
+            
         """
         self.srNormalisationImgs = normalisationImages
         
 
     def set_sr_shifts(self, shifts):
-        """ Provide shifts between SR images"""
+        """ Provide shifts between SR images. If this is set then no registration
+        will be performed. 
+        
+        Arguments:
+            shifts : 2D numpy array, shifts for each image relative to first
+                     image. 1st axis is image number, 2nd axis is (x,y)
+        """
         self.srShifts = shifts
      
      
     def set_sr_dark_frame(self, darkFrame):
-        """ Provide a dark frame for super-resolution calibration"""
+        """ Provide a dark frame for super-resolution calibration.
+        
+        Arguments:
+            darkFrame : 2D numpy array, dark frame
+        
+        """
         self.srDarkFrame = darkFrame
         
         
     def set_sr_param_value(self, val):
-        """ Sets the current value of the parameter on which the shifts dependent for SR reconstruction """
+        """ Sets the current value of the parameter on which the shifts
+        dependent for SR reconstruction.
+        
+        Arguments:
+            val : parameter value
+        
+        """
         self.srParamValue = val
                 
         
@@ -372,11 +482,11 @@ class PyBundle:
         """ Peforms calibraion steps appropriate to chosen method. A calibration 
         image must have been set prior to calling this.
         
-        For TRILIN, creates inerpolation calibration.
+        For TRILIN, creates interpolation calibration.
         
-        FOR FILTER, EDGE_FILTER the bundle will be located if autoLoc has been set.
+        For FILTER, EDGE_FILTER the bundle will be located if autoLoc has been set.
         
-        FOR FILTER, EDGE_FILTER the mask will be located if autoMask has been set.
+        For FILTER, EDGE_FILTER the mask will be located if autoMask has been set.
         
         """
         assert self.calibImage is not None, "Calibration requires calibration image, use set_calib_image()."
@@ -408,7 +518,7 @@ class PyBundle:
     
     def calibrate_sr(self):
         """ Creates calibration for TRILIN SR method. A calibration image, 
-        set of super-res shift images, coreSize and griSize must have been 
+        set of super-res shift images, coreSize and gridSize must have been 
         set prior to calling this.
         """
         
@@ -561,9 +671,11 @@ class PyBundle:
                 imgOut = imgOut * (2**16 - 1)
             elif self.outputType == 'float':
                 imgOut = imgOut
-        
+                
+                
         # Type casting
-        imgOut = imgOut.astype(self.outputType)        
+        if imgOut.dtype != self.outputType:
+            imgOut = imgOut.astype(self.outputType)        
         
         return imgOut
     
@@ -596,12 +708,21 @@ class PyBundle:
         
         
     def set_super_res(self, sr):
-        """ Enables or disables super resolution, sr is boolean"""
+        """ Enables or disables super resolution.
+        
+        Arguments:
+            sr : boolean, True to use super-resolution.
+        """
         self.superRes = sr
         
         
     def set_sr_use_lut(self, useLUT):
-        """ Enables or disables use of calibration LUT for super resoution, useLUT is boolean"""
+        """ Enables or disables use of calibration LUT for super resoution.
+        
+        Arguments:
+            useLUT : boolean, True to use calibration LUT.
+            
+        """
         self.srUseLut = useLUT
         
     def calibrate_sr_lut(self, paramCalib, paramRange, nCalibrations) :   
@@ -610,9 +731,9 @@ class PyBundle:
         set prior to calling this.
         
         Arguments:
-            paramCalib  -  parameter shift calibration, as generated by calib_param_shift
-            paramRange  -  tuple of (min, max) defining range of parameter values to generate for
-            nCalibration - int, number of parameter values to generate for
+            paramCalib   :  parameter shift calibration, as generated by calib_param_shift()
+            paramRange   :  tuple of (min, max) defining range of parameter values to generate for
+            nCalibration : int, number of parameter values to generate for
             
         """
    

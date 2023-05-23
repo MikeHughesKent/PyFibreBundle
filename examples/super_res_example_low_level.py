@@ -70,7 +70,7 @@ print(f"Calibration time: {round(time.perf_counter() - t1, 3)}")
 
 t1 = time.perf_counter()
 reconImg = SuperRes.recon_multi_tri_interp(imgs, calib)
-print(f"Reconstruction time:{round(time.perf_counter() - t1, 3)}")
+print(f"Reconstruction time: {round(time.perf_counter() - t1, 3)}")
 
 plt.figure(dpi = 150)
 plt.imshow(reconImg, cmap='gray')

@@ -27,7 +27,7 @@ def extract_central(img, boxSize = None):
     Arguments:
         img     : input image as 2D numpy array
         
-    Optional Keyword Arguments:    
+    Keyword Arguments:    
         boxSize : size of cropping square, default is largest possible
     """
 
@@ -54,6 +54,8 @@ def to8bit(img, **kwargs):
     
     Arguments:
         img    : input image as 2D numpy array
+        
+   Keyword Arguments:    
         minVal : optional, pixel value to scale to 0
         maxVal : optional, pixel value to scale to 255
     """
@@ -87,6 +89,8 @@ def to16bit(img, **kwargs):
     
     Arguments:
         img    : input image as 2D numpy array
+        
+    Keyword Arguments:    
         minVal : optional, pixel value to scale to 0
         maxVal : optional, pixel value to scale to 2^16 - 1
     """
@@ -143,20 +147,37 @@ def save_image8(img, filename):
 
 
 def save_image16(img, filename):
-    """ Saves image as 16 bit tif without scaling"""
+    """ Saves image as 16 bit tif without scaling.
+    
+    Arguments:
+        img: image as 2D/3D numpy array
+        filname : str, path to file. Folder must exist.
+    """
     im = Image.fromarray(img.astype('uint16'))
     im.save(filename)
 
 
      
 def save_image8_scaled(img, filename):
-    """ Saves image as 8 bit tif with scaling to use full dynamic range"""
+    """ Saves image as 8 bit tif with scaling to use full dynamic range.
+    
+    Arguments:
+        img: image as 2D/3D numpy array
+        filname : str, path to file. Folder must exist.        
+    """
+    
     im = Image.fromarray(to8bit(img))
     im.save(filename)
     
     
 def save_image16_scaled(img, filename):
-    """ Saves image as 16 bit tif with scaling to use full dynamic range"""
+    """ Saves image as 16 bit tif with scaling to use full dynamic range.
+    
+    Arguments:
+        img: image as 2D/3D numpy array
+        filname : str, path to file. Folder must exist.
+    """
+    
     im = Image.fromarray(to16bit(img)[0])
     im.save(filename) 
 
@@ -164,7 +185,12 @@ def save_image16_scaled(img, filename):
 def average_channels(img):
     """ Returns an image which is the the average pixel value across all channels of a colour image.
     It is safe to pass a 2D array which will be returned unchanged.
+    
+    
+    Arguments:
+        img: image as 2D/3D numpy array
     """     
+
     if img.ndim == 3:
         return np.mean(img, 2)
     else:
@@ -174,7 +200,12 @@ def average_channels(img):
 def max_channels(img):
     """ Returns an image which is the the maximum pixel value across all channels of a colour image.
     It is safe to pass a 2D array which will be returned unchanged.
+    
+    
+    Arguments:
+        img: image as 2D/3D numpy array
     """     
+
     if img.ndim == 3:
         return np.max(img, 2)
     else:

@@ -227,120 +227,41 @@ Function Reference
 
 These are the low level functions, for most purposes it is better to use an instance of the ``PyBundle`` class.
 
-.. py:function:: calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, [optional arguments])
 
-*Required arguments:*
+----------
+High Level
+----------
 
-* ``calibImg`` Calibration image of fibre bundle, 2D numpy array
-* ``imgs`` Example set of images with the same set of mutual shifts as the images to later be used to recover an enhanced resolution image from. 3D numpy array. Can be ``None`` if ``shifts`` is specified instead.
-* ``coreSize`` Estimate of average spacing between cores
-* ``gridSize`` Output size of image, supply a single value, image will be square
+.. autofunction:: pybundle.SuperRes.calib_multi_tri_interp
 
-*Optional arguments:*
+.. autofunction:: pybundle.SuperRes.recon_multi_tri_interp
 
-* ``background`` Image used for background subtraction as 2D numpy array, defaults to no background
-* ``normalise`` Image used for normalisation of core intensities, as 2D numpy array. Can be same as calibration image, defaults to no normalisation
-* ``shifts`` Known x and y shifts between images as 2D numpy array of size (numImages,2). Will override ``imgs`` if specified as anything other than ``None``.
-* ``centreX`` X centre location of bundle, if not specified will be determined automatically.
-* ``centreY`` Y centre location of bundle, if not specified will be determined automatically.
-* ``radius`` Radius of bundle, if not specified will be determined automatically.
-* ``filterSize`` Sigma of Gaussian filter applied during core-finding, defaults to no filter.
-* ``normToImage`` If ``true`` each image will be normalised to have the same mean intensity. Defaults to ``false``.
-* ``normToBackground`` If ``true``, each image will be normalised with respect to the corresponding background image from a stack of background images (one for each shift position) provided in ``backgroundImgs``.
-* ``multiBackgrounds`` If ``True`` each shifted image will have an independent core-background subtraction based on the background images provided in ``backgroundImgs``.
-* ``multiNormalisation`` If ``True`` each shifted image will have an independent core-normalisation based on the normalisation images provided in ``normalisationImgs``.
-* ``backgroundImgs`` Stack of images, same size as ``imgs`` which are used either for correcting mean image intensity (if ``normToBackground`` used) or image-by-image core background correction (if ``multiBackgrounds`` used).
-* ``normalisationImgs`` Stack of images, same size as ``imgs``, which is used for image-by-image core normalisation.
-* ``imageScaleFactor`` If normToBackground and normToImage are False (default), use this to specify the normalisation factors for each image. Provide a 1D array the same size as the number of shifted images. Each image will be multiplied by the corresponding factor prior to reconstruction. Default is None (i.e. no scaling).
-* ``postFilterSize`` Sigma of Gaussian filter applied to image after reconstruction, defaults to no filter.
-* ``autoMask`` Whether to mask pixels outside bundle when searching for cores. Defualts to ``True``.
-* ``mask`` Whether to mask pixels outside of bundle in reconstructed image. Defaults to ``True``.
-
-*Returns:*
-
-* Instance of ``BundleCalibration``
+.. autofunction:: pybundle.SuperRes.multi_tri_backgrounds
 
 
+-------------
+Registration
+-------------
 
-.. py:function:: recon_multi_tri_interp(imgs, calib, [useNumba])
+.. autofunction:: pybundle.SuperRes.get_shifts
 
-*Required arguments:*
+.. autofunction:: pybundle.SuperRes.find_shift
 
-* ``imgs`` Stack of shifted images as 3D numpy array. The third axis is image number.
-* ``calib`` Instance of ``bundleCalibration`` returned by ``calib_multi_tri_interp``.
+-----------------
+Parameterisation
+-----------------
 
-*Optional arguments:*
+.. autofunction:: pybundle.SuperRes.calib_param_shift
 
-* ``useNumba`` Boolean, whether to use Numba package to speed up reconstruction if available. Defaults to ``true``.
+.. autofunction:: pybundle.SuperRes.get_param_shift
 
-*Returns:*
+.. autofunction:: pybundle.SuperRes.param_calib_multi_tri_interp
 
-* Reconstructed image as 2D numpy array.
+----------------
+Utility
+----------------
 
-
-
-
-.. py:function:: sort_sr_stack(stack, stackLength)
-
-A helper function that takes a stack of images and extracts an ordered set of images relative to a reference 
-'blank' frame which is much lower intensity than the other frames.  For use with super-resolution systems
-which use a blank frame as a reference point.
-
-The blank frame can be anywhere in the stack, and the output stack will be formed cyclically
-from frames before and after the blank frame. For example, if we have frames
-
-       1  2  3  X  4  5
-
-where X is the blank frame, the function will return a stack in the following order
-
-       4  5  1  2  3
-               
-The input stack, ``stack`` should should have ``stackLength + 1``  frames and 
-there must be ``stackLength + 1`` images in each cycle  (i.e. ``stackLength`` useful 
-images plus one blank reference image).
-
-The blank reference image is not returned, i.e the returned stack has ``stackLength`` frames.
-    
-Input stack should have frame number in third dimension.
-
-*Required arguments:*
-
-* ``stack`` Input images (x,y,frame_num), a stack containing (stackLength + 1) frames, one of which is blank.
-* ``stackLength`` Desired number of images in output stack.
-
-*Returns:*
-
-* Re-arranged stack.
-
-
-
-.. py:function:: multi_tri_backgrounds(calibIn, backgrounds) 
-
-Updates a multi_tri calibration with a new set of backgrounds without requiring full recalibration
-
-*Required arguments:*
-
-* ``calibIn`` super-resolution bundle calibration, instance of BundleCalibration
-* ``backgrounds``: stack of background images, 3D numpy array with image number on 3rd axis
-
-*Returns:*
-
-* An instance of BundleCalibration which contatins the updated background values
-
-
-    
-.. py:function:: calib_param_shift(param, images, calibration)
-
-For use when the shifts between the images are linearly dependent on some other parameter. 
-
-* ``param`` a 1D numpy array containing example values of the parameter for calibration
-* ``images`` a set of shifted image stacks, one for each example value of the parameter. Provide the images as a 4D numpy array of (y, x, shift, parameter).
-* ``calibation`` a single image bundle calibration as an instance of BundleCalibration
-
-*Returns:*
-
-* A 3D array of calibration factors, giving the gradient and offset of x and y shifts of each image with respect to the parameter.
-           
+.. autofunction:: pybundle.SuperRes.sort_sr_stack
 
 
 

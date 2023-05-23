@@ -6,9 +6,7 @@ fibre bundle images.
 This file contains functions related to triangular linear interpolation 
 between cores, including functions for finding cores.
 
-@author: Mike Hughes
-Applied Optics Group, University of Kent
-https://github.com/mikehugheskent
+@author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
 
@@ -111,7 +109,7 @@ def core_values(img, coreX, coreY, filterSize, **kwargs):
         coreY      : 1D numpy array giving y co-ordinates of core centres
         filterSize : float, sigma of Gaussian filter
     
-    Optional Keyword Arguments:    
+    Keyword Arguments:    
 
         numba  : optional, if true numba JIT used for faster execution, defaults to False.
     """
@@ -146,7 +144,7 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
         coreSize   : float, estimate of average spacing between cores
         gridSize   : int, output size of image, supply a single value, image will be square
         
-    Optional Keyword Arguments:    
+    Keyword Arguments:    
         centreX    : int, optional, x centre location of bundle, if not specified will be determined automatically
         centreY    : int, optional, y centre location of bundle, if not specified will be determined automatically
         radius     : int, optional, radius of bundle, if not specified will be determined automatically
@@ -199,22 +197,27 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     """ Used by calib_tri_interp to perform Delaunay triangulation of core positions, 
     and find each pixel of reconstruction grid in barycentric co-ordinates w.r.t. 
     enclosing triangle.
-    :param img: calibration image as 2D (mono) or 3D (colour) numpy array
-    :param coreX: x centre of each core as 1D numpy array
-    :param coreY: y centre of each core as 1D numpy array
-    :param centreX: x centre location of bundle (reconstruction will be centred on this)
-    :param centreY: y centre location of bundle (reconstruction will be centred on this)
-    :param radius: radius of bundle (reconstruction will cover a square out to this radius)
-    :param gridSize: output size of image, supply a single value, image will be square
-    :param filterSize: optional, sigma of Gaussian filter applied, defaults to no filter
-    :param background: optional, image used for background subtractionn as 2D numpy array
-    :param normalise: optional, image used for normalisation, as 2D numpy array. Can be same as 
-                      calibration image, defaults to no normalisation
-    :param mask: optional, boolean, when reconstructing output image will be masked outside 
-                 of bundle, defaults to True
-    :return: instance of BundleCalibration
     
+    Returns instance of BundleCalibration.
+    
+    Arguments:
+         img     : calibration image as 2D (mono) or 3D (colour) numpy array
+         coreX   : x centre of each core as 1D numpy array
+         coreY   : y centre of each core as 1D numpy array
+         centreX : x centre location of bundle (reconstruction will be centred on this)
+         centreY : y centre location of bundle (reconstruction will be centred on this)
+         radius  : radius of bundle (reconstruction will cover a square out to this radius)
+    
+    Keyword Arguments:    
+         gridSize   : output size of image, supply a single value, image will be square
+         filterSize : optional, sigma of Gaussian filter applied, defaults to no filter
+         background : optional, image used for background subtractionn as 2D numpy array
+         normalise  : optional, image used for normalisation, as 2D numpy array. Can be same as 
+                      calibration image, defaults to no normalisation
+         mask       : optional, boolean, when reconstructing output image will be masked outside 
+                      of bundle, defaults to True    
     """
+    
     filterSize = kwargs.get('filterSize', None)
     normalise = kwargs.get('normalise', None)
     background = kwargs.get('background', None)
@@ -225,7 +228,6 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
         col = True
     else:
         col = False
-
 
     # Delaunay triangulation over core centre locations
     points = np.vstack((coreX, coreY)).T
@@ -298,11 +300,13 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
 def barycentric(nPixels, tri, mapping, interpPoints):
     """ Converts a set of Cartesian co-ordinates to barycentric co-ordinates.
     Assumes a prior Delaunay triangulation and simplex stored in mapping.
-    :param nPixels : Number of pixels in grid 
-    :param tri     : Delaunay triangulation
-    :param mapping : Output from Delaunay.find_simplex, records the co-ordinates of the
-                     three triangle vertices surrounding each point
-    :param interpPoints : Cartesian grid co-ordinates
+    
+    Arguments:
+         nPixels      : Number of pixels in grid 
+         tri          : Delaunay triangulation
+         mapping      : Output from Delaunay.find_simplex, records the co-ordinates of the
+                        three triangle vertices surrounding each point
+         interpPoints : Cartesian grid co-ordinates
     """
     # Left here as could try numba optimisation in future
     # baryCoords = np.zeros([nPixels, 3])
@@ -319,10 +323,13 @@ def barycentric(nPixels, tri, mapping, interpPoints):
 
 def tri_interp_normalise(calibIn, normalise):
     """ Updates a calibration with a new normalisation without requiring
-    full recalibration
-    :param calibIn: input calibration, instance of BundleCalibration
-    :param normalise: normalisation image as 2D/3D numpy array, or None to remove normalisation
-    :return: updated instance of BundleCalibration
+    full recalibration.
+    
+    Returns updated instance of BundleCalibration
+    
+    Arguments:
+         calibIn   : input calibration, instance of BundleCalibration
+         normalise : normalisation image as 2D/3D numpy array, or None to remove normalisation
     """
     calibOut = calibIn
 
@@ -339,10 +346,15 @@ def tri_interp_normalise(calibIn, normalise):
 
 def tri_interp_background(calibIn, background):
      """ Updates a calibration with a new background without requiring
-     full recalibration
-     :param calibIn: bundle calibration, instance of BundleCalibration
-     :param background: background image as 2D/3D numpy array
+     full recalibration.
+     
+     Returns updated instance of BundleCalibration
+
+     Arguments:
+          calibIn: bundle calibration, instance of BundleCalibration
+          background: background image as 2D/3D numpy array
      """
+     
      calibOut = calibIn
 
      if background is not None:
@@ -358,11 +370,16 @@ def tri_interp_background(calibIn, background):
 
 def recon_tri_interp(img, calib, **kwargs):
      """ Removes core pattern using triangular linear interpolation. Requires an initial
-     calibration using calib_tri_interp
-     :param img: raw image to be reconstructed as 2D (mono) or 3D (colour) numpy array
-     :param calib: bundle calibration as instance of BundleCalibration
-     :param numba: optional, if true use JIT acceleration using Numba, default to False
-     :return: reconstructed image as 2D/3D numpy array
+     calibration using calib_tri_interp.
+     
+     Returns reconstructed image as 2D/3D numpy array.
+
+     Arguments:
+          img: raw image to be reconstructed as 2D (mono) or 3D (colour) numpy array
+          calib: bundle calibration as instance of BundleCalibration
+          
+     Keyword Arguments:     
+          numba: optional, if true use JIT acceleration using Numba, default is False
      """
     
      numba = kwargs.get('numba', True)
@@ -410,13 +427,18 @@ def grid_data(baryCoords, cVals, coreIdx, mapping):
     grid are given by coreIdx, a 2D  numpy array. The mapping, which provides
     the tringle index for each reconstruction grid pixel, is used here purely
     for intentifying pixels which lie outside the complex hull of the bundle, so
-    that these can be set to 0.  
-    :param baryCoords: barycentric co-ordinates of each pixel in reconstruction grid
-        as 2D numpy array of size (3, num_pixels)
-    :param cVals: intensity values from each core as 1D numpy array
-    :param coreIdx: the indices of the three cores making up the enclosing triangle
-        for each reconstruction grid pixel, as 2D numpy array of size (3, num_pixels)
-    :return: value of each pixel in the reconstruction grid, as 1D numpy array
+    that these can be set to 0. 
+    
+    Returns value of each pixel in the reconstruction grid, as 1D numpy array
+
+    Arguments:
+         baryCoords  : barycentric co-ordinates of each pixel in reconstruction grid
+                       as 2D numpy array of size (3, num_pixels)
+         cVals       : intensity values from each core as 1D numpy array
+         coreIdx     : the indices of the three cores making up the enclosing triangle
+                       for each reconstruction grid pixel, as 2D numpy array of 
+                       size (3, num_pixels)
+         mapping     : pixel to triangle mapping, as generated by init_tri_interp              
     """
    
     if cVals.ndim == 2:

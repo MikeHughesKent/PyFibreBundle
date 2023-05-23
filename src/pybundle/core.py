@@ -39,7 +39,7 @@ def normalise_image(img, normImg, outputType = None):
         img     : 2D/3D numpy array, input image
         normImg : 2D/3D numpy array, reference image to divide by
         
-    Optional Keyword Arguments:
+    Keyword Arguments:
         outputType : str, if specified, output image will be cast to this type
                      Default is None, in which case it will be returned as
                      a float32.
@@ -85,7 +85,7 @@ def g_filter(img, filterSize, kernelSize = None):
         img          : input image as 2D/3D numpy array
         filterSize   : float, sigma of Gaussian filter
    
-    Optional Keyword Arguments:   
+    Keyword Arguments:   
         kernelSize   : int, size of convolution kernal
 
     """
@@ -220,7 +220,7 @@ def find_bundle(img, **kwargs):
 
         img        : input image of fibre bundle, 2D numpy array
         
-    Optional Keyword Arguments:   
+    Keyword Arguments:   
    
         filterSize : sigma of Gaussian filter applied to remove core pattern, 
                      defaults to 4
@@ -262,7 +262,7 @@ def find_bundle(img, **kwargs):
 def crop_rect(img, loc):
     """Extracts a square around the bundle using specified co-ordinates.
     
-    Return tuple of (cropped image as 2D numpy array, new location tuple)
+    Returns tuple of (cropped image as 2D numpy array, new location tuple)
 
     Arguments:  
         img  : input image as 2D numpy array
@@ -329,7 +329,7 @@ def auto_mask(img, loc = None, **kwargs):
     Arguments:  
         img  : input image as 2D numpy array
     
-    Optional Keyword Arguments:
+    Keyword Arguments:
         loc    : optional location of bundle as tuple of (centreX, centreY, radius), 
                  defaults to determining this using find_bundle
         Others : if loc is not specified, other optional keyword arguments will
@@ -353,7 +353,7 @@ def auto_mask_crop(img, loc = None, **kwargs):
 
         img:  input image as 2D numpy array
         
-    Optional Keyword Arguments:
+    Keyword Arguments:
     
         loc:     optional location of bundle as tuple of (centreX, centreY, radius), 
                  defaults to determining this using find_bundle
@@ -387,7 +387,7 @@ def crop_filter_mask(img, loc, mask, filterSize, resize = False, **kwargs):
         mask       : 2D numpy array with value of 1 inside bundle and 0 outside bundle
         filterSize : sigma of Gaussian filter
         
-    Optional Keyword Arguments:
+    Keyword Arguments:
     
         resize     : size to rescale output image to, default is no resize
         Others     : if loc is not specified, other optional keyword arguments will

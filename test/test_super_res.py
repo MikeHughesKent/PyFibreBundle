@@ -60,7 +60,7 @@ plt.title('Single Image')
 
 """ Super Resolution Recon """
 t1 = time.perf_counter()
-calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, filterSize = filterSize, background = calibImg, normalise = calibImg, autoMask = True)
+calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, filterSize = filterSize, normalise = calibImg, autoMask = True)
 print("Calibration time:", round(time.perf_counter() - t1, 3))
 
 t1 = time.perf_counter()
@@ -74,7 +74,7 @@ plt.title('SR Image')
 
 """ Super Resolution Recon with Intensity Normalisation"""
 t1 = time.perf_counter()
-calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, filterSize = filterSize, background = calibImg, normalise = calibImg, normToImage = True, autoMask = True)
+calib = SuperRes.calib_multi_tri_interp(calibImg, imgs, coreSize, gridSize, filterSize = filterSize, normalise = calibImg, normToImage = True)
 print("Calibration time:", round(time.perf_counter() - t1, 3))
 
 t1 = time.perf_counter()
@@ -96,7 +96,7 @@ shifts = np.array([[  0.        ,   0.        ],
                    [ -9.78841333, -30.51681804],
                    [-17.27367059, -27.06208392]])
 t1 = time.perf_counter()
-calib = SuperRes.calib_multi_tri_interp(calibImg, None, coreSize, gridSize,  shifts = shifts, filterSize = filterSize, background = calibImg, normalise = calibImg, autoMask = True)
+calib = SuperRes.calib_multi_tri_interp(calibImg, None, coreSize, gridSize,  shifts = shifts, filterSize = filterSize, normalise = calibImg)
 print(f"Calibration time: {round(time.perf_counter() - t1, 3)} s")
 
 t1 = time.perf_counter()

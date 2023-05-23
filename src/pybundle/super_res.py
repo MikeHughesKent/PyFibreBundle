@@ -51,7 +51,7 @@ class SuperRes:
                coreSize   : float, estimate of average spacing between cores
                gridSize   : int, output size of image, supply a single value, image will be square
                
-        Optional Keyword Arguments:       
+        Keyword Arguments:       
               
                normalise  : image used for normalisation, as 2D numpy array. Can be same as calibration image, defaults to no normalisation
                background : image used for background subtraction, as 2D numpy array, defaults to no background
@@ -245,6 +245,9 @@ class SuperRes:
             imgs     : set of shifted images
             calib    : calibration, instance of BundleCalibration (must be
                     created by calib_multi_tri_interp and not calib_tri_interp).
+            
+        Keyword Arguments:
+            numba    : boolean, if True Numba JIT will be used (default).
         """
 
         nImages = np.shape(imgs)[2]
@@ -315,7 +318,7 @@ class SuperRes:
             
             imgs         : stack of images as 3D numpy array
             
-        Optional Keyword Arguments:
+        Keyword Arguments:
             
             templateSize : int, a square of this size is extracted from imgs 
                            as the template, default is 1/4 image size
@@ -369,7 +372,7 @@ class SuperRes:
             upsample     : int, factor to scale images by prior to template matching to
                            allow for sub-pixel registration.  
                            
-        Optional Keyword Arguments:
+        Keyword Arguments:
             returnMax    : boolean, if true returns cc.peak value as well
                            as shift, default is False. 
                    
@@ -407,9 +410,12 @@ class SuperRes:
 
         The blank frame can be anywhere in the stack, and the output stack will be formed cyclically
         from frames before and after the blank frame. For example, if we have frames:
-           1  2  3  B  4  5
+        
+        1  2  3  B  4  5
+        
         where B is the blank frame, the function will return a stack in the following order:
-           4  5  1  2  3
+        
+        4  5  1  2  3
                    
         The input stack, 'stack' should should have (stackLength + 1)  frames to ensure that a 
         and there must be stackLength + 1 images in each cycle

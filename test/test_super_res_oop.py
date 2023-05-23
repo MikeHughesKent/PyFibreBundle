@@ -45,8 +45,8 @@ for idx, fName in enumerate(files[:nImages]):
 
 calibImg = np.array(Image.open(backFile))
 
-pyb = PyBundle(coreMethod = PyBundle.TRILIN, gridSize = gridSize, autoContrast = True, 
-               calibImage = calibImg, backgroundImage = calibImg, normaliseImage = calibImg)
+pyb = PyBundle(coreMethod = PyBundle.TRILIN, gridSize = gridSize, autoContrast = False, 
+               calibImage = calibImg, normaliseImage = calibImg, backgroundImage = calibImg)
 
 
 """ Single image recon for comparison """
@@ -79,8 +79,8 @@ shifts = np.array([ [  0.        ,   0.        ],
                     [ -9.78841333, -30.51681804],
                     [-17.27367059, -27.06208392] ])
     
-pyb = PyBundle(coreMethod = PyBundle.TRILIN, superRes = True, gridSize = gridSize, autoContrast = True, 
-               calibImage = calibImg, backgroundImage = calibImg, normaliseImage = calibImg)
+pyb = PyBundle(coreMethod = PyBundle.TRILIN, superRes = True, gridSize = gridSize, autoContrast = False, 
+               calibImage = calibImg, normaliseImage = calibImg)
 
 pyb.set_sr_shifts(shifts)
 pyb.calibrate_sr()

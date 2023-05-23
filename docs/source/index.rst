@@ -33,9 +33,9 @@ Contents
    core
    linear_interp
    pybundle_class
-   low_level
    mosaicing
    super_res
+   low_level
    functions
    
 * :ref:`genindex`

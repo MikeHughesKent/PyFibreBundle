@@ -47,4 +47,4 @@ import test_recon_tri_interp
 
 print("\ntest_super_res")
 print("-------------------------")
-import test_super_res
+import test_super_res_oop
