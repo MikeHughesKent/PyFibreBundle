@@ -27,7 +27,16 @@ See `PyBundle class <pybundle_class.html>`_ for details.
 Provides object-oriented access to mosaicing functionality of PyFibreBundle. 
 See `Mosaic class <mosaicing.html>`_ for details.
 
+.. py:function:: SuperRes()
 
+Functions for super-resolution. Normally these should be accessed using the
+PyBundle class. See `Super Resolution Section <super_res.html>`_ for details.
+
+.. py:function:: BundleCalibration()
+   :noindex:
+
+Stores a calibration for triangular linear interpolation, both normal and
+super-resolution.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
