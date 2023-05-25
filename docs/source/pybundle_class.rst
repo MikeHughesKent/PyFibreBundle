@@ -27,7 +27,7 @@ for a detailed description of each option's meaning.
 * coreMethod = None (``set_core_method``)
 * outputType = 'float64' (``set_output_type``)
 
-**CROP/MASK Settings (for FILTER/EDGE_FILTER only):**
+**CROP/MASK Settings:**
 
 * applyMask = False (``set_apply_mask``)
 * autoMask = True (``set_auto_mask``)
@@ -35,7 +35,7 @@ for a detailed description of each option's meaning.
 * crop = False(``set_crop``)
 * loc = None (``set_loc``)
 * mask = None (``set_mask``)
-
+* radius = None (``set_radius``)
 
 **CALIB/BACKGROUND/NORMALISATION Settings:**
 

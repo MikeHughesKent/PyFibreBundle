@@ -260,7 +260,9 @@ def find_bundle(img, **kwargs):
     
 
 def crop_rect(img, loc):
-    """Extracts a square around the bundle using specified co-ordinates.
+    """Extracts a square around the bundle using specified co-ordinates. If the
+    rectange is larger than the image then the returned image will be a rectangle,
+    limited by the extent of the image.
     
     Returns tuple of (cropped image as 2D numpy array, new location tuple)
 
@@ -269,16 +271,27 @@ def crop_rect(img, loc):
         loc  : location to crop, specified as bundle location tuple of 
                (centreX, centreY, radius)
     """
-    
-    cx,cy, rad = loc
-    imgCrop = img[cy-rad:cy+ rad, cx-rad:cx+rad]
-    
-    # Correct the co-ordinates of the bundle so that they
-    # are correct for new cropped image
-    newLoc = [rad,rad,loc[2]]
-   
-    return imgCrop, newLoc
-
+    if loc is not None:
+        
+        h,w = np.shape(img)[:2]
+        cx,cy, rad = loc
+        
+        minX = np.clip(cx-rad, 0, None)
+        maxX = np.clip(cx+rad, None, w)
+        
+         
+        minY = np.clip(cy-rad, 0, None)
+        maxY = np.clip(cy+rad, None, h)
+        
+        imgCrop = img[minY:maxY, minX: maxX]
+        
+        # Correct the co-ordinates of the bundle so that they
+        # are correct for new cropped image
+        newLoc = [rad,rad,loc[2]]
+       
+        return imgCrop, newLoc
+    else:
+        return img, None
 
 
 
@@ -314,14 +327,17 @@ def apply_mask(img, mask):
                  with areas to be kept as 1 and areas to be masked as 0.
     """
     
-    if img.ndim == 3:
-        m = np.expand_dims(mask, 2)
+    if mask is not None:
+        if img.ndim == 3:
+            m = np.expand_dims(mask, 2)
+        else:
+            m = mask
+        imgMasked = np.multiply(img, m)
+        
+        return imgMasked
     else:
-        m = mask
-    imgMasked = np.multiply(img, m)
+        return img
     
-    return imgMasked
-  
 
 def auto_mask(img, loc = None, **kwargs):
     """ Locates bundle and sets pixels outside to 0 .
@@ -332,13 +348,24 @@ def auto_mask(img, loc = None, **kwargs):
     Keyword Arguments:
         loc    : optional location of bundle as tuple of (centreX, centreY, radius), 
                  defaults to determining this using find_bundle
+        radius : optional, int, radius of mask to use rather than the automatically
+                 determined radius        
         Others : if loc is not specified, other optional keyword arguments will
                  be passed to find_bundle.
 
 
     """
+    radius = kwargs.get('radius', None)
+    
+    # If location not specified, find it
     if loc is None:
         loc = pybundle.find_bundle(img, **kwargs)
+    
+    # If radius was specified, replace auto determined radius
+    if radius is not None:
+        loc = (loc[0], loc[1], radius)
+        
+    # Mask image    
     mask = pybundle.get_mask(img, loc)
     imgMasked = pybundle.apply_mask(img, mask)
     

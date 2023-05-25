@@ -6,9 +6,8 @@ fibre bundle images.
 This file contains the PyBundle class which provides object oriented
 usage of the key functionality.
 
-@author: Mike Hughes
-Applied Optics Group, University of Kent
-https://github.com/mikehugheskent
+@author: Mike Hughes, Applied Optics Group, University of Kent
+
 """
 
 
@@ -21,7 +20,7 @@ import pybundle
 
 from pybundle.core_interpolation import *    
 from pybundle.bundle_calibration import BundleCalibration
-from pybundle.core import normalise_image
+from pybundle.core import normalise_image, g_filter, edge_filter, filter_image, crop_rect
 
 
 class PyBundle:
@@ -30,6 +29,8 @@ class PyBundle:
 
     background = None
     normaliseImage = None
+    normaliseImageFiltered = None
+    normaliseImageFilterSize = None
     
     autoLoc = True
     loc = None
@@ -84,6 +85,7 @@ class PyBundle:
         self.background = kwargs.get('backgroundImage', self.background)
         self.normaliseImage = kwargs.get('normaliseImage',self.normaliseImage)
         
+        self.radius = kwargs.get('radius', None)
         self.loc = kwargs.get('loc', self.loc )
         if self.loc is not None:
             self.autoLoc = False
@@ -122,6 +124,217 @@ class PyBundle:
         self.srDarkFrame = kwargs.get('srDarkFrame', self.srDarkFrame)
         self.srUseLut = kwargs.get('srUseLut', self.srUseLut)
         
+
+            
+
+    def __process_filter(self, img, cropLoc, mask):
+         """ Process fibre bundle image using FILTER method using current settings.
+         Designed to be called from process.
+         
+         Returns processed image as 2D/3D numpy array.
+         
+         Arguments:
+             img: input image as 2D/3D numpy array
+             cropLoc : location to crop to, tuple of (centre_x, centre_y, radius)
+                       (None for no crop)
+             mask : mask to apply (None for no mask)
+             
+         """
+         
+         imgOut = img        
+                         
+         if self.background is not None: imgOut = imgOut - self.background
+                 
+         if self.filterSize is not None: imgOut = pybundle.g_filter(imgOut, self.filterSize)            
+                   
+         if self.normaliseImage is not None:
+             # Check we have a filtered normaliseImage, otherwise
+             # we need to do that now
+             if self.normaliseImageFilterSize != self.filterSize:
+                 self.normaliseImageFiltered = g_filter(self.normaliseImage, self.filterSize)
+                 self.normaliseImageFilterSize = self.filterSize
+             if self.filterSize is None:
+                 self.normaliseImageFiltered = self.normaliseImage
+             # Do the normalisation
+             imgOut = normalise_image(imgOut, self.normaliseImageFiltered)         
+       
+         
+         # Masking
+         imgOut = pybundle.apply_mask(imgOut, mask)        
+         
+         # Cropping
+         if self.crop: imgOut = pybundle.crop_rect(imgOut, cropLoc)[0]
+
+         return imgOut
+         
+     
+        
+    def __process_edge_filter(self, img, cropLoc, mask):
+        """ Process fibre bundle image using EDGE FILTER method using current settings.
+        Designed to be called from process.
+        
+        Returns processed image as 2D/3D numpy array.
+        
+        Arguments:
+            img: input image as 2D/3D numpy array
+            cropLoc : location to crop to, tuple of (centre_x, centre_y, radius)
+                      (None for no crop)
+            mask : mask to apply (None for no mask)
+            
+        """
+        
+        imgOut = img
+        
+        if self.background is not None: imgOut = imgOut - self.background
+        
+         
+        # Masking
+        if mask is not None: imgOut = pybundle.apply_mask(imgOut, mask)
+       
+        
+        # Cropping
+        if cropLoc is not None: imgOut = pybundle.crop_rect(imgOut, cropLoc)[0]
+
+                
+        # If there isn't an edge filter created, create it now          
+        if self.edgeFilter is None:
+            assert cropLoc is not None, "Edge filter requires the bundle location."
+            assert self.edgeFilterShape is not None, "Edge filter requires the edge filter shape to be set using set_edge_filter_shape()."
+            self.edgeFilter = pybundle.edge_filter(cropLoc[2] * 2 , self.edgeFilterShape[0], self.edgeFilterShape[1])
+           
+        
+        # Normalisation.
+        # (If there is a normalisation image but not a filtered version of it
+        # create a filtered version now)
+        if self.normaliseImage is not None:
+            
+            # Create the filtered normalisation image if we don't have it
+            if self.normaliseImageFilterSize != self.edgeFilterShape or self.normaliseImageFiltered is None:
+                self.normaliseImageFiltered = filter_image(crop_rect(self.normaliseImage, cropLoc)[0], self.edgeFilter)
+                self.normaliseImageFilterSize = self.edgeFilterShape
+            
+            # Do the normalisation
+            imgOut = normalise_image(imgOut, self.normaliseImageFiltered)    
+       
+        
+        # Apply edge filter
+        if self.edgeFilter is not None and cropLoc is not None:
+               imgOut = pybundle.filter_image(imgOut, self.edgeFilter) 
+        
+        return imgOut
+    
+    
+    
+
+    def __process_trilin(self, img):
+        
+        """ Process fibre bundle image using TRILIN method using current settings.
+        Designed to be called from process.
+        
+        Returns processed image as 2D/3D numpy array.
+        
+        Arguments:
+            img: input image as 2D/3D numpy array            
+        """
+        
+        imgOut = img
+        
+        # Normal Triangular linear interpolation    
+        if not self.superRes:
+            if self.calibration is None and self.calibImage is not None:
+                self.calibrate()
+            if self.calibration is None: return None
+            if imgOut.ndim != 2 and imgOut.ndim != 3: return None            
+            imgOut = pybundle.recon_tri_interp(imgOut, self.calibration, numba = self.useNumba)
+            
+        # Super Res Triangular linear interpolation
+        else:        
+            
+            # Check that we have a stack of images
+            if imgOut.ndim != 3: return None           
+            
+            # If we have a calibration LUT and have opted to use this and we have a value for the parameter, pull out the
+            # correct calibration and use this for recon
+          
+            if self.srUseLut and self.srCalibrationLUT is not None and self.srParamValue is not None:
+                calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
+            elif self.calibrationSR is not None:
+                calibSR = self.calibrationSR
+            elif ( (self.srCalibImages is not None) or (self.srShifts is not None)):
+                self.calibrate_sr() 
+                # If we still don't have a calibration we cannot proceed    
+                if self.calibrationSR is None: return None
+                calibSR = self.calibrationSR
+            else:
+                return None
+            
+            # If we don't have the correct number of images in the stack, we cannot proceeed            
+            if np.shape(imgOut)[2] != calibSR.nShifts: return None
+            imgOut = pybundle.SuperRes.recon_multi_tri_interp(imgOut, calibSR, numba = self.useNumba)
+       
+        return imgOut
+    
+    
+    def process(self, img):
+        """ Process fibre bundle image using current settings.
+        
+        Returns processed image as 2D/3D numpy array.
+        
+        Arguments:
+            img: input image as 2D/3D numpy array
+            
+        """        
+       
+        # If autoLoc is still True, meaning calibrate() was not called,
+        # and we need to crop, mask apply an edge filter, 
+        # then we find the location for the crop now, otherwise
+        # we use the stored location (if this is None then there will be no crop)
+        if self.autoLoc and ((self.crop or self.coreMethod == self.EDGE_FILTER) or self.applyMask):
+            if self.calibImage is not None:
+
+                self.loc = pybundle.find_bundle(self.calibImage) 
+                cropLoc = self.loc
+                self.autoLoc = False   # We have done this, don't do it again
+            else:
+                cropLoc = pybundle.find_bundle(img) 
+        else:
+            cropLoc = self.loc
+         
+         
+        # If autoMask is still True, meaning calibrate() was not called, and we 
+        # are applying a mask, we create a mask now, otherwise we
+        # we use the stored mask (and if this is None then there will be no mask)    
+        if self.autoMask and cropLoc is not None and self.applyMask is not None:
+            if self.calibImage is not None:
+                self.mask = pybundle.get_mask(self.calibImage, cropLoc)
+                mask = self.mask
+                self.autoMask = False  # We have done this, don't do it again
+            else:
+                mask = pybundle.get_mask(img, cropLoc)
+        else:
+            mask = self.mask
+            
+        # Call the specific method for core removal    
+        if self.coreMethod == self.FILTER: imgOut = self.__process_filter(img, cropLoc, mask)     
+        if self.coreMethod == self.EDGE_FILTER: imgOut = self.__process_edge_filter(img, cropLoc, mask)     
+        if self.coreMethod == self.TRILIN: imgOut = self.__process_trilin(img)
+        
+        # Autocontrast
+        if self.autoContrast:
+            imgOut = imgOut - np.min(imgOut)
+            imgOut = imgOut / np.max(imgOut)
+            if self.outputType == 'uint8':
+                imgOut = imgOut * 255
+            elif self.outputType == 'uint16':
+                imgOut = imgOut * (2**16 - 1)
+            elif self.outputType == 'float':
+                imgOut = imgOut                
+                
+        # Type casting
+        if imgOut.dtype != self.outputType:
+            imgOut = imgOut.astype(self.outputType)        
+        
+        return imgOut
                
 
     def set_filter_size(self, filterSize):
@@ -217,6 +430,10 @@ class PyBundle:
         
         Arguments:
             img: boolean, True to automically create mask
+            
+        Keyword Arguments:
+            radius : optional, int, overrides automically determined radius for
+                     mask.
        
         """       
         if type(img) is bool:
@@ -297,7 +514,7 @@ class PyBundle:
     def set_normalise_image(self, normaliseImage):
         """ Store an image to be used for normalisation. If TRILIN is being used and a 
         calibration has already been performed, the normalisation will be added to the
-        calibration.
+        calibration. 
         
         Arguments:
 
@@ -335,6 +552,15 @@ class PyBundle:
         """
         self.calibImage = calibImg.astype('float')
         
+        
+    def set_radius(self, radius):
+        """ Sets the radius of the bundle in the image. This will override
+        any automically determined value.
+        
+        Arguments:
+            radius : int, bundle radius
+        """
+        self.radius = radius
         
         
     def set_grid_size(self, gridSize):
@@ -484,6 +710,8 @@ class PyBundle:
         
         For TRILIN, creates interpolation calibration.
         
+        For FILTER, EDGE_FILTER, a filtered normalisation image is created.
+        
         For FILTER, EDGE_FILTER the bundle will be located if autoLoc has been set.
         
         For FILTER, EDGE_FILTER the mask will be located if autoMask has been set.
@@ -499,22 +727,39 @@ class PyBundle:
                                                          normalise = self.normaliseImage,
                                                          filterSize = self.filterSize,
                                                          mask = True,
-                                                         autoMask = True)
+                                                         autoMask = True,
+                                                         radius = self.radius)
         else:
             
             if self.autoLoc and self.calibImage is not None:
                 self.loc = pybundle.find_bundle(self.calibImage)
+                # If user has specified a radius, over-ride the auto determined
+                # one from find_bundle
+                if self.radius is not None:
+                    self.loc = (self.loc[0], self.loc[1], self.radius)
                 self.autoLoc = False    
             
             if self.autoMask and self.calibImage is not None and self.loc is not None:
                 self.mask = pybundle.get_mask(self.calibImage, self.loc)
                 self.autoMask = False
+                
+        # If we are Gaussian filtering and we have a normalisation image
+        # create a filtered version of it for use later.
+        if self.coreMethod == self.FILTER:
+             if self.filterSize is not None and self.normaliseImage is not None:  
+                 self.normaliseImageFiltered = g_filter(self.normaliseImage, self.filterSize)
+                 self.normaliseImageFilterSize = self.filterSize     # So we can realise if the filtersize changes we
+                                                                     # need to redo this
          
         if self.coreMethod == self.EDGE_FILTER:
              assert self.loc is not None, "Calibration for edge filter requires the bundle location."
              assert type(self.edgeFilterShape) is tuple, "Edge filter shape not defined."
              self.edgeFilter = pybundle.edge_filter(self.loc[2] *2 , self.edgeFilterShape[0], self.edgeFilterShape[1])
-            
+             # If we have a normalisation image, create a filtered version of it for use later.
+             if self.normaliseImage is not None and self.loc is not None:
+                 self.nomaliseImageFiltered = filter_image(crop_rect(self.normaliseImage, self.loc)[0], self.edgeFilter)
+                 self.normaliseImageFilterSize = self.edgeFilterShape
+                 
     
     def calibrate_sr(self):
         """ Creates calibration for TRILIN SR method. A calibration image, 
@@ -537,147 +782,6 @@ class PyBundle:
                 multiNormalisation = self.srMultiNormalisation,
                 darkFrame = self.srDarkFrame,
                 filterSize = self.filterSize)
-
-    
-    def process(self, img):
-        """ Process fibre bundle image using current settings.
-        
-        Returns processed image as 2D/3D numpy array.
-        
-        Arguments:
-            img: input image as 2D/3D numpy array
-            
-        """
-        
-        method = self.coreMethod  # to insulate against a change during processing
-        
-        imgOut = img        
-        
-        
-        
-        # If autoLoc is True (or if we are doing EDGE_FILTER), we find the location for the crop now, otherwise
-        # we use the stored location (if this is None then there will be no crop)
-        # We avoid doing this if we are not cropping or masking to save time
-        if self.autoLoc and ((self.crop or self.coreMethod == self.EDGE_FILTER) or self.applyMask):
-            if self.calibImage is not None:
-
-                self.loc = pybundle.find_bundle(self.calibImage) 
-                cropLoc = self.loc
-                self.autoLoc = False   # We have done this, don't do it again
-            else:
-                cropLoc = pybundle.find_bundle(img) 
-        else:
-            cropLoc = self.loc
-         
-         
-        # If autoMask is True, we find the location for mask crop now, otherwise
-        # we use the stored mask (if this is None then there will be no mask)
-        # We avoid doing this if we are not masking to save time         
-        if self.autoMask and cropLoc is not None and self.applyMask is not None:
-            if self.calibImage is not None:
-                self.mask = pybundle.get_mask(self.calibImage, cropLoc)
-                mask = self.mask
-                self.autoMask = False  # We have done this, don't do it again
-            else:
-                mask = pybundle.get_mask(img, cropLoc)
-
-        else:
-            mask = self.mask
-            
-            
-        # Background subtraction (This is handled separately for TRILIN)     
-        if method == self.FILTER or method == self.EDGE_FILTER:
-            if self.background is not None:
-                imgOut = imgOut - self.background
-                
-        
-        # Normalisation (This is handled separately for TRILIN)     
-        if method == self.FILTER or method == self.EDGE_FILTER:
-            if self.normaliseImage is not None:
-                imgOut = normalise_image(imgOut, self.normaliseImage)              
-
-        
-        # Gaussian Filter
-        if method == self.FILTER and self.filterSize is not None:
-            imgOut = pybundle.g_filter(imgOut, self.filterSize)            
-                  
-                
-        # Masking
-        if (method == self.FILTER or method == self.EDGE_FILTER) and mask is not None:
-            imgOut = pybundle.apply_mask(imgOut, mask)
-       
-        
-        # Cropping
-        if method == self.EDGE_FILTER or (method == self.FILTER and self.crop):
-            if cropLoc is not None:
-                imgOut = pybundle.crop_rect(imgOut, cropLoc)[0]
-
-       
-        # Edge Filter
-        if method == self.EDGE_FILTER:
-
-           if self.edgeFilter is None:
-               assert cropLoc is not None, "Edge filter requires the bundle location."
-               assert self.edgeFilterShape is not None, "Edge filter requires the edge filter shape to be set using set_edge_filter_shape()."
-               self.edgeFilter = pybundle.edge_filter(cropLoc[2] *2 , self.edgeFilterShape[0], self.edgeFilterShape[1])
-                
-           if self.edgeFilter is not None and cropLoc is not None:
-               imgOut = pybundle.filter_image(imgOut, self.edgeFilter) 
-        
-        # Normal Triangular linear interpolation    
-        if method == self.TRILIN and not self.superRes:
-            if self.calibration is None and self.calibImage is not None:
-                self.calibrate()
-            if self.calibration is None: return None
-            if imgOut.ndim != 2 and imgOut.ndim != 3: return None            
-            imgOut = pybundle.recon_tri_interp(imgOut, self.calibration, numba = self.useNumba)
-            
-         
-        # Super-resolution triangular linear interpolation    
-        if method == self.TRILIN and self.superRes:
-            
-            # Check that we have a stack of images
-            if imgOut.ndim != 3: return None           
-            
-            # If we have a calibration LUT and have opted to use this and we have a value for the parameter, pull out the
-            # correct calibration and use this for recon
-          
-            if self.srUseLut and self.srCalibrationLUT is not None and self.srParamValue is not None:
-                calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
-            elif self.calibrationSR is not None:
-                calibSR = self.calibrationSR
-            elif ( (self.srCalibImages is not None) or (self.srShifts is not None)):
-                self.calibrate_sr() 
-                # If we still don't have a calibration we cannot proceed    
-                if self.calibrationSR is None: return None
-                calibSR = self.calibrationSR
-            else:
-                return None
-            
-            # If we don't have the correct number of images in the stack, we cannot proceeed            
-            if np.shape(imgOut)[2] != calibSR.nShifts: return None
-            imgOut = pybundle.SuperRes.recon_multi_tri_interp(imgOut, calibSR, numba = self.useNumba)
-       
-           
-        
-        # Autocontrast
-        if self.autoContrast:
-            t1 = time.perf_counter()
-            imgOut = imgOut - np.min(imgOut)
-            imgOut = imgOut / np.max(imgOut)
-            if self.outputType == 'uint8':
-                imgOut = imgOut * 255
-            elif self.outputType == 'uint16':
-                imgOut = imgOut * (2**16 - 1)
-            elif self.outputType == 'float':
-                imgOut = imgOut
-                
-                
-        # Type casting
-        if imgOut.dtype != self.outputType:
-            imgOut = imgOut.astype(self.outputType)        
-        
-        return imgOut
     
 
     def get_pixel_scale(self):

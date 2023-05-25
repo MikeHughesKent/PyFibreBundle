@@ -210,3 +210,15 @@ def max_channels(img):
         return np.max(img, 2)
     else:
         return img
+    
+def resample(img, factor):
+    
+    h,w = np.shape(img)
+    img = cv.resize(img, ( int(w * factor), int(h * factor)))
+    
+    return img
+    
+    
+    
+    
+    

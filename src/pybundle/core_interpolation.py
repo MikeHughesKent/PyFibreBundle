@@ -14,6 +14,9 @@ import numpy as np
 import math
 import time
 
+
+import matplotlib.pyplot as plt
+
 import cv2 as cv
 
 from scipy.spatial import Delaunay
@@ -53,15 +56,18 @@ def find_cores(img, coreSpacing):
      # If a colour image, convert to greyscale by taking the maximum value across the channels
      imgF = pybundle.max_channels(imgF)
 
-     imgF = (imgF / np.max(imgF) * 255).astype('uint8')
+     imgF = (imgF / np.max(imgF) * 255).astype('uint8') 
 
      # Find regional maximum by taking difference between dilated and original
      # image. Because of the way dilation works, the local maxima are not changed
      # and so these will have a value of 0
-     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (coreSpacing,coreSpacing))
-     imgD = cv.dilate(imgF, kernel)
-     imgMax = 255 - (imgF - imgD)  # we need to invert the image
+     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (int(round(coreSpacing)),int(round(coreSpacing)) ))
+     kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3,3 ))
 
+     imgD = cv.dilate(imgF, kernel)
+     
+     imgMax = 255 - (imgF - imgD)  # we need to invert the image
+     
      # Just keep the maxima
      thres, imgBinary = cv.threshold(imgMax, 0,1,cv.THRESH_BINARY+cv.THRESH_OTSU)
 
@@ -117,9 +123,10 @@ def core_values(img, coreX, coreY, filterSize, **kwargs):
     
     if filterSize is not None:
         img = pybundle.g_filter(img, filterSize)
-        
-    if numba and numbaAvailable:
-        cInt = core_value_extract_numba(img, coreX, coreY)
+
+    cInt = np.zeros(np.shape(coreX))
+    if numba and numbaAvailable:     
+        cInt = cInt + core_value_extract_numba(img, coreX, coreY)         
     else:
         cInt = img[coreY, coreX]
         
@@ -156,29 +163,31 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
                      spurious core detections outside of bundle, defualts to True
         mask       : optional, boolean, when reconstructing output image will be masked outside of 
                      bundle, defaults to True
+        
     """
 
-    centreX = kwargs.get('centreX', -1)
-    centreY = kwargs.get('centreY', -1)
-    radius = kwargs.get('radius', -1)
+    centreX = kwargs.get('centreX', None)
+    centreY = kwargs.get('centreY', None)
+    radius = kwargs.get('radius', None)
     filterSize = kwargs.get('filterSize', 0)
     normalise = kwargs.get('normalise', None)
     autoMask = kwargs.get('autoMask', True)
     mask = kwargs.get('mask', True)
     background = kwargs.get('background', None)
+    
     if autoMask:
-        img = pybundle.auto_mask(img)
+        img = pybundle.auto_mask(img, radius = radius)
     # Find the cores in the calibration image
     coreX, coreY = pybundle.find_cores(img, coreSize)
     coreX = np.round(coreX).astype('uint16')
     coreY = np.round(coreY).astype('uint16')
 
     # Default values
-    if centreX < 0:
+    if centreX is None:
         centreX = np.mean(coreX)
-    if centreY < 0:
+    if centreY is None:
         centreY = np.mean(coreY)
-    if radius < 0:
+    if radius is None:
         dist = np.sqrt((coreX - centreX)**2 + (coreY - centreY)**2)
         radius = max(dist)
         
@@ -385,9 +394,10 @@ def recon_tri_interp(img, calib, **kwargs):
      numba = kwargs.get('numba', True)
 
      # Extract intensity from each core
+     t1 = time.perf_counter()
      cVals = pybundle.core_values(
          img, calib.coreX, calib.coreY, calib.filterSize, **kwargs).astype('float64')
-
+     
      if calib.background is not None:
          cVals = cVals - calib.backgroundVals    
       
