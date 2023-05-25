@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "PyFibreBundle"
-version = "1.3.2"
+version = "1.3.3"
 description = "Image processing of images acquired through fibre imaging bundle, including core removal, mosaicing and super-resolution.."
 readme = "README.md"
 authors = [{ name = "Michael Hughes", email = "m.r.hughes@kent.ac.uk" }]
