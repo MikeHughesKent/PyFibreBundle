@@ -51,7 +51,7 @@ def find_cores(img, coreSpacing):
      """
      # Pre-filtering helps to minimse noise and reduce efffect of
      # multimodal patterns
-     imgF = pybundle.g_filter(img, coreSpacing/5)
+     imgF = pybundle.g_filter(img.astype('float32'), coreSpacing/5)
 
      # If a colour image, convert to greyscale by taking the maximum value across the channels
      imgF = pybundle.max_channels(imgF)
