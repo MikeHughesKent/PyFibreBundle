@@ -79,35 +79,38 @@ def test_mosaic(mosaic, description):
 mosaic = Mosaic(1000)
 test_mosaic(mosaic, "Default")
 
-mosaic = Mosaic(1000, resize = 250)
-test_mosaic(mosaic, "Default with resize to 250")
+mosaic = Mosaic(1000, resize = 636)
+test_mosaic(mosaic, "Default with resize to 512")
 
-mosaic = Mosaic(10000, resize = 250)
-test_mosaic(mosaic, "Default with 10k x 10k image, resize to 250")
+mosaic = Mosaic(1000, resize = 256)
+test_mosaic(mosaic, "Default with resize to 256")
 
-mosaic = Mosaic(1000, resize = 250, blend = False)
+mosaic = Mosaic(10000, resize = 256)
+test_mosaic(mosaic, "Default with 10k x 10k image, resize to 256")
+
+mosaic = Mosaic(1000, resize = 256, blend = False)
 test_mosaic(mosaic, "No Blend")
 
-mosaic = Mosaic(1000, resize = 250, blend = True)
+mosaic = Mosaic(1000, resize = 256, blend = True)
 test_mosaic(mosaic, "Blend")
 
-mosaic = Mosaic(1000, resize = 250, blend = True, blendDist = 5)
+mosaic = Mosaic(1000, resize = 256, blend = True, blendDist = 5)
 test_mosaic(mosaic, "Blend distance of 5 px")
 
-mosaic = Mosaic(500, resize = 250)
+mosaic = Mosaic(500, resize = 256)
 test_mosaic(mosaic, "Crop at Edge (Default)")
 
-mosaic = Mosaic(500, resize = 250, boundaryMethod = mosaic.EXPAND)
+mosaic = Mosaic(500, resize = 256, boundaryMethod = mosaic.EXPAND)
 test_mosaic(mosaic, "Expand at Edge")
 
-mosaic = Mosaic(500, resize = 250, boundaryMethod = mosaic.SCROLL)
+mosaic = Mosaic(500, resize = 256, boundaryMethod = mosaic.SCROLL)
 test_mosaic(mosaic, "Scroll at Edge")
 
-mosaic = Mosaic(1000, resize = 250, resetThresh = .985)
+mosaic = Mosaic(1000, resize = 256, resetThresh = .985)
 test_mosaic(mosaic, "Reset on threshold")
 
-mosaic = Mosaic(1000, resize = 250, resetIntensity = 80)
+mosaic = Mosaic(1000, resize = 256, resetIntensity = 80)
 test_mosaic(mosaic, "Reset on intensity")
 
-mosaic = Mosaic(1000, resize = 250, resetSharpness = 3)
+mosaic = Mosaic(1000, resize = 256, resetSharpness = 3)
 test_mosaic(mosaic, "Reset on sharpness")

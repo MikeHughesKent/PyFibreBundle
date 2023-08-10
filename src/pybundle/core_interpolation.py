@@ -126,7 +126,7 @@ def core_values(img, coreX, coreY, filterSize, **kwargs):
 
     cInt = np.zeros(np.shape(coreX))
     if numba and numbaAvailable:     
-        cInt = cInt + core_value_extract_numba(img, coreX, coreY)         
+        cInt = core_value_extract_numba(img, coreX, coreY)         
     else:
         cInt = img[coreY, coreX]
         
@@ -159,10 +159,11 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
         background : optional, image used for background subtraction as 2D numpy array
         normalise  : optional, image used for normalisation, as 2D numpy array. Can be same as 
                      calibration image, defaults to no normalisation
-        autoMask   : optional, boolean, if true the calibration image will be masked to prevent 
+        autoMask   : optional, boolean, if True the calibration image will be masked to prevent 
                      spurious core detections outside of bundle, defualts to True
         mask       : optional, boolean, when reconstructing output image will be masked outside of 
                      bundle, defaults to True
+        whiteBalance : optional, boolean, if True then each colour channel is normalised individually, defaults to False.           
         
     """
 
@@ -174,6 +175,7 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     autoMask = kwargs.get('autoMask', True)
     mask = kwargs.get('mask', True)
     background = kwargs.get('background', None)
+    whiteBalance = kwargs.get('whiteBalance', False)
     
     if autoMask:
         img = pybundle.auto_mask(img, radius = radius)
@@ -194,7 +196,7 @@ def calib_tri_interp(img, coreSize, gridSize, **kwargs):
     # Delaunay triangulation and find barycentric co-ordinates for each pixel
     t1 = time.perf_counter()   
     
-    calib = pybundle.init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, filterSize= filterSize, background = background, normalise = normalise, mask = mask)
+    calib = pybundle.init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, whiteBalance = whiteBalance, filterSize= filterSize, background = background, normalise = normalise, mask = mask)
     #print("Init tri interp " + str(time.perf_counter() - t1))
 
     calib.nCores = np.shape(coreX)
@@ -225,6 +227,8 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
                       calibration image, defaults to no normalisation
          mask       : optional, boolean, when reconstructing output image will be masked outside 
                       of bundle, defaults to True    
+         whiteBalance : optional, boolean, if True then each colour channel is normalised individually, defaults to False.           
+
     """
     
     filterSize = kwargs.get('filterSize', None)
@@ -232,6 +236,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     background = kwargs.get('background', None)
     mask = kwargs.get('mask', True)
     numba = kwargs.get('numba', True)
+    whiteBalance = kwargs.get('whiteBalance', False)
 
     if img.ndim > 2:    # Colour image if we have a third dimension to image
         col = True
@@ -265,7 +270,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     # Store background values
     if normalise is not None:
         normaliseVals = pybundle.core_values(normalise, coreX, coreY, filterSize).astype('double')
-        if col:
+        if col and not whiteBalance:
             normaliseVals = np.mean(pybundle.core_values(normalise, coreX, coreY, filterSize).astype('double'),1)
             normaliseVals = np.expand_dims(normaliseVals,1)
     else:

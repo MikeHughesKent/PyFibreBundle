@@ -54,6 +54,7 @@ class PyBundle:
     gridSize  = 512
     calibration = None
     useNumba = True  
+    whiteBalance = False
     
     # Super Resolution
     superRes = False
@@ -109,6 +110,7 @@ class PyBundle:
         self.coreSize = kwargs.get('coreSize', self.coreSize)
         self.gridSize  = kwargs.get('gridSize', self.gridSize)
         self.useNumba = kwargs.get('useNumba',self.useNumba )
+        self.whiteBalance = kwargs.get('whiteBalance', self.whiteBalance)
         
         
         # Super Resolution
@@ -284,7 +286,6 @@ class PyBundle:
             img: input image as 2D/3D numpy array
             
         """        
-       
         # If autoLoc is still True, meaning calibrate() was not called,
         # and we need to crop, mask apply an edge filter, 
         # then we find the location for the crop now, otherwise
@@ -313,11 +314,15 @@ class PyBundle:
                 mask = pybundle.get_mask(img, cropLoc)
         else:
             mask = self.mask
-            
+        
+       
         # Call the specific method for core removal    
         if self.coreMethod == self.FILTER: imgOut = self.__process_filter(img, cropLoc, mask)     
         if self.coreMethod == self.EDGE_FILTER: imgOut = self.__process_edge_filter(img, cropLoc, mask)     
         if self.coreMethod == self.TRILIN: imgOut = self.__process_trilin(img)
+        
+        if imgOut is None:
+            return None
         
         # Autocontrast
         if self.autoContrast:
@@ -728,6 +733,7 @@ class PyBundle:
                                                          filterSize = self.filterSize,
                                                          mask = True,
                                                          autoMask = True,
+                                                         whiteBalance = self.whiteBalance,
                                                          radius = self.radius)
         else:
             
