@@ -588,6 +588,15 @@ class PyBundle:
         
         self.edgeFilterShape  = (edgePos, edgeSlope)
         
+    def set_white_balance(self, whiteBalance):
+        """ Sets whether each colour channel should be normalised independently
+        when using linear interpolation method.
+        
+        Arguments:
+            whiteBalance   : boolean, each channel normalised independently if True (default is False).
+        """
+        
+        self.whiteBalance = whiteBalance
         
     def set_use_numba(self, useNumba):
         """ Sets whether Numba should be used for JIT compiler acceleration for 

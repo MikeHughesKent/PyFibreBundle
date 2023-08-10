@@ -147,12 +147,11 @@ class SuperRes:
         imgsProc = np.zeros((gridSize, gridSize, nImages))
 
         if shifts is None:
-
+            t1 = time.perf_counter()
             for idx in range(nImages):
 
                 imgsProc[:, :, idx] = pybundle.recon_tri_interp(
                     imgs[:, :, idx], singleCalib)
-
             shifts = SuperRes.get_shifts(imgsProc, **kwargs)
 
             # Since we have done the shift estimation on a different sized grid
@@ -170,9 +169,10 @@ class SuperRes:
             coreYList = np.append(
                 coreYList, singleCalib.coreY + shifts[idx + 1][1])
         #breakpoint()    
-
+        #t1 = time.perf_counter()
         calib = pybundle.init_tri_interp(calibImg, coreXList, coreYList, centreX, centreY,
                                          radius, gridSize, filterSize=filterSize, background=None, normalise=None)
+        #print(time.perf_counter() - t1)    
 
         # We store the number of cores in a single image
         calib.nCores = np.shape(singleCalib.coreX)[0]

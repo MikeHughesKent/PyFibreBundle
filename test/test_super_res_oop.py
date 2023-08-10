@@ -78,7 +78,8 @@ shifts = np.array([ [  0.        ,   0.        ],
                     [ -4.60631216, -16.69788157],
                     [ -9.78841333, -30.51681804],
                     [-17.27367059, -27.06208392] ])
-    
+
+
 pyb = PyBundle(coreMethod = PyBundle.TRILIN, superRes = True, gridSize = gridSize, autoContrast = False, 
                calibImage = calibImg, normaliseImage = calibImg)
 

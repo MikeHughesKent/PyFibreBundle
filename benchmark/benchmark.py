@@ -60,7 +60,7 @@ get_ipython().magic('%timeit pyb.process(img)')
 
 """ Gaussian Filter """
 
-pyb = PyBundle(coreMethod = PyBundle.FILTER, calibImage = calibImg, 
+pyb = PyBundle(coreMethod = PyBundle.FILTER, calibImage = calibImg, crop = True,
                filterSize = 2)
 pyb.calibrate()
 

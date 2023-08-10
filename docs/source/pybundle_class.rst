@@ -56,6 +56,7 @@ for a detailed description of each option's meaning.
 * coreSize = 3 (``set_core_size``)
 * gridSize  = 512 (``set_grid_size``)
 * useNumba = True (``set_use_numba``)
+* whiteBalance = False (``set_white_balance``)
     
 **SUPER RESOLUTION Settings:**
    
@@ -69,6 +70,7 @@ for a detailed description of each option's meaning.
 * srDarkFrame = None (``set_sr_dark_frame``)
 * srUseLut = False (``set_sr_use_lut``)
 * srParamValue = None (``set_sr_param_value``)
+
  
 ^^^^^^^^^^^^^^^
 Methods
