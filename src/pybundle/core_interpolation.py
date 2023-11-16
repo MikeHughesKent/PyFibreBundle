@@ -301,7 +301,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     calib.background = background
     calib.backgroundVals = backgroundVals
 
-    calib.coreIdx = calib.tri.vertices[calib.mapping, :]
+    calib.coreIdx = calib.tri.simplices[calib.mapping, :]
 
     if mask:
         calib.mask = pybundle.get_mask(np.zeros((gridSize, gridSize)), (gridSize/2, gridSize/2,gridSize/2))

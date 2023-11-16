@@ -94,6 +94,7 @@ class SuperRes:
         if singleCalib is None:
             singleCalib = pybundle.calib_tri_interp(
                 calibImg, coreSize, gridSize, **kwargs)
+
         # Default values
         if centreX is None:
             centreX = np.mean(singleCalib.coreX)
@@ -193,7 +194,9 @@ class SuperRes:
 
             for idx in range(nImages):
                 multiNormalisationVals[:, idx] = pybundle.core_values(normalisationImgs[:,:,idx], singleCalib.coreX, singleCalib.coreY, filterSize).astype('double') - darkVals
-        
+            av = np.mean(multiNormalisationVals)
+            calib.multiNormalisationVals = multiNormalisationVals
+            multiNormalisationVals[multiNormalisationVals == 0] = av 
             calib.multiNormalisationVals = multiNormalisationVals
 
           
@@ -471,12 +474,21 @@ class SuperRes:
          return calibOut 
 
         
-    def calib_param_shift(param, images, calibration):
+    def calib_param_shift(param, images, calibration, forceZero = False):
         """ For use when the shifts between the images are linearly dependent on some other parameter. 
         Provide a TRILIN calibration and a 4D stack of images of (x, y, shift, parameter), i.e. an extra 
         dimension to provide examples of shifts for different values of the parameter. The values of the parameter
         corresponding to each set of images is provided in param, i.e. the fourth dimension of images should be
         the same length as param.
+        
+         
+         Arguments:
+             param       : 1D numpy array of parameter values
+             images      : 4D numpy array of shifted images for each parameter values
+                          (x, y, shift, parameter)
+             calibration : trilinear interpolation calibration
+             forceZero   : set True to add an additional data point for zero shift for the parameter
+                            value equal to zero.
         
         Returns a 3D array of calibration factors, giving the gradient and offset of x and y shifts of each image with respect to the parameter.
         
@@ -484,15 +496,30 @@ class SuperRes:
         """
         nSets = np.shape(images)[3]
         nShifts = np.shape(images)[2]
+        
+        assert len(param) == nSets
+
         imgRecon = np.zeros((calibration.gridSize, calibration.gridSize, nShifts))
+        assert len(param) == nSets
+             
+
         shifts = np.zeros((nShifts, 2, nSets))
         shiftFit = np.zeros((nShifts, 2, 2))    # 2 dimensions (x,y) and 2 params of linear fit
-        assert len(param) == nSets
+
+        
         for iSet in range(nSets):
             for iShift in range(nShifts):
                 imgRecon[:,:, iShift] = pybundle.recon_tri_interp(images[:,:,iShift, iSet], calibration)                
             shifts[:,:,iSet] = SuperRes.get_shifts(imgRecon)
         shifts = shifts * calibration.radius * 2 / calibration.gridSize
+
+        # If forceZero was set True, we add an extra point for zero shift when 
+        # parameter is zero
+        if forceZero:
+            zeroShift = np.zeros((nShifts,2,1))
+            param = np.append(param, [0], axis = 0)
+            shifts = np.append(shifts, zeroShift, axis = 2)
+
 
         for iShift in range(nShifts):
             shiftFit[iShift, 0, :] = np.polyfit(param, shifts[iShift, 0, :],1)
@@ -507,7 +534,7 @@ class SuperRes:
         Assuming a prior calibration using calib_param_shift in 'calib', this function returns the 
         current value of the parameter to obtain the image shifts.
         """
-        shifts = param * calib[:,:,0] # + calib[:,:,1]
+        shifts = param * calib[:,:,0] + calib[:,:,1]
         return shifts
         
     

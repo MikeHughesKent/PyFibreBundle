@@ -251,15 +251,19 @@ class PyBundle:
             
         # Super Res Triangular linear interpolation
         else:        
-            
             # Check that we have a stack of images
             if imgOut.ndim != 3: return None           
             
             # If we have a calibration LUT and have opted to use this and we have a value for the parameter, pull out the
             # correct calibration and use this for recon
           
-            if self.srUseLut and self.srCalibrationLUT is not None and self.srParamValue is not None:
-                calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
+            if self.srUseLut:
+                if self.srCalibrationLUT is not None and self.srParamValue is not None:
+                    calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
+                    print("Taken calibration from LUT")
+                    print(calibSR)
+                else:
+                    return None
             elif self.calibrationSR is not None:
                 calibSR = self.calibrationSR
             elif ( (self.srCalibImages is not None) or (self.srShifts is not None)):
@@ -269,6 +273,7 @@ class PyBundle:
                 calibSR = self.calibrationSR
             else:
                 return None
+            if calibSR is None: return None
             
             # If we don't have the correct number of images in the stack, we cannot proceeed            
             if np.shape(imgOut)[2] != calibSR.nShifts: return None
@@ -855,8 +860,9 @@ class PyBundle:
             nCalibration : int, number of parameter values to generate for
             
         """
-   
-        if self.srCalibImages is not None or self.srShifts is not None:
+       
+        if self.calibImage is not None:
+            print("pybundle doing calib")
             self.srCalibrationLUT = pybundle.calibrationLUT(
                 self.calibImage, self.srCalibImages,                                                                           
                 self.coreSize, self.gridSize, 
