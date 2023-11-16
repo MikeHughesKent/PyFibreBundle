@@ -15,7 +15,7 @@ and OpenCV is used for fast mosaicing. If the Numba package is not installed the
 The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and 
 holographic endomicroscopy, but there are also potential applications in endoscopy, industrial inspection etc.
 
-Developed is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
+Development is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
 at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), School of Physics & Astronomy, University of Kent. 
 Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
 for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
