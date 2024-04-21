@@ -300,6 +300,7 @@ def init_tri_interp(img, coreX, coreY, centreX, centreY, radius, gridSize, **kwa
     calib.normaliseVals = normaliseVals
     calib.background = background
     calib.backgroundVals = backgroundVals
+    calib.nCores = np.shape(calib.coreX)[0]
 
     calib.coreIdx = calib.tri.simplices[calib.mapping, :]
 

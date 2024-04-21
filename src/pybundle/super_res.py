@@ -20,6 +20,8 @@ import numpy as np
 
 import cv2 as cv
 
+import matplotlib.pyplot as plt
+
 
 # We try to import numba here and if successful, load the numba-optimised
 # interpolation funactions. If we get an error (i.e. library not available)
@@ -388,6 +390,7 @@ class SuperRes:
 
             template = pybundle.extract_central(img2, templateSize).astype('float32')
             refIm = pybundle.extract_central(img1, refSize).astype('float32')
+      
 
             if upsample != 1:
 
@@ -397,9 +400,12 @@ class SuperRes:
                     refIm, (np.shape(refIm)[0] * upsample, np.shape(refIm)[0] * upsample))
 
             res = cv.matchTemplate(template, refIm, cv.TM_CCORR_NORMED)
+           
             min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
-            shift = [(max_loc[0] - (refSize - templateSize) * upsample)/upsample,
-                     (max_loc[1] - (refSize - templateSize) * upsample)/upsample]
+            
+            shift = [(max_loc[0] - (refSize - templateSize)   * upsample)/upsample,
+                     (max_loc[1] - (refSize - templateSize)   * upsample)/upsample]
+            
             if returnMax:
                 return shift, max_val
             else:

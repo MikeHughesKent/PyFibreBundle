@@ -290,7 +290,9 @@ class PyBundle:
         Arguments:
             img: input image as 2D/3D numpy array
             
-        """        
+        """   
+        imgOut = None
+        
         # If autoLoc is still True, meaning calibrate() was not called,
         # and we need to crop, mask apply an edge filter, 
         # then we find the location for the crop now, otherwise
@@ -737,10 +739,9 @@ class PyBundle:
         
         """
         assert self.calibImage is not None, "Calibration requires calibration image, use set_calib_image()."
-        
+
         if self.coreMethod == self.TRILIN:
             if self.calibImage is not None:
-
                 self.calibration = pybundle.calib_tri_interp(self.calibImage, self.coreSize, self.gridSize, 
                                                          background = self.background, 
                                                          normalise = self.normaliseImage,

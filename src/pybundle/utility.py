@@ -128,7 +128,7 @@ def radial_profile(img, centre):
     """
     y, x = np.indices((img.shape))
     r = np.sqrt((x - centre[1])**2 + (y - centre[0])**2)
-    r = r.astype(np.int)
+    r = r.astype(int)
     
     tbin = np.bincount(r.ravel(), weights = img.ravel())
     nr = np.bincount(r.ravel())
