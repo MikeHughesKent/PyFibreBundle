@@ -29,8 +29,10 @@ def extract_central(img, boxSize = None):
         
     Keyword Arguments:    
         boxSize : size of cropping square, default is largest possible
+        
+    Returns:
+        ndarray, cropped image
     """
-
 
     w = np.shape(img)[0]
     h = np.shape(img)[1]
@@ -46,71 +48,74 @@ def extract_central(img, boxSize = None):
     return imgOut
 
 
-def to8bit(img, **kwargs):
+def to8bit(img, minVal = None, maxVal = None):
     """ Returns an 8 bit representation of image. If min and max are specified,
     these pixel values in the original image are mapped to 0 and 255 
     respectively, otherwise the smallest and largest values in the 
     whole image are mapped to 0 and 255, respectively.
     
     Arguments:
-        img    : input image as 2D numpy array
+        img    : ndarray
+                 input image as 2D numpy array
         
    Keyword Arguments:    
-        minVal : optional, pixel value to scale to 0
-        maxVal : optional, pixel value to scale to 255
+        minVal : float
+                 optional, pixel value to scale to 0
+        maxVal : float
+                 optional, pixel value to scale to 255
     """
-    minV = kwargs.get("minVal", None)
-    maxV = kwargs.get("maxVal", None)
-        
-        
+ 
     img = img.astype('float64')
        
-    if minV is None:
-        minV = np.min(img)
+    if minVal is None:
+        minVal = np.min(img)
                     
-    img = img - minV
+    img = img - minVal
         
-    if maxV is None:
-        maxV = np.max(img)
+    if maxVal is None:
+        maxVal = np.max(img)
     else:
-        maxV = maxV - minV
+        maxVal = maxVal - minVal
         
-    img = img / maxV * 255
+    img = img / maxVal * 255
     img = img.astype('uint8')
     
     return img
 
 
-def to16bit(img, **kwargs):
+def to16bit(img, minVal = None, maxVal = None):
     """ Returns an 16 bit representation of image. If min and max are specified,
     these pixel values in the original image are mapped to 0 and 2^16 
     respectively, otherwise the smallest and largest values in the 
     whole image are mapped to 0 and 2^16 - 1, respectively.
     
     Arguments:
-        img    : input image as 2D numpy array
+        img    : ndarray
+                 input image as 2D numpy array
         
     Keyword Arguments:    
-        minVal : optional, pixel value to scale to 0
-        maxVal : optional, pixel value to scale to 2^16 - 1
-    """
-    minV = kwargs.get("minVal", None)
-    maxV = kwargs.get("maxVal", None)
-        
+        minVal : float
+                 optional, pixel value to scale to 0
+        maxVal : float
+                 optional, pixel value to scale to 2^16 - 1
+                 
+    Returns:
+        ndarray, 16 bit image             
+    """   
         
     img = img.astype('float64')
        
-    if minV is None:
-        minV = np.min(img)
+    if minVal is None:
+        minVal = np.min(img)
                     
-    img = img - minV
+    img = img - minVal
         
-    if maxV is None:
-        maxV = np.max(img)
+    if maxVal is None:
+        maxVal = np.max(img)
     else:
-        maxV = maxV - minV
+        maxVal = maxVal - minVal
         
-    img = img / maxV * (2^16 - 1)
+    img = img / maxVal * (2^16 - 1)
     img = img.astype('uint16')
     
     return img
@@ -123,9 +128,14 @@ def radial_profile(img, centre):
     Returns radial profile as 1D numpy array
 
     Arguments:
-        img    : input image as 2D numpy array
-        centre : centre point for radial profile, tuple of (x,y)        
+        img    : ndarray
+                 input image as 2D numpy array
+        centre : (int, int)
+                 centre point for radial profile, tuple of (x,y)  
+    Returns:
+        ndarray, 1D profile             
     """
+    
     y, x = np.indices((img.shape))
     r = np.sqrt((x - centre[1])**2 + (y - centre[0])**2)
     r = r.astype(int)
@@ -140,7 +150,16 @@ def radial_profile(img, centre):
 
 
 def save_image8(img, filename):
-    """ Saves image as 8 bit tif without scaling"""
+    """ Saves image as 8 bit tif without scaling.
+    
+    Arguments:
+         img      : ndarray, 
+                    input image as 2D numpy array
+                   
+         filename : str
+                    path to save to, folder must exist
+    """
+    
     im = Image.fromarray(img.astype('uint8'))
     im.save(filename)
 
@@ -148,10 +167,13 @@ def save_image8(img, filename):
 
 def save_image16(img, filename):
     """ Saves image as 16 bit tif without scaling.
-    
+        
     Arguments:
-        img: image as 2D/3D numpy array
-        filname : str, path to file. Folder must exist.
+         img      : ndarray, 
+                    input image as 2D numpy array
+                   
+         filename : str
+                    path to save to, folder must exist
     """
     im = Image.fromarray(img.astype('uint16'))
     im.save(filename)
@@ -160,10 +182,13 @@ def save_image16(img, filename):
      
 def save_image8_scaled(img, filename):
     """ Saves image as 8 bit tif with scaling to use full dynamic range.
-    
+            
     Arguments:
-        img: image as 2D/3D numpy array
-        filname : str, path to file. Folder must exist.        
+         img      : ndarray, 
+                    input image as 2D numpy array
+                   
+         filename : str
+                    path to save to, folder must exist
     """
     
     im = Image.fromarray(to8bit(img))
@@ -172,12 +197,15 @@ def save_image8_scaled(img, filename):
     
 def save_image16_scaled(img, filename):
     """ Saves image as 16 bit tif with scaling to use full dynamic range.
-    
+            
     Arguments:
-        img: image as 2D/3D numpy array
-        filname : str, path to file. Folder must exist.
+         img      : ndarray, 
+                    input image as 2D numpy array
+                   
+         filename : str
+                    path to save to, folder must exist
     """
-    
+        
     im = Image.fromarray(to16bit(img)[0])
     im.save(filename) 
 
@@ -188,7 +216,11 @@ def average_channels(img):
     
     
     Arguments:
-        img: image as 2D/3D numpy array
+        img:    ndarray
+                 image as 2D/3D numpy array
+            
+    Returns:
+        ndarray, averaged image        
     """     
 
     if img.ndim == 3:
@@ -203,7 +235,11 @@ def max_channels(img):
     
     
     Arguments:
-        img: image as 2D/3D numpy array
+        img:   ndarray
+               image as 2D/3D numpy array
+               
+    Returns:
+        ndarray, max value image           
     """     
 
     if img.ndim == 3:
@@ -211,8 +247,19 @@ def max_channels(img):
     else:
         return img
     
-def resample(img, factor):
     
+def resample(img, factor):
+    """ Resizes an image by a factor.
+    
+    Arguments:
+        img    : ndarray
+                 image as 2D numpy array
+        factor : float,
+                 resize factor        
+         
+    Returns:
+        ndarray, resmaple images
+    """    
     h,w = np.shape(img)
     img = cv.resize(img, ( int(w * factor), int(h * factor)))
     

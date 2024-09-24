@@ -14,6 +14,7 @@ usage of the key functionality.
 import numpy as np
 import math
 import time
+import pickle
 
 import cv2 as cv
 import pybundle
@@ -260,8 +261,6 @@ class PyBundle:
             if self.srUseLut:
                 if self.srCalibrationLUT is not None and self.srParamValue is not None:
                     calibSR = self.srCalibrationLUT.calibrationSR(self.srParamValue)
-                    print("Taken calibration from LUT")
-                    print(calibSR)
                 else:
                     return None
             elif self.calibrationSR is not None:
@@ -787,7 +786,6 @@ class PyBundle:
         set of super-res shift images, coreSize and gridSize must have been 
         set prior to calling this.
         """
-        
         if self.srCalibImages is not None or self.srShifts is not None:
             self.calibrationSR = pybundle.SuperRes.calib_multi_tri_interp(
                 self.calibImage, self.srCalibImages,                                                                           
@@ -804,6 +802,23 @@ class PyBundle:
                 darkFrame = self.srDarkFrame,
                 filterSize = self.filterSize)
     
+    def save_calibration(self, filename):
+        
+        if self.calibration is not None:
+            with open(filename, 'wb') as pickleFile:               
+                pickle.dump(self.calibration, pickleFile)
+
+    def save_sr_calibration(self, filename):
+        if self.calibrationSR is not None:
+            with open(filename, 'wb') as pickleFile:               
+                pickle.dump(self.calibration, pickleFile)
+
+
+    def load_calibration(self, filename):
+        
+        with open(filename, 'rb') as pickleFile:
+            self.calibration = pickle.load(pickleFile)
+
 
     def get_pixel_scale(self):
         """ Returns the scaling factor between the pixel size in the raw image

@@ -107,9 +107,9 @@ class Mosaic:
         self.resetSharpness = kwargs.get('resetSharpness', None)
         
         # These are created the first time they are needed
-        self.mosaic = []
-        self.mask = []
-        self.blendMask = []
+        self.mosaic = None
+        self.mask = None
+        self.blendMask = None
        
         # Initial values
         self.lastShift = [0,0]
@@ -266,7 +266,7 @@ class Mosaic:
         if self.imageType is None:
             self.imageType = img.dtype
         
-        if np.size(self.mask) == 0:
+        if self.mask is None:
             self.mask = pybundle.get_mask(np.zeros([self.imSize,self.imSize]),(self.imSize/2,self.imSize/2,self.cropSize / 2))
        
         if self.col:
@@ -302,6 +302,7 @@ class Mosaic:
         
         oldRegion = mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]]
         
+              
         oldRegion[np.array(mask)] = img[np.array(mask)]
         mosaic[px:px + np.shape(img)[0] , py :py + np.shape(img)[1]] = oldRegion
         
@@ -318,7 +319,7 @@ class Mosaic:
            img       : img to insert, 2D/3D numpy array
            mask      : 2D numpy array with values of 1 for pixels to be copied
                        and 0 for pixels not to be copied. Must be same size as img.           
-           blendMask : the cosine window blending mask with weighted pixel values. If passed empty []
+           blendMask : the cosine window blending mask with weighted pixel values. If None
                        this will be created
            cropSize  : size of input image.
            blendDist : number which controls the sptial extent of the blending
@@ -342,7 +343,7 @@ class Mosaic:
             blendingMask = np.max(blendingMask,2)
 
         # If first time, create blend mask giving weights to apply for each pixel
-        if blendMask == []:
+        if blendMask is None:
             maskRad = cropSize / 2
             blendImageMask = Mosaic.__cosine_window(np.shape(oldRegion)[0], maskRad, blendDist) 
 

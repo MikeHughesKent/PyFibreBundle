@@ -294,7 +294,7 @@ class SuperRes:
         # Triangular linear interpolation
         if numba and numbaAvailable:
             if calib.mask is not None:
-                maskNumba = np.squeeze(np.reshape(calib.mask, (np.product(np.shape(calib.mask)),1)))
+                maskNumba = np.squeeze(np.reshape(calib.mask, (np.prod(np.shape(calib.mask)),1)))
             else:
                 maskNumba = None
             pixelVal = pybundle.grid_data_numba(calib.baryCoords, cVals, calib.coreIdx, calib.mapping, maskNumba)
