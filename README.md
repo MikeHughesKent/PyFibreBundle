@@ -16,12 +16,21 @@ The package was originally developed mostly for applications in endoscopic micro
 holographic endomicroscopy, but there are also potential applications in endoscopy, industrial inspection etc.
 
 Development is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
-at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), School of Physics & Astronomy, University of Kent. 
+at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), Physics & Astronomy, University of Kent. 
 Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
 for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
 
 [Join the mailing list](https://groups.google.com/g/pyfibrebundle) to hear about releases, updates and bug fixes.
 
+## Journal Paper
+
+The package is described in this paper, please cite it using PyFibreBundle for academic work, and provide a link to this repository:
+
+M. Hughes, _Real-timing processing of fiber bundle endomicroscopy images in Python using PyFibreBundle_, Applied Optics **62**(34), 9041-9050 (2023). [Link](https://doi.org/10.1364/AO.503700)
+
+## Documentation
+
+Read the [full documentation](http://PyFibreBundle.readthedocs.io).
 
 ## Capabilities
 
@@ -43,8 +52,6 @@ for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
 
 ### Super Resolution
 * Combine multiple shifted images to improve resolution.
-
-Read the [full documentation](http://PyFibreBundle.readthedocs.io) for more details.
 
 ## Getting Started
 
