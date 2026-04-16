@@ -3,7 +3,7 @@ Mosaicing
 The Mosaic class allows high speed mosaicing using normalised cross correlation to detect shifts between image frames, 
 and either dead-leaf or alpha-blended insertion of images into a mosaic. 
 The easiest way to use this functionality is to create an instance of ``Mosaic`` class and then use ``Mosaic.add(img)`` to 
-sequentially register and add image ``img`` to the mosaic,	 and ``Mosaic.getMosaic()`` to get the latest mosaic image. 
+sequentially register and add image ``img`` to the mosaic,	 and ``Mosaic.get_mosaic()`` to get the latest mosaic image. 
 Both ``img`` and the ``mosaic`` are 2D (monochrome) or 3D (colour) numpy arrays.
 
 An example is provided on `Github <examples\\mosaicing_example.py>`_.
@@ -23,9 +23,9 @@ Add an image ``img`` to the mosaic::
 
 Request the latest mosaic image::
 
-    mosaicImage = mMosaic.getMosaic()
+    mosaic_image = mMosaic.get_mosaic()
 
-The ``mosaicImage`` will be a 2D numpy array if ``img`` is 2D and a 3D numpy array if ``img`` is 3D, in which case the third axis represents the colour channels.	
+The ``mosaic_image`` will be a 2D numpy array if ``img`` is 2D and a 3D numpy array if ``img`` is 3D, in which case the third axis represents the colour channels.	
 
 
 ^^^^^^^^^^^^^^^^^^^^
@@ -40,7 +40,7 @@ Methods
 ^^^^^^^^^^^^^^^^^^^^
 Usage Notes
 ^^^^^^^^^^^^^^^^^^^^
-The only required argument is the size of the mosaic image. By default images will be added blended, there will be no resize of the input image, no checking of input image quality and if the mosaic reaches the edge of the image it will simple run off the the edge.
+The only required argument is the size of the mosaic image. By default images will be added blended, there will be no resize of the input image, no checking of input image quality and if the mosaic reaches the edge of the image it will simply run off the the edge.
 
 Usually it is beneficial to resize the input images to prevent the need for a very large mosaic image, e.g.::
 

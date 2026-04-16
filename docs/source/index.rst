@@ -2,6 +2,10 @@ PyFibreBundle
 ====================================
 PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. 
 
+Parts of the package are described and validated in this paper:
+
+M. Hughes, `Real-timing processing of fiber bundle endomicroscopy images in Python using PyFibreBundle <https://doi.org/10.1364/AO.503700>`_, Applied Optics 62(34), 9041-9050 (2023). doi: 10.1364/AO.503700.
+
 The project is hosted on `github <https://github.com/MikeHughesKent/PyFibreBundle/>`_. The latest stable release can be installed via pip::
 
     pip install PyFibreBundle
@@ -10,6 +14,7 @@ The package supports fibre core pattern removal by filtering and triangular line
 flat fielding, as well as automatic bundle location, cropping and masking. Both monochrome and colour images can be processed.
 The :doc:`PyBundle<pybundle_class>` class is the preferred way to access this functionality, 
 but the lower level functions can also be used directly for greater customisation. 
+
 The :doc:`Mosaic<mosaicing>` class provides mosaicing via normalised cross correlation, 
 and the :doc:`SuperRes<super_res>` class allows multiple shifted images to be combined to improve resolution.
 

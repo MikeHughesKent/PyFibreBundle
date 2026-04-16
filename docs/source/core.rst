@@ -70,10 +70,10 @@ how to perform linear interpolation.
 The edge filter is a spatial frequency domain filter that seeks to cut off
 higher spatial frequencies includes those that correspond to the cores. It is used 
 similarly to the Gaussian filter, except that the
-filter size is defined by passing ``edgeFilterSize = (pos, slope)`` or
+filter size is defined by passing ``edgeFilterShape = (pos, slope)`` or
 calling::
 
-    set_edge_filter_size(pos, slope)
+    set_edge_filter_shape(pos, slope)
     
 where ``pos`` the defines the position of the cut-off and ``slope`` defines
 the steepness of the cut-off. ``pos`` should typically be around twice the 
@@ -208,5 +208,5 @@ Linear interpolation: `examples/linear_interp_example.py <https://github.com/Mik
 
 Colour Gaussian filtering: `examples/filtering_colour_example.py <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/filtering_colour_example.py>`_.
 
-Colouor Linear interpolation: `examples/linear_interp_colour_example.py <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_colour_example.py>`_.
+Colour Linear interpolation: `examples/linear_interp_colour_example.py <https://github.com/MikeHughesKent/PyFibreBundle/blob/main/examples/linear_interp_colour_example.py>`_.
   

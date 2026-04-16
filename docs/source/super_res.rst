@@ -58,7 +58,7 @@ Using Known Shifts
 
 If the x and y shifts between images are known in advance, they can be specified using::
 
-    pyb.set_sr_shifits(shifts)
+    pyb.set_sr_shifts(shifts)
 
 where ``shifts`` is a 2D numpy array of size (nImages, 2). When ``pyb.calibrate_sr()`` is called, these shifts will be used instead of calculating shifts, i.e. ``pyb.set_sr_calib_images()`` does not need to be called.
 
@@ -141,7 +141,7 @@ In some circumstances, the shifts between the images in the stack are fixed in t
 For example, in fibre bundle inline holographic microscopy, which uses multiple light sources in a transmission geometry, 
 the shifts of the hologram (image) position on the bundle depend on the distance between the object and the 
 bundle. In these cases it can be convenient to determine the dependence of the shifts on this parameter in a calibrations stage, and then to 
-subsequently infer the shifts for all further sets of images based on the current value of the parameter rather than measuring them directl from the images.
+subsequently infer the shifts for all further sets of images based on the current value of the parameter rather than measuring them directly from the images.
 
 Assuming we have acquired several stacks of shifted images for different values of the parameter, 
 we assemble a 4D numpy array of images with dimensions (image height, image width, number of shifts, number of example param values).
@@ -191,11 +191,11 @@ either created manually or using the output of ``calib_param_shift``.
 
 We then tell PyBundle to use the LUT::
 
-    PyBundle.set_use_sr_lut(True)
+    PyBundle.set_sr_use_lut(True)
     
 We must also tell PyBundle the current value of the parameter::
 
-    PyBundle.set_sr_param(paramValue)
+    PyBundle.set_sr_param_value(paramValue)
       
 Now, when we call ``PyBundle.process``, assuming we have enabled super-resolution and provided a set of shifted images, as described above,
 the calibration LUT will be accessed and the calibration previously created for a value of the parameter closest to the current value will be used. 
@@ -275,7 +275,7 @@ Implementation Details
 
 Reconstruction is performed using ``recon_multi_tri_interp``.  The intensity value from each core in each of the images are extracted, and then pixel values in the final image are interpolated linearly from the three surrounding (shifted) cores, using the pre-calculated barycentric distance weights.
 
-The SR calibration is stored in an instane of ``BundleCalibration``. This is an extension of the regular TRILIN calibration, and so this super-resolution calibration can be used for non-super-resolution reconstructions (but not vice-versa).
+The SR calibration is stored in an instance of ``BundleCalibration``. This is an extension of the regular TRILIN calibration, and so this super-resolution calibration can be used for non-super-resolution reconstructions (but not vice-versa).
 
 ^^^^^^^^
 Examples

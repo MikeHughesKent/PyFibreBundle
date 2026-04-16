@@ -8,7 +8,7 @@ below, introductory guides on using the class are available for for
 and `Super Resolution <super_res.html>`_ .
 
 ^^^^^^^^^^^^^^^
-Instantiatation
+Instantiation
 ^^^^^^^^^^^^^^^
 
 .. py:function:: PyBundle(optional arguments)
@@ -17,7 +17,7 @@ Creates a PyBundle object. There are a large number of optional keyword
 arguments (.e.g ``autoLoc = True``), which are listed below with their defaults
 if not set. Each option also has a setter method (e.g. ``set_auto_loc``) which
 can be called after creating the object as an alternative to passing the 
-keyword arguement at creation. See the documentation for each setter, below,
+keyword argument at creation. See the documentation for each setter, below,
 for a detailed description of each option's meaning.
 
 **GENERAL Settings:**
@@ -31,7 +31,7 @@ for a detailed description of each option's meaning.
 
 * applyMask = False (``set_apply_mask``)
 * autoMask = True (``set_auto_mask``)
-* autoLoc = False (``set_auto_loc``)
+* autoLoc = True (``set_auto_loc``)
 * crop = False(``set_crop``)
 * loc = None (``set_loc``)
 * mask = None (``set_mask``)

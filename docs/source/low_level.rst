@@ -1,10 +1,10 @@
 ------------------------------
 Using the Low-Level Functions
 ------------------------------
-While the ``PyBundle`` class is the recommended way to use most functinality.
+While the ``PyBundle`` class is the recommended way to use most functionality.
 the lower-level functions can be called directly if greater control is needed.
 
-The fuctions are documented fully in the `Function Reference <functions.html>`_.
+The functions are documented fully in the `Function Reference <functions.html>`_.
 
 Begin by importing the package::
     
@@ -59,21 +59,20 @@ convenient function to filter, mask and crop an image is given by::
     smoothedImg = pybundle.crop_filter_mask(img, loc, mask)
 
 where ``loc`` is the location of the bundle, determined using ``find_bundle`` 
-on a calibraton image, and ``mask`` is a mask created by ``get_mask``.
+on a calibration image, and ``mask`` is a mask created by ``get_mask``.
 
 The core spacing of the bundle can be found using::
 
-    coreSpacing = pybundle.get_core_spacing(img)
+    coreSpacing = pybundle.find_core_spacing(img)
 
 This can then be used to define a custom edge filter using::
 
-    filter = pybundle.edge_filter(img,  edgeLocation, edgeSlope)
+    filter = pybundle.edge_filter(np.shape(img),  edgeLocation, edgeSlope)
 
 This defines a Fourier domain filter with a cosine smoothed cut-off at the 
 spatial frequency corresponding to the spatial distance ``edgeLocation``. 
 ``edgeSlope`` defines the smoothness of the cut-off; a value of 0 gives a 
-rectangular function. ``img`` merely needs to be a numpy array the same size 
-as the image(s) to be filtered. ``edgeLocation`` should typically be 
+rectangular function. ``edgeLocation`` should typically be 
 ``1.6 * coreSpacing``, and ``edgeSlope`` is not critical, but a value of 
 ``0.1 * coreSpacing`` generally works well. To apply the filter use::
 
@@ -87,7 +86,7 @@ calibration using the calibration image ``calibImg``, a 2D numpy array::
     coreSize = 3
     gridSize = 512    
     calib = pybundle.calib_tri_interp(calibImg, coreSize, gridSize, 
-                                     normalise = calibImg, automask = True)  
+                                     normalise = calibImg, autoMask = True)  
 
 Here we have specified ``coreSize = 3`` which is the approximate core spacing 
 in the image. This assists the calibration routine in finding all cores. If 
