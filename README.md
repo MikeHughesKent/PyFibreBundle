@@ -1,3 +1,7 @@
+[![Tests](https://github.com/MikeHughesKent/PyFibreBundle/actions/workflows/tests.yml/badge.svg)](https://github.com/MikeHughesKent/pyfibrebundle/actions/workflows/tests.yml)
+![Documentation Status](https://app.readthedocs.org/projects/pyfibrebundle/badge/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 <h1 align="right">
 <img src="res/pyb_logo.png" width="250">
 </h1>
