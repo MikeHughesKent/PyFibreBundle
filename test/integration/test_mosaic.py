@@ -8,13 +8,11 @@ University of Kent
 """
 
 import numpy as np
-import math
 from matplotlib import pyplot as plt
 import time
 
 import cv2 as cv
 
-import context    # For paths to library
 
 import pybundle
 from pybundle import Mosaic

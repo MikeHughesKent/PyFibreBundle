@@ -6,7 +6,6 @@ Tests sim functions of PyFibreBundle.
 """
 
 import unittest 
-import context
 
 
 import numpy as np
@@ -44,5 +43,4 @@ class TestSim(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    import context
     unittest.main()

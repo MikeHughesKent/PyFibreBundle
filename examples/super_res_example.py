@@ -6,15 +6,12 @@ Example of use super-resolution functionality of PyFibreBundle using PyBundle Cl
 """
 
 import os
-import sys
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-import context    # For paths to library
 
-import pybundle
 from pybundle import PyBundle
 
 dataFolder = Path('../test/data/super_res/data')

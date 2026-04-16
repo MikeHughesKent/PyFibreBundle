@@ -13,12 +13,10 @@ by spatial filtering.
 import numpy as np
 import scipy.fft
 import math
-import time
 
 import cv2 as cv
 
 import pybundle
-from pybundle.bundle_calibration import BundleCalibration
 from pybundle.utility import average_channels, max_channels, extract_central
 
 

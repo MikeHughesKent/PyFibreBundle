@@ -9,15 +9,11 @@ It is recommended for most purposes that the PyBundle class is used instead.
 
 @author: Mike Hughes, Applied Optics Group, University of Kent
 """
-from matplotlib import pyplot as plt
 import numpy as np
 import os
-import time
 
 from PIL import Image
-import cv2 as cv
 
-import context    # Add relative path to get pybundle
 
 import pybundle 
 

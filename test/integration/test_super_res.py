@@ -8,13 +8,11 @@ University of Kent
 """
 
 import os
-import sys
 from PIL import Image
 import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-import context    # For paths to library
 
 import pybundle
 from pybundle import SuperRes

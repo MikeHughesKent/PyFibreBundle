@@ -20,15 +20,12 @@ spots so that no external test-data files are needed.
 
 """
 
-import matplotlib.pyplot as plt
 
 import unittest
 import math
 import numpy as np
 
-import context
 
-import pybundle
 from pybundle import PyBundle
 from pybundle.core import (
     g_filter,

@@ -6,15 +6,12 @@ Testing that processing works with different image types.
 """
 from matplotlib import pyplot as plt
 import numpy as np
-import time
 
 from PIL import Image
 
 from time import perf_counter as timer
 
-import context
 
-import pybundle 
 from pybundle import PyBundle
 
 filterSize = 2

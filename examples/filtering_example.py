@@ -13,8 +13,6 @@ from time import perf_counter as timer
 
 from pathlib import Path
 
-import context
-import pybundle
 
 from pybundle import PyBundle
 

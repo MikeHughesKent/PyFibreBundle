@@ -17,7 +17,6 @@ Tests cover:
 import unittest
 import numpy as np
 
-import context
 
 from pybundle.core import (
     g_filter,

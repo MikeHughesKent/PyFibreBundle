@@ -12,7 +12,7 @@ package.
 
 
 import numba
-from numba import jit, njit
+from numba import jit
 import numpy as np
 
 @jit(nopython = True)   

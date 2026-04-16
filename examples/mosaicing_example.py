@@ -6,15 +6,12 @@ Example of how to use Mosaicing functionality of PyFibreBundle.
 """
 
 import numpy as np
-import math
-from matplotlib import pyplot as plt
 from PIL import Image
 import time
 from pathlib import Path
 
 import cv2 as cv
 
-import context    # For paths to library
 
 import pybundle
 from pybundle import Mosaic

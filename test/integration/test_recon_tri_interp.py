@@ -16,9 +16,7 @@ import time
 
 from PIL import Image
 
-import context    # Add relative path to get PyBundle
 
-import cv2 as cv
 import pybundle
 
 # We load in two images, an image with uniform illumination for calibation

@@ -15,7 +15,6 @@ import math
 import time
 
 
-import matplotlib.pyplot as plt
 
 import cv2 as cv
 
@@ -30,8 +29,6 @@ from pybundle.bundle_calibration import BundleCalibration
 # interpolation funactions. If we get an error (i.e. library not available)
 # then we won't call the function that require this.
 try:
-    from numba import jit
-    import numba
     from pybundle.core_interpolation_numba import *
     numbaAvailable = True
 except:

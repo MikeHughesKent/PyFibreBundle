@@ -54,7 +54,6 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 
-import sphinx_rtd_theme
 
 
 html_theme = "sphinx_rtd_theme"
@@ -71,4 +70,3 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-import pybundle

@@ -6,22 +6,16 @@ fibre bundle images.
 This file contains the PyBundle class which provides object oriented
 usage of the key functionality.
 
-@author: Mike Hughes, Applied Optics Group, University of Kent
-
 """
 
 
 import numpy as np
-import math
-import time
 import pickle
 
-import cv2 as cv
 import pybundle
 
 from pybundle.core_interpolation import *    
-from pybundle.bundle_calibration import BundleCalibration
-from pybundle.core import normalise_image, g_filter, edge_filter, filter_image, crop_rect
+from pybundle.core import normalise_image, g_filter, filter_image, crop_rect
 
 
 class PyBundle:
@@ -374,7 +368,6 @@ class PyBundle:
         Arguments:
             coreMethod: PyBundle.FILTER, PyBundle.TRILIN or PyBundle.EDGE_FILTER
         """
-        print(coreMethod)
         self.coreMethod = coreMethod
         
         
@@ -879,7 +872,6 @@ class PyBundle:
         """
        
         if self.calibImage is not None:
-            print("pybundle doing calib")
             self.srCalibrationLUT = pybundle.calibrationLUT(
                 self.calibImage, self.srCalibImages,                                                                           
                 self.coreSize, self.gridSize, 

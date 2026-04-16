@@ -17,7 +17,6 @@ import unittest
 import math
 import numpy as np
 
-import context
 
 from pybundle.core_interpolation import (
     core_values,

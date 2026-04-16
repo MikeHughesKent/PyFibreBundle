@@ -12,7 +12,6 @@ This file contains utility functions.
 
 import numpy as np
 import math
-import time
 from PIL import Image
 
 import cv2 as cv

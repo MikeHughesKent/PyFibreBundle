@@ -9,9 +9,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 from PIL import Image
 
-import cv2 as cv
 
-import context    # For paths to library
 
 import pybundle
 

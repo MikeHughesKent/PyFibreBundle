@@ -20,15 +20,12 @@ import numpy as np
 
 import cv2 as cv
 
-import matplotlib.pyplot as plt
 
 
 # We try to import numba here and if successful, load the numba-optimised
 # interpolation funactions. If we get an error (i.e. library not available)
 # then we won't call the functions that require this.
 try:
-    from numba import jit
-    import numba
     from pybundle.core_interpolation_numba import *
     numbaAvailable = True
 except:

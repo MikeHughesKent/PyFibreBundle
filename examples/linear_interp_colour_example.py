@@ -14,9 +14,7 @@ import time
 
 from PIL import Image
 
-import context    # Add relative path to get PyBundle
 
-import os
 import pybundle
 from pybundle import PyBundle
 

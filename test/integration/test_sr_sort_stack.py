@@ -5,7 +5,6 @@ Tests the super-resolution stack sorter helper function.
 @author: Mike Hughes, Applied Optics Group, University of Kent
 """
 
-import context
 import pybundle as pyb
 import os
 import numpy as np

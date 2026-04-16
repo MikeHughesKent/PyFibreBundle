@@ -5,7 +5,8 @@ Created on Sat Jul  3 21:23:46 2021
 @author: AOG
 """
 
-import sys, os
+import sys
+import os
 testdir = os.path.dirname(__file__)
 srcdir = '../../src/'
 sys.path.insert(0, os.path.abspath(os.path.join(testdir, srcdir)))

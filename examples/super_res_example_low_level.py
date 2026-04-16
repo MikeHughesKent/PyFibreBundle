@@ -16,7 +16,6 @@ import matplotlib.pyplot as plt
 import time
 from pathlib import Path
 
-import context    # For paths to library
 
 import pybundle
 from pybundle import SuperRes

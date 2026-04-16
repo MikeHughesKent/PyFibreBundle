@@ -12,10 +12,7 @@ from unittest import mock
 
 import numpy as np
 
-try:
-    import test.unit_tests.context as context
-except ImportError:
-    import context
+import context
 
 from pybundle import Mosaic
 

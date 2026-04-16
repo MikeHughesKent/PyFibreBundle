@@ -4,22 +4,17 @@ Times several key functions of PyFibreBundle.
 
 @author: Mike Hughes, Applied Optics Group, University of Kent
 """
-from matplotlib import pyplot as plt
 import numpy as np
 import os
 import time
 
 from PIL import Image
-import cv2 as cv
 
-import context    # Add relative path to get pybundle
 
 from pybundle import PyBundle 
-import pybundle
 
 from pathlib import Path
 
-import timeit
 
 
 from IPython import get_ipython
