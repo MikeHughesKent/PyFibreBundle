@@ -131,7 +131,7 @@ class Mosaic:
         Arguments:
             img    : image as 2D/3D numpy array
         """
-
+        #print("adding")
         # Before we have first image we can't choose sensible default values, so
         # initialisation is called here if we are on the first image
         if self.nImages == 0:

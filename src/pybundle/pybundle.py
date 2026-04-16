@@ -374,6 +374,7 @@ class PyBundle:
         Arguments:
             coreMethod: PyBundle.FILTER, PyBundle.TRILIN or PyBundle.EDGE_FILTER
         """
+        print(coreMethod)
         self.coreMethod = coreMethod
         
         
