@@ -29,6 +29,7 @@ Read the [full documentation](http://PyFibreBundle.readthedocs.io).
 These can be run online on Binder:
 - Triangular Linear Interpolation [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MikeHughesKent/PyFibreBundle/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Ftriangular_linear_interp.ipynb)
 - Resolution Enhancement [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MikeHughesKent/PyFibreBundle/HEAD?urlpath=%2Fdoc%2Ftree%2Fresolution_enhancement.ipynb)
+- Mosaicing [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MikeHughesKent/PyFibreBundle/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Fmosaicing.ipynb)
 
 ## Journal Paper
 
