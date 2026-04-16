@@ -10,7 +10,7 @@
 
 PyFibreBundle is a Python package for processing images captured through optical fibre bundles. 
 
-Full documentation is available on [Readthedocs](http://PyFibreBundle.readthedocs.io) and a summary of the current functionality is below.
+The core functionality allows fibre core patterns to be identified and removed by several methods, in addition to background subtraction, flat-fielding (normalisation), and cropping via automatical bundle localisation. Modules also allow for mosaicking and resolution enhancement.
 
 PyFibreBundle is fast enough for live imaging as well as for offline research; frame rates of over 100 fps 
 can be achieved on mid-level hardware, including core removal and mosaicing. The Numba just-in-time compiler is used to accelerate key portions of code (particularly triangular linear interpolation) 
@@ -19,43 +19,23 @@ and OpenCV is used for fast mosaicing. If the Numba package is not installed the
 The package was originally developed mostly for applications in endoscopic microscopy, including fluorescence endomicroscopy and 
 holographic endomicroscopy, but there are also potential applications in endoscopy, industrial inspection etc.
 
-Development is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
-at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), Physics & Astronomy, University of Kent. 
-Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
-for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
-
 [Join the mailing list](https://groups.google.com/g/pyfibrebundle) to hear about releases, updates and bug fixes.
-
-## Journal Paper
-
-The package is described in this paper, please cite it using PyFibreBundle for academic work, and provide a link to this repository:
-
-M. Hughes, _Real-timing processing of fiber bundle endomicroscopy images in Python using PyFibreBundle_, Applied Optics **62**(34), 9041-9050 (2023). [Link](https://doi.org/10.1364/AO.503700)
 
 ## Documentation
 
 Read the [full documentation](http://PyFibreBundle.readthedocs.io).
 
-## Capabilities
+## Example Notebooks
+These can be run online on Binder:
+- Triangular Linear Interpolation [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MikeHughesKent/PyFibreBundle/HEAD?urlpath=%2Fdoc%2Ftree%2Fnotebooks%2Ftriangular_linear_interp.ipynb)
+- Resolution Enhancement [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MikeHughesKent/PyFibreBundle/HEAD?urlpath=%2Fdoc%2Ftree%2Fresolution_enhancement.ipynb)
 
-### Core Functions  
-* Supports monochrome and multi-channel (e.g. colour) images.
-* Locate bundle in image.
-* Crop image to only show bundle.
-* Mask areas outside of bundle.
-* Determine core spacing.
-* Find locations of all cores in bundle.
-* Core removal by Gaussian filtering.
-* Core removal using custom edge filtering.
-* Core removal using triangular linear interpolation following Delaunay triangulation. 
+## Journal Paper
 
-### Mosaicing
-* Detect image to image shift using normalised cross correlation.
-* Insert image into mosaic either using dead-leaf or alpha blending.
-* Expand or scroll mosaic when the edge of the mosaic image is reached.
+The package is described in this paper, please cite it when using PyFibreBundle for academic work, as well as providing a link to this repository:
 
-### Super Resolution
-* Combine multiple shifted images to improve resolution.
+M. Hughes, _Real-timing processing of fiber bundle endomicroscopy images in Python using PyFibreBundle_, Applied Optics **62**(34), 9041-9050 (2023). [Link](https://doi.org/10.1364/AO.503700)
+
 
 ## Getting Started
 
@@ -82,6 +62,26 @@ Note that the pip install doesn't include the examples and tests which still nee
 
 Once installed, you can try running the [examples](https://github.com/MikeHughesKent/PyFibreBundle/tree/main/examples).
 
+## Feature List
+
+### Core Functions  
+* Supports monochrome and multi-channel (e.g. colour) images.
+* Locate bundle in image.
+* Crop image to only show bundle.
+* Mask areas outside of bundle.
+* Determine core spacing.
+* Find locations of all cores in bundle.
+* Core removal by Gaussian filtering.
+* Core removal using custom edge filtering.
+* Core removal using triangular linear interpolation following Delaunay triangulation. 
+
+### Mosaicing
+* Detect image to image shift using normalised cross correlation.
+* Insert image into mosaic either using dead-leaf or alpha blending.
+* Expand or scroll mosaic when the edge of the mosaic image is reached.
+
+### Super Resolution
+* Combine multiple shifted images to improve resolution.
 
 ## Requirements
 
@@ -98,6 +98,12 @@ Optional Packages:
 * Matplotlib (to run examples and tests)
 
 ## Contributions
-Cheng Yong Xin, Joseph, who contributed to triangular linear interpolation; Callum McCall who contributed to the super resolution component, Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. 
+Development is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
+at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), Physics & Astronomy, University of Kent. 
 
-Funding from EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), Royal Society (Ultrathin Inline Holographic Microscopy) and University of Kent.
+Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
+for potential commercial users, [get in touch](mailto:m.r.hughes@kent.ac.uk)
+
+Thanks to: Cheng Yong Xin, Joseph, who contributed to triangular linear interpolation; Callum McCall who contributed to the super resolution component, Petros Giataganas who developed some of the Matlab code that parts of this library were ported from. 
+
+The work was partly funded by EPSRC (Ultrathin fluorescence microscope in a needle, EP/R019274/1), the Royal Society (Ultrathin Inline Holographic Microscopy) and University of Kent.
