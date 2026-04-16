@@ -16,6 +16,7 @@ Tests cover:
 import unittest
 import numpy as np
 
+import context
 
 from pybundle.utility import (
     extract_central,
