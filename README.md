@@ -84,6 +84,9 @@ Once installed, you can try running the [examples](https://github.com/MikeHughes
 ### Super Resolution
 * Combine multiple shifted images to improve resolution.
 
+### Fibre Bundle Analysis
+* Detect fibre core locations and compute various statistics.
+
 ## Requirements
 
 Required Packages:
