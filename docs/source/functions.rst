@@ -109,6 +109,13 @@ Low-level functions
 
 
 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Bundle Analysis Functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. autofunction:: pybundle.core_pattern_statistics
+
+
 ^^^^^^^^^^^^^^^^^
 Utility Functions
 ^^^^^^^^^^^^^^^^^

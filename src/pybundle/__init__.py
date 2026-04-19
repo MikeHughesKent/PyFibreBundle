@@ -15,6 +15,7 @@ from pybundle.utility import *
 from pybundle.pybundle import *
 from pybundle.super_res import *
 from pybundle.core_interpolation import *
+from pybundle.bundle_analysis import *
 from pybundle.bundle_calibration import BundleCalibration
 from pybundle.mosaic import *
     

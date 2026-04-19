@@ -1,6 +1,6 @@
 PyFibreBundle
 ====================================
-PyFibreBundle is a Python package for processing of images captured through optical fibre bundles. 
+PyFibreBundle is a Python package for analysis and processing of images captured through optical fibre imaging bundles. 
 
 Parts of the package are described and validated in this paper:
 
@@ -38,6 +38,7 @@ Contents
    pybundle_class
    mosaicing
    super_res
+   bundle_analysis
    low_level
    functions
    
