@@ -101,8 +101,22 @@ Optional Packages:
 * Numba (for faster linear interpolation)
 * Matplotlib (to run examples and tests)
 
+## Development
+
+The current focus of development is adding capability to simulate fibre bundle imaging. Current progress is
+in the sim.py and sim_core_pos.py. The roadmap is roughly:
+
+- [x] Add Bundle Analysis tools to extract statistical parameters from real bundles to allow validation of simulated bundles.
+- [x] Generate core patterns use simple regular square and hex lattices
+- [x] Generate realistic core patterns using physics-inspired relaxation circle-packing
+- [x] Generate simple bundle image using Gaussians centered on cores
+- [ ] Add support for simulating damaged cores and regions
+- [ ] Sample images using simulated bundle
+- [ ] Cross-validation with real images
+- [ ] Simulation of core patterns for coherent and incoherent illumination, perhaps using mode solver and coupling calculations, aiming to show effects such as
+
 ## Contributions
-Development is led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
+Development is currently led by [Mike Hughes](https://research.kent.ac.uk/applied-optics/hughes) 
 at the [Applied Optics Group](https://research.kent.ac.uk/applied-optics/), Physics & Astronomy, University of Kent. 
 
 Bug reports, contributions and pull requests are welcome. Academic collaborations are welcomed and consultancy is available
