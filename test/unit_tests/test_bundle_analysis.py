@@ -9,7 +9,7 @@ import numpy as np
 import context
 
 from pybundle.bundle_analysis import core_pattern_statistics
-from pybundle.sim import regular_lattice_centres
+from pybundle.sim import regular_core_lattice
 
 
 # ---------------------------------------------------------------------------
@@ -18,7 +18,7 @@ from pybundle.sim import regular_lattice_centres
 
 def _make_hex_lattice(spacing=3.0, radius=50.0):
     """Return coreX, coreY for a clean hex lattice clipped to a circle."""
-    coreX, coreY = regular_lattice_centres(spacing=spacing, radius=radius, packing='hex')
+    coreX, coreY = regular_core_lattice(spacing=spacing, radius=radius, packing='hex')
     r = np.sqrt(coreX ** 2 + coreY ** 2)
     mask = r <= radius
     return coreX[mask], coreY[mask]
